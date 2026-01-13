@@ -1,0 +1,1017 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="mb-4">
+      <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+        <li>
+          <a routerLink="/dashboard" class="hover:text-green-600">Home</a>
+        </li>
+        <li><i class="pi pi-angle-right text-xs"></i></li>
+        <li>
+          <a
+            routerLink="/school-information/campuses"
+            class="hover:text-green-600"
+            >Campuses</a
+          >
+        </li>
+        <li *ngIf="currentCampusName">
+          <i class="pi pi-angle-right text-xs"></i>
+        </li>
+        <li *ngIf="currentCampusName">
+          <a
+            [routerLink]="['/school-information/departments']"
+            [queryParams]="{
+              campusId: currentCampusId,
+              campusName: currentCampusName
+            }"
+            class="hover:text-green-600"
+            >{{ currentCampusName }}</a
+          >
+        </li>
+        <li *ngIf="currentDepartmentName">
+          <i class="pi pi-angle-right text-xs"></i>
+        </li>
+        <li *ngIf="currentDepartmentName" class="text-green-600 font-semibold">
+          {{ currentDepartmentName }}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Programs<span *ngIf="currentDepartmentName">
+          - {{ currentDepartmentName }}</span
+        >
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage academic programs and courses
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls mb-4 flex justify-between items-center gap-3">
+      <div class="flex gap-3 flex-1">
+        <div class="w-[300px]">
+          <p-inputgroup>
+            <input
+              pInputText
+              placeholder="Search programs..."
+              [(ngModel)]="keyword"
+              (keyup.enter)="handleSearch()"
+            />
+            <p-inputgroup-addon>
+              <button
+                pButton
+                icon="pi pi-search"
+                severity="secondary"
+                variant="text"
+                (click)="handleSearch()"
+              ></button>
+            </p-inputgroup-addon>
+          </p-inputgroup>
+        </div>
+      </div>
+      <button
+        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs cursor-pointer flex items-center gap-2"
+        (click)="handleAddDialog()"
+      >
+        <i class="pi pi-plus"></i>
+        Add Program
+      </button>
+    </div>
+
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[35%] text-sm"
+              >
+                Program Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[25%] text-sm"
+              >
+                Department
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let program of programs; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ program.program_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ program.department_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-white"
+                  [ngClass]="
+                    program.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  "
+                >
+                  {{ program.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="bg-indigo-500 hover:bg-indigo-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="viewSections(program)"
+                    title="Manage Sections"
+                  >
+                    <i class="pi pi-th-large"></i>
+                  </button>
+                  <button
+                    class="bg-purple-500 hover:bg-purple-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="viewMajors(program)"
+                    title="Manage Majors"
+                  >
+                    <i class="pi pi-list"></i>
+                  </button>
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleUpdateDialog(program.program_id)"
+                    title="Edit Program"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    [ngClass]="{
+                      'bg-green-500 hover:bg-green-600':
+                        program.status === 'inactive',
+                      'bg-red-500 hover:bg-red-600': program.status === 'active'
+                    }"
+                    class="p-2 text-white rounded cursor-pointer text-sm"
+                    (click)="
+                      handleUpdateStatus(
+                        $event,
+                        program.program_id,
+                        program.status
+                      )
+                    "
+                    [title]="
+                      program.status === 'active'
+                        ? 'Disable Program'
+                        : 'Enable Program'
+                    "
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        program.status === 'active'
+                          ? 'pi-ban'
+                          : 'pi-check-circle'
+                      "
+                    ></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="programs.length === 0">
+              <td
+                colspan="4"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No programs found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between px-4 py-3 border-t border-gray-300 bg-gray-50"
+      >
+        <div class="text-sm text-gray-600 poppins-regular">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600 poppins-regular"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Modal -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Add Program</h3>
+      <button
+        type="button"
+        (click)="handleAddDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="newProgramForm" (ngSubmit)="submitNewProgram()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Enter program information<span *ngIf="currentDepartmentName">
+            for {{ currentDepartmentName }}</span
+          >.
+        </p>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Program Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="program_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Abbreviation</label
+            >
+            <input
+              type="text"
+              formControlName="abbrev"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+              placeholder="e.g. BSCS, BSIT"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="handleAddDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 poppins-medium text-sm"
+        >
+          Save Program
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update Modal -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Update Program</h3>
+      <button
+        type="button"
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="updateProgramForm" (ngSubmit)="submitUpdatedProgram()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Update program information.
+        </p>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Program Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="program_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Abbreviation</label
+            >
+            <input
+              type="text"
+              formControlName="abbrev"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Department <span class="text-red-500">*</span></label
+            >
+            <select
+              formControlName="department_id"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option [value]="null" disabled>Select Department</option>
+              <option
+                *ngFor="let dept of departments"
+                [value]="dept.department_id"
+              >
+                {{ dept.department_name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Status <span class="text-red-500">*</span></label
+            >
+            <select
+              formControlName="status"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 poppins-medium text-sm"
+        >
+          Update Program
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Majors Management Modal -->
+<div
+  *ngIf="isMajorsDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col relative z-10"
+  >
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">
+        Manage Majors - {{ selectedProgramName }}
+      </h3>
+      <button
+        type="button"
+        (click)="closeMajorsDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto flex-1">
+      <!-- Add Major Form -->
+      <div class="mb-6 p-4 bg-gray-50 rounded">
+        <h4 class="font-semibold poppins-medium text-sm mb-3">Add New Major</h4>
+        <form
+          [formGroup]="newMajorForm"
+          (ngSubmit)="submitNewMajor()"
+          class="flex gap-3"
+        >
+          <input
+            type="text"
+            formControlName="major_name"
+            placeholder="Major Name"
+            class="flex-1 border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          />
+          <input
+            type="text"
+            formControlName="abbrev"
+            placeholder="Abbreviation"
+            class="w-32 border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 poppins-medium text-sm cursor-pointer"
+          >
+            <i class="pi pi-plus mr-1"></i> Add
+          </button>
+        </form>
+      </div>
+
+      <!-- Majors List -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[45%] text-sm"
+              >
+                Major Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Abbreviation
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let major of majors; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ major.major_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ major.abbrev || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-white text-xs"
+                  [ngClass]="
+                    major.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  "
+                >
+                  {{ major.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="handleUpdateMajorDialog(major)"
+                    title="Edit Major"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    [ngClass]="{
+                      'bg-green-500 hover:bg-green-600':
+                        major.status === 'inactive',
+                      'bg-red-500 hover:bg-red-600': major.status === 'active'
+                    }"
+                    class="p-2 text-white rounded cursor-pointer text-xs"
+                    (click)="
+                      handleUpdateMajorStatus(
+                        $event,
+                        major.major_id,
+                        major.status
+                      )
+                    "
+                    [title]="
+                      major.status === 'active'
+                        ? 'Disable Major'
+                        : 'Enable Major'
+                    "
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        major.status === 'active' ? 'pi-ban' : 'pi-check-circle'
+                      "
+                    ></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="majors.length === 0">
+              <td
+                colspan="4"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No majors found for this program
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 p-4 border-t">
+      <button
+        type="button"
+        (click)="closeMajorsDialog()"
+        class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Major Modal -->
+<div
+  *ngIf="isUpdateMajorDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-[60]"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Update Major</h3>
+      <button
+        type="button"
+        (click)="isUpdateMajorDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="updateMajorForm" (ngSubmit)="submitUpdatedMajor()">
+      <div class="p-6">
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Major Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="major_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Abbreviation</label
+            >
+            <input
+              type="text"
+              formControlName="abbrev"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Status <span class="text-red-500">*</span></label
+            >
+            <select
+              formControlName="status"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateMajorDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 poppins-medium text-sm"
+        >
+          Update Major
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Sections Management Modal -->
+<div
+  *ngIf="isSectionsDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-6xl mx-4 max-h-[90vh] flex flex-col relative z-10"
+  >
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">
+        Manage Sections - {{ selectedProgramName }}
+      </h3>
+      <button
+        type="button"
+        (click)="closeSectionsDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto flex-1">
+      <!-- Add Section Form -->
+      <form
+        [formGroup]="newSectionForm"
+        (ngSubmit)="submitNewSection()"
+        class="mb-6 p-4 bg-gray-50 rounded"
+      >
+        <h4 class="text-md font-semibold poppins-semibold mb-4">
+          Add New Sections
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Year Level <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="year_level"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option value="" disabled selected>Select year level</option>
+              <option [value]="1">1st Year</option>
+              <option [value]="2">2nd Year</option>
+              <option [value]="3">3rd Year</option>
+              <option [value]="4">4th Year</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Major (Optional)
+            </label>
+            <select
+              formControlName="major_id"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option [value]="null">No Major</option>
+              <option *ngFor="let major of majors" [value]="major.major_id">
+                {{ major.major_name }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section Names Input -->
+        <div class="flex flex-col gap-2 mb-4">
+          <label class="font-semibold poppins-medium text-sm">
+            Section Names <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="tempSectionName"
+              [ngModelOptions]="{ standalone: true }"
+              (keyup.enter)="addSectionName()"
+              placeholder="e.g., A, B, 1, 2"
+              class="flex-1 border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+            <button
+              type="button"
+              (click)="addSectionName()"
+              [disabled]="!tempSectionName.trim()"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed poppins-medium text-sm"
+            >
+              <i class="pi pi-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section Names List -->
+        <div *ngIf="sectionNameList.length > 0" class="mb-4">
+          <p class="text-sm text-gray-600 poppins-medium mb-2">
+            Sections to add ({{ sectionNameList.length }}):
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span
+              *ngFor="let sectionName of sectionNameList; let i = index"
+              class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded poppins-regular text-sm"
+            >
+              {{ sectionName }}
+              <button
+                type="button"
+                (click)="removeSectionName(i)"
+                class="text-blue-700 hover:text-blue-900"
+              >
+                <i class="pi pi-times text-xs"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="!newSectionForm.valid || sectionNameList.length === 0"
+          class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed poppins-medium text-sm"
+        >
+          <i class="pi pi-save mr-2"></i> Save
+          {{ sectionNameList.length }} Section(s)
+        </button>
+      </form>
+
+      <!-- Sections Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-100">
+              <th
+                class="border border-gray-300 px-4 py-2 text-left poppins-medium text-sm"
+              >
+                Year Level
+              </th>
+              <th
+                class="border border-gray-300 px-4 py-2 text-left poppins-medium text-sm"
+              >
+                Section
+              </th>
+              <th
+                class="border border-gray-300 px-4 py-2 text-left poppins-medium text-sm"
+              >
+                Major
+              </th>
+              <th
+                class="border border-gray-300 px-4 py-2 text-left poppins-medium text-sm"
+              >
+                Status
+              </th>
+              <th
+                class="border border-gray-300 px-4 py-2 text-left poppins-medium text-sm"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let section of sections; let rowIndex = index"
+              class="hover:bg-gray-50"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-sm"
+              >
+                {{
+                  section.year_level === 1
+                    ? "1st Year"
+                    : section.year_level === 2
+                    ? "2nd Year"
+                    : section.year_level === 3
+                    ? "3rd Year"
+                    : section.year_level === 4
+                    ? "4th Year"
+                    : section.year_level
+                }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-sm"
+              >
+                {{ section.section_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-sm"
+              >
+                {{ section.major_name || "N/A" }}
+              </td>
+              <td class="border border-gray-300 px-4 py-2">
+                <span
+                  class="px-2 py-1 rounded text-white text-xs"
+                  [ngClass]="
+                    section.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  "
+                >
+                  {{ section.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td class="border border-gray-300 px-4 py-2">
+                <div class="flex items-center gap-2">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="handleUpdateSectionDialog(section)"
+                    title="Edit Section"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    [ngClass]="{
+                      'bg-green-500 hover:bg-green-600':
+                        section.status === 'inactive',
+                      'bg-red-500 hover:bg-red-600': section.status === 'active'
+                    }"
+                    class="p-2 text-white rounded cursor-pointer text-xs"
+                    (click)="
+                      handleUpdateSectionStatus(
+                        $event,
+                        section.section_id,
+                        section.status
+                      )
+                    "
+                    [title]="
+                      section.status === 'active'
+                        ? 'Disable Section'
+                        : 'Enable Section'
+                    "
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        section.status === 'active'
+                          ? 'pi-ban'
+                          : 'pi-check-circle'
+                      "
+                    ></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="sections.length === 0">
+              <td
+                colspan="5"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No sections found for this program
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 p-4 border-t">
+      <button
+        type="button"
+        (click)="closeSectionsDialog()"
+        class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Section Modal -->
+<div
+  *ngIf="isUpdateSectionDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-[60]"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Update Section</h3>
+      <button
+        type="button"
+        (click)="closeUpdateSectionDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="updateSectionForm" (ngSubmit)="submitUpdatedSection()">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Year Level <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="year_level"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option [value]="null" disabled>Select year level</option>
+              <option [value]="1">1st Year</option>
+              <option [value]="2">2nd Year</option>
+              <option [value]="3">3rd Year</option>
+              <option [value]="4">4th Year</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Section Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="section_name"
+              placeholder="e.g., A, B, 1, 2"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Major (Optional)
+            </label>
+            <select
+              formControlName="major_id"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option [value]="null">No Major</option>
+              <option *ngFor="let major of majors" [value]="major.major_id">
+                {{ major.major_name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="status"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="closeUpdateSectionDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 poppins-medium text-sm"
+        >
+          Update Section
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

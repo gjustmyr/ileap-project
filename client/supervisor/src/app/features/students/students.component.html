@@ -1,0 +1,49 @@
+<div>
+  <div class="mb-6">
+    <h1 class="text-3xl poppins-bold text-gray-800">My Students</h1>
+    <p class="text-gray-600 mt-1 poppins-regular">Manage and monitor your assigned OJT students</p>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+  </div>
+
+  <div *ngIf="!isLoading && students.length === 0" class="bg-white rounded-lg p-12 text-center">
+    <i class="pi pi-users text-6xl text-gray-300 mb-4"></i>
+    <p class="text-gray-600 poppins-medium text-lg">No students assigned yet</p>
+  </div>
+
+  <div
+    *ngIf="!isLoading && students.length > 0"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+  >
+    <div
+      *ngFor="let student of students"
+      class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition"
+    >
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+          <span class="text-green-600 poppins-semibold text-lg">{{
+            getInitials(student.first_name, student.last_name)
+          }}</span>
+        </div>
+        <div>
+          <h3 class="poppins-semibold text-gray-800">
+            {{ student.first_name }} {{ student.last_name }}
+          </h3>
+          <p class="text-sm text-gray-600">{{ student.student_number }}</p>
+        </div>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-book text-gray-400"></i>
+          <span class="text-gray-600">{{ student.program || 'N/A' }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-calendar text-gray-400"></i>
+          <span class="text-gray-600">{{ student.ojt_status || 'Not Started' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

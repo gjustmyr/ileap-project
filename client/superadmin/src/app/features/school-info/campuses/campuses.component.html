@@ -1,0 +1,441 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Campuses
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage campuses and their extensions
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls mb-4 flex justify-between items-center gap-3">
+      <div class="w-[300px]">
+        <p-inputgroup>
+          <input
+            pInputText
+            placeholder="Search campuses..."
+            [(ngModel)]="keyword"
+            (keyup.enter)="handleSearch()"
+          />
+          <p-inputgroup-addon>
+            <button
+              pButton
+              icon="pi pi-search"
+              severity="secondary"
+              variant="text"
+              (click)="handleSearch()"
+            ></button>
+          </p-inputgroup-addon>
+        </p-inputgroup>
+      </div>
+      <button
+        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs cursor-pointer flex items-center gap-2"
+        (click)="handleAddDialog()"
+      >
+        <i class="pi pi-plus"></i>
+        Add Campus
+      </button>
+    </div>
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[30%] text-sm"
+              >
+                Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
+                Extension
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Main Campus
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[25%] text-sm"
+              >
+                Action
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let campus of campuses; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ campus.campus_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-white"
+                  [ngClass]="
+                    campus.is_extension ? 'bg-red-500' : 'bg-green-500'
+                  "
+                >
+                  {{ campus.is_extension ? "Yes" : "No" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ campus.parent_campus_name || "-" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-white"
+                  [ngClass]="
+                    campus.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  "
+                >
+                  {{ campus.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex items-center gap-2">
+                  <a
+                    [routerLink]="['/school-information/departments']"
+                    [queryParams]="{
+                      campusId: campus.campus_id,
+                      campusName: campus.campus_name
+                    }"
+                    class="bg-green-500 hover:bg-green-600 p-2 text-white text-sm rounded cursor-pointer inline-flex items-center"
+                    title="View Departments"
+                  >
+                    <i class="pi pi-building"></i>
+                  </a>
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleUpdateDialog(campus.campus_id)"
+                    title="Edit Campus"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    [ngClass]="{
+                      'bg-green-500 hover:bg-green-600':
+                        campus.status === 'inactive',
+                      'bg-red-500 hover:bg-red-600': campus.status === 'active'
+                    }"
+                    class="p-2 text-white rounded cursor-pointer text-sm"
+                    (click)="
+                      handleUpdateStatus(
+                        $event,
+                        campus.campus_id,
+                        campus.status
+                      )
+                    "
+                    [title]="
+                      campus.status === 'active'
+                        ? 'Disable Campus'
+                        : 'Enable Campus'
+                    "
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        campus.status === 'active'
+                          ? 'pi-ban'
+                          : 'pi-check-circle'
+                      "
+                    ></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="campuses.length === 0">
+              <td
+                colspan="5"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No campuses found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-between items-center mt-4 poppins-regular">
+        <div class="flex items-center gap-2">
+          <span class="text-sm">Show</span>
+          <select
+            [(ngModel)]="pageSize"
+            (change)="onPageSizeChange()"
+            class="border rounded px-3 py-1.5 text-sm poppins-regular"
+          >
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="30">30</option>
+          </select>
+          <span class="text-sm">entries</span>
+        </div>
+        <div class="text-sm">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-4 py-2 border rounded text-sm disabled:opacity-50 poppins-regular"
+          >
+            <i class="pi pi-angle-left"></i> Previous
+          </button>
+          <span class="text-sm px-2"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-4 py-2 border rounded text-sm disabled:opacity-50 poppins-regular"
+          >
+            Next <i class="pi pi-angle-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Modal -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Add Campus</h3>
+      <button
+        type="button"
+        (click)="handleAddDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="newCampus" (ngSubmit)="submitNewCampus()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Enter campus information.
+        </p>
+
+        <div class="flex flex-col gap-2 mb-4">
+          <label for="campus_name" class="font-semibold poppins-medium text-sm">
+            Campus Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="campus_name"
+            formControlName="campus_name"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2 mb-4">
+          <label
+            for="is_extension"
+            class="font-semibold poppins-medium text-sm"
+          >
+            Is Extension <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="is_extension"
+            formControlName="is_extension"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          >
+            <option value="" disabled>Select</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 mb-4"
+          *ngIf="newCampus.get('is_extension')?.value === 'true'"
+        >
+          <label
+            for="parent_campus_id"
+            class="font-semibold poppins-medium text-sm"
+          >
+            Main Campus <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="parent_campus_id"
+            formControlName="parent_campus_id"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          >
+            <option value="">Select Main Campus</option>
+            <option
+              *ngFor="let campus of mainCampuses"
+              [value]="campus.campus_id"
+            >
+              {{ campus.campus_name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="handleAddDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 poppins-medium text-sm"
+        >
+          Save Campus
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update Modal -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Update Campus</h3>
+      <button
+        type="button"
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="updateCampusForm" (ngSubmit)="submitUpdatedSubmit()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Update campus information.
+        </p>
+
+        <div class="flex flex-col gap-2 mb-4">
+          <label
+            for="campus_name_edit"
+            class="font-semibold poppins-medium text-sm"
+          >
+            Campus Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="campus_name_edit"
+            formControlName="campus_name"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2 mb-4">
+          <label
+            for="is_extension_edit"
+            class="font-semibold poppins-medium text-sm"
+          >
+            Is Extension <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="is_extension_edit"
+            formControlName="is_extension"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          >
+            <option value="" disabled>Select</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 mb-4"
+          *ngIf="updateCampusForm.get('is_extension')?.value === 'true' || updateCampusForm.get('is_extension')?.value === true"
+        >
+          <label
+            for="parent_campus_id_edit"
+            class="font-semibold poppins-medium text-sm"
+          >
+            Main Campus <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="parent_campus_id_edit"
+            formControlName="parent_campus_id"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          >
+            <option value="">Select Main Campus</option>
+            <option
+              *ngFor="let campus of mainCampuses"
+              [value]="campus.campus_id"
+            >
+              {{ campus.campus_name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2 mb-4">
+          <label for="status_edit" class="font-semibold poppins-medium text-sm">
+            Status <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="status_edit"
+            formControlName="status"
+            class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 poppins-medium text-sm"
+        >
+          Update Campus
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

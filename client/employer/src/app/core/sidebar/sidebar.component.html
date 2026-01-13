@@ -1,0 +1,33 @@
+<aside
+  [ngClass]="{ 'w-[16rem]': !isCollapsed, 'w-[4rem]': isCollapsed }"
+  class="h-full bg-red-500 shadow transition-all duration-300 ease-in-out overflow-hidden"
+>
+  <div class="sidebar-header px-3 h-[10%] flex items-center justify-center">
+    <h1
+      *ngIf="!isCollapsed"
+      class="poppins-semibold text-white text-lg text-center"
+    >
+      ILEAP - BatStateU TNEU
+    </h1>
+    <i *ngIf="isCollapsed" class="fas fa-bars text-white text-2xl"></i>
+  </div>
+
+  <ul class="list-none p-0 m-0">
+    <li
+      *ngFor="let item of sidebarItems"
+      [ngClass]="{
+        'bg-white text-red-500 font-semibold': isActiveRoute(item.route),
+        'text-white hover:bg-red-400': !isActiveRoute(item.route)
+      }"
+      class="poppins-regular text-xs flex items-center px-4 py-3 cursor-pointer transition-colors"
+      [routerLink]="item.route"
+      [pTooltip]="isCollapsed ? item.label : undefined"
+      tooltipPosition="right"
+    >
+      <i
+        [ngClass]="[item.icon, 'text-lg', !isCollapsed ? 'mr-2' : 'mx-auto']"
+      ></i>
+      <span *ngIf="!isCollapsed" class="ml-2">{{ item.label }}</span>
+    </li>
+  </ul>
+</aside>

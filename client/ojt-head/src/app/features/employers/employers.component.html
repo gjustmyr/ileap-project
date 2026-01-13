@@ -1,0 +1,721 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Employers</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Manage and view all registered employers
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Industry Filter Dropdown -->
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+        Industry
+      </label>
+      <select
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+        [(ngModel)]="selectedIndustryId"
+      >
+        <option value="">All Industries</option>
+        <option
+          *ngFor="let industry of industries"
+          [value]="industry.industry_id"
+        >
+          {{ industry.industry_name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Search Box -->
+    <div class="lg:col-span-3">
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+        Search
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="keyword"
+        placeholder="Search by company name or email"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      />
+    </div>
+  </div>
+
+  <!-- Filter Action Buttons -->
+  <div class="flex gap-3 mb-6">
+    <button
+      (click)="applyFilters()"
+      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Apply Filters
+    </button>
+    <button
+      (click)="resetFilters()"
+      class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Reset
+    </button>
+    <button
+      (click)="handleAddDialog()"
+      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded ml-auto"
+    >
+      <i class="pi pi-plus mr-1"></i> Add Employer
+    </button>
+  </div>
+</div>
+
+<div class="bg-white rounded">
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+        <tr class="bg-white text-sm poppins-medium">
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[20%]"
+          >
+            Company Name
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[18%]"
+          >
+            Email
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]"
+          >
+            Industry
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]"
+          >
+            Representative
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[12%]"
+          >
+            Phone
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[12%]"
+          >
+            Validity
+          </td>
+          <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[8%]">
+            Status
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm w-[10%]"
+          >
+            Actions
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let employer of employers; let rowIndex = index"
+          class="transition-colors duration-200 hover:bg-gray-200"
+        >
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ employer.company_name }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ employer.email_address }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ employer.industry_name }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ employer.representative_name || "N/A" }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ employer.phone_number || "N/A" }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <span *ngIf="employer.internship_validity">{{
+              employer.internship_validity | date : "MMM d, y"
+            }}</span>
+            <span
+              *ngIf="
+                !employer.internship_validity && employer.job_placement_validity
+              "
+              >{{ employer.job_placement_validity | date : "MMM d, y" }}</span
+            >
+            <span
+              *ngIf="
+                !employer.internship_validity &&
+                !employer.job_placement_validity
+              "
+              class="text-gray-400"
+              >N/A</span
+            >
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <span
+              class="px-2 py-1 rounded text-xs poppins-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-700': employer.status === 'approved',
+                'bg-yellow-100 text-yellow-700': employer.status === 'pending',
+                'bg-red-100 text-red-700': employer.status === 'rejected'
+              }"
+            >
+              {{
+                employer.status === "approved"
+                  ? "Approved"
+                  : employer.status === "pending"
+                  ? "Pending"
+                  : "Rejected"
+              }}
+            </span>
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 poppins-regular text-xs text-center"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <button
+              (click)="viewEmployerDetails(employer)"
+              class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs poppins-medium"
+              title="View Details"
+            >
+              <i class="pi pi-eye"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="employers.length === 0">
+          <td
+            colspan="8"
+            class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+          >
+            No employers found.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div
+    class="flex items-center justify-between px-4 py-3 border-t border-gray-300 bg-gray-50"
+  >
+    <div class="text-sm text-gray-600 poppins-regular">
+      Showing {{ (pageNo - 1) * pageSize + 1 }} to
+      {{ Math.min(pageNo * pageSize, totalRecords) }} of
+      {{ totalRecords }} entries
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        (click)="onPageChange(pageNo - 1)"
+        [disabled]="pageNo === 1"
+        class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+      >
+        Previous
+      </button>
+      <span class="text-sm text-gray-600 poppins-regular"
+        >Page {{ pageNo }} of {{ Math.ceil(totalRecords / pageSize) }}</span
+      >
+      <button
+        (click)="onPageChange(pageNo + 1)"
+        [disabled]="pageNo >= Math.ceil(totalRecords / pageSize)"
+        class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Employer Modal -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto"
+  >
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-medium">Add Employer</h3>
+      <button
+        type="button"
+        (click)="handleAddDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form
+      [formGroup]="employerSimpleForm"
+      (ngSubmit)="submitAddSimpleEmployer()"
+    >
+      <div class="p-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p class="text-sm text-blue-800">
+            <i class="pi pi-info-circle mr-2"></i>
+            <strong>Note:</strong> Password will be auto-generated and sent to
+            the email address. If the employer email already exists, the system
+            will reuse the same account.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <!-- Email Address -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email_address"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="employer@company.com"
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('email_address')?.invalid &&
+                employerSimpleForm.get('email_address')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Valid email is required
+            </div>
+          </div>
+
+          <!-- Company Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Company Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="company_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Company Inc."
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('company_name')?.invalid &&
+                employerSimpleForm.get('company_name')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Company name is required
+            </div>
+          </div>
+
+          <!-- Representative Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Representative Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="representative_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="John Doe"
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('representative_name')?.invalid &&
+                employerSimpleForm.get('representative_name')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Representative name is required
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Phone Number <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              formControlName="phone_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="09123456789"
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('phone_number')?.invalid &&
+                employerSimpleForm.get('phone_number')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Phone number is required
+            </div>
+          </div>
+
+          <!-- Industry -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Industry <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="industry_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option [value]="null">Select Industry</option>
+              <option
+                *ngFor="let industry of industries"
+                [value]="industry.industry_id"
+              >
+                {{ industry.industry_name }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                employerSimpleForm.get('industry_id')?.invalid &&
+                employerSimpleForm.get('industry_id')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Industry is required
+            </div>
+          </div>
+
+          <!-- Validity Start Date -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Validity Start Date <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              formControlName="validity_start"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('validity_start')?.invalid &&
+                employerSimpleForm.get('validity_start')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Start date is required
+            </div>
+          </div>
+
+          <!-- Validity End Date -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Validity End Date <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              formControlName="validity_end"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            />
+            <div
+              *ngIf="
+                employerSimpleForm.get('validity_end')?.invalid &&
+                employerSimpleForm.get('validity_end')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              End date is required
+            </div>
+          </div>
+
+          <!-- MOA PDF Upload -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              MOA PDF (Optional)
+            </label>
+            <input
+              type="file"
+              accept=".pdf"
+              (change)="onMOAFileSelected($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Upload the Memorandum of Agreement (PDF only)
+            </p>
+            <div *ngIf="moaFileName" class="mt-2 flex items-center gap-2">
+              <span class="text-sm text-gray-700"
+                >Selected: {{ moaFileName }}</span
+              >
+              <button
+                type="button"
+                (click)="clearMOASelection()"
+                class="text-red-500 hover:text-red-700 text-xs"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t bg-gray-50">
+        <button
+          type="button"
+          (click)="handleAddDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSubmitting || employerSimpleForm.invalid"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm poppins-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          <span
+            *ngIf="isSubmitting"
+            class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+          ></span>
+          <span>{{ isSubmitting ? "Registering..." : "Register" }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Employer Details Modal -->
+<div
+  *ngIf="showViewDialog && selectedEmployer"
+  class="fixed inset-0 z-50 overflow-y-auto"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Header -->
+      <div
+        class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+      >
+        <h2 class="text-xl font-semibold text-gray-800">Employer Details</h2>
+        <button
+          (click)="closeViewDialog()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 bg-white text-sm">
+        <!-- Company Info -->
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg poppins-semibold mb-4 text-gray-800">
+            Company Information
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Company Name
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.company_name }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Industry
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.industry_name }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Representative
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.representative_name || "N/A" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Company Size
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.company_size || "N/A" }} employees
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Email
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.email_address }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Phone
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.phone_number || "N/A" }}
+              </p>
+            </div>
+            <div class="col-span-2">
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Address
+              </p>
+              <p class="poppins-regular text-gray-800">
+                {{ selectedEmployer.address || "N/A" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Status
+              </p>
+              <span
+                class="inline-block px-2 py-1 rounded text-xs poppins-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700':
+                    selectedEmployer.status === 'approved',
+                  'bg-yellow-100 text-yellow-700':
+                    selectedEmployer.status === 'pending',
+                  'bg-red-100 text-red-700':
+                    selectedEmployer.status === 'rejected'
+                }"
+              >
+                {{ selectedEmployer.status | titlecase }}
+              </span>
+            </div>
+            <div>
+              <p
+                class="text-xs text-gray-500 uppercase tracking-wider poppins-medium mb-1"
+              >
+                Validity
+              </p>
+              <p class="poppins-regular text-gray-800">
+                <span *ngIf="selectedEmployer.internship_validity">{{
+                  selectedEmployer.internship_validity | date : "MMM d, y"
+                }}</span>
+                <span
+                  *ngIf="
+                    !selectedEmployer.internship_validity &&
+                    selectedEmployer.job_placement_validity
+                  "
+                  >{{
+                    selectedEmployer.job_placement_validity | date : "MMM d, y"
+                  }}</span
+                >
+                <span
+                  *ngIf="
+                    !selectedEmployer.internship_validity &&
+                    !selectedEmployer.job_placement_validity
+                  "
+                  class="text-gray-400"
+                  >N/A</span
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-6 border-gray-200" />
+
+        <!-- MOA Document -->
+        <div *ngIf="selectedEmployer.moa_file" class="mb-6">
+          <h3 class="font-semibold text-lg poppins-semibold mb-4 text-gray-800">
+            Memorandum of Agreement
+          </h3>
+          <div
+            class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50"
+          >
+            <i class="pi pi-file-pdf text-red-500 text-2xl"></i>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-800 poppins-medium">
+                MOA Document
+              </p>
+              <p class="text-xs text-gray-500 poppins-regular">
+                Uploaded during account creation
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                (click)="previewMOA()"
+                class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs poppins-medium hover:bg-blue-600 transition-colors flex items-center gap-1"
+              >
+                <i class="pi pi-eye"></i>
+                Preview
+              </button>
+              <button
+                (click)="downloadMOA()"
+                class="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs poppins-medium hover:bg-green-600 transition-colors flex items-center gap-1"
+              >
+                <i class="pi pi-download"></i>
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!selectedEmployer.moa_file" class="mb-6">
+          <h3 class="font-semibold text-lg poppins-semibold mb-4 text-gray-800">
+            Memorandum of Agreement
+          </h3>
+          <p class="text-sm text-gray-500 italic">
+            No MOA uploaded for this employer
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button
+            (click)="closeViewDialog()"
+            class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded poppins-medium"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

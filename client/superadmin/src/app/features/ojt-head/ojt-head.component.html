@@ -1,0 +1,480 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        OJT Head
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage OJT Head personnel across campuses
+      </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <!-- Campus Filter Dropdown -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Campus
+        </label>
+        <select
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          [(ngModel)]="selectedCampusId"
+        >
+          <option value="">All Campuses</option>
+          <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Search Box -->
+      <div class="lg:col-span-2">
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Search
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          placeholder="Search by name, email, or campus"
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Filter Action Buttons -->
+    <div class="flex gap-3 mb-6">
+      <button
+        (click)="applyFilters()"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Apply Filters
+      </button>
+      <button
+        (click)="resetFilters()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Reset
+      </button>
+      <button
+        (click)="handleAddDialog()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2"
+      >
+        <i class="pi pi-plus"></i>
+        Add OJT Head
+      </button>
+    </div>
+
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[18%] text-sm"
+              >
+                Campus
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[18%] text-sm"
+              >
+                Email
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[12%] text-sm"
+              >
+                Contact No.
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[12%] text-sm"
+              >
+                Position
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[8%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[12%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let head of ojtHeadList; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ head.campus_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ head.last_name }}, {{ head.first_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ head.email_address }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ head.contact_number }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ head.position_title }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-sm poppins-medium"
+                  [ngClass]="
+                    head.status === 'active'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  "
+                >
+                  {{ head.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex gap-1">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleUpdateDialog(head.user_id)"
+                    title="Edit OJT Head"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="
+                      handleSendNewPassword(head.user_id, head.email_address)
+                    "
+                    title="Send New Password"
+                  >
+                    <i class="pi pi-key"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="ojtHeadList.length === 0">
+              <td
+                colspan="6"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No OJT heads found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between px-4 py-3 border-t border-gray-300 bg-gray-50"
+      >
+        <div class="text-sm text-gray-600 poppins-regular">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600 poppins-regular"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add OJT Head Dialog -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xs shadow-lg w-full max-w-md p-6 relative z-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg poppins-semibold text-gray-800">
+        Register New OJT Head
+      </h2>
+      <button
+        (click)="isAddDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="ojtHeadForm" (ngSubmit)="submitOjtHeadForm()">
+      <div class="flex flex-col gap-3">
+        <!-- Info message -->
+        <div
+          class="bg-blue-50 border border-blue-200 rounded p-3 text-xs poppins-regular text-blue-800"
+        >
+          <i class="pi pi-info-circle mr-1"></i>
+          A temporary password will be auto-generated and sent to the email
+          address provided.
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Email Address</label
+          >
+          <input
+            type="email"
+            formControlName="email_address"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >First Name</label
+          >
+          <input
+            type="text"
+            formControlName="first_name"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Last Name</label
+          >
+          <input
+            type="text"
+            formControlName="last_name"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Contact Number</label
+          >
+          <input
+            type="text"
+            formControlName="contact_number"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Position Title</label
+          >
+          <input
+            type="text"
+            formControlName="position_title"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Campus</label
+          >
+          <select
+            formControlName="campus_id"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          >
+            <option value="">Select campus</option>
+            <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+              {{ campus.campus_name
+              }}{{ campus.is_extension ? " (Extension)" : "" }}
+            </option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1 poppins-regular">
+            <i class="pi pi-info-circle text-xs"></i>
+            If main campus is selected, OJT Head will also be assigned to all
+            extension campuses.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <button
+            type="button"
+            (click)="isAddDialogVisible = false"
+            class="px-4 py-2 text-sm border border-gray-300 rounded poppins-medium text-gray-700 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="ojtHeadForm.invalid"
+            class="px-4 py-2 text-sm bg-green-500 text-white rounded poppins-medium hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Register
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update OJT Head Dialog -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xs shadow-lg w-full max-w-md p-6 relative z-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg poppins-semibold text-gray-800">Update OJT Head</h2>
+      <button
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="ojtHeadUpdateForm" (ngSubmit)="submitUpdateForm()">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Email Address</label
+          >
+          <input
+            type="email"
+            formControlName="email_address"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >First Name</label
+          >
+          <input
+            type="text"
+            formControlName="first_name"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Last Name</label
+          >
+          <input
+            type="text"
+            formControlName="last_name"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Contact Number</label
+          >
+          <input
+            type="text"
+            formControlName="contact_number"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Position Title</label
+          >
+          <input
+            type="text"
+            formControlName="position_title"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Campus</label
+          >
+          <select
+            formControlName="campus_id"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          >
+            <option value="">Select campus</option>
+            <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+              {{ campus.campus_name
+              }}{{ campus.is_extension ? " (Extension)" : "" }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-col">
+          <label class="poppins-medium text-xs text-gray-700 mb-1"
+            >Status</label
+          >
+          <select
+            formControlName="status"
+            class="px-3 py-2 text-sm border border-gray-300 rounded poppins-regular outline-none"
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1 poppins-regular">
+            <i class="pi pi-info-circle text-xs"></i>
+            Set to inactive if OJT Head no longer has access to this campus.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <button
+            type="button"
+            (click)="isUpdateDialogVisible = false"
+            class="px-4 py-2 text-sm border border-gray-300 rounded poppins-medium text-gray-700 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="ojtHeadUpdateForm.invalid"
+            class="px-4 py-2 text-sm bg-blue-500 text-white rounded poppins-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,269 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Dashboard</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Overview of OJT student progress and statistics
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Semester</label
+      >
+      <select
+        [(ngModel)]="selectedSemester"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option value="">All Semesters</option>
+        <option *ngFor="let semester of semesters" [value]="semester">
+          {{ semester }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >School Year</label
+      >
+      <select
+        [(ngModel)]="selectedSchoolYear"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option value="">All School Years</option>
+        <option *ngFor="let year of schoolYears" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Industry</label
+      >
+      <select
+        [(ngModel)]="selectedIndustry"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Industries</option>
+        <option *ngFor="let industry of industries" [value]="industry.id">
+          {{ industry.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Company</label
+      >
+      <select
+        [(ngModel)]="selectedCompany"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Companies</option>
+        <option *ngFor="let company of companies" [value]="company.id">
+          {{ company.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Location</label
+      >
+      <select
+        [(ngModel)]="selectedLocation"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option value="">All Locations</option>
+        <option *ngFor="let location of locations" [value]="location">
+          {{ location }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Campus</label
+      >
+      <select
+        [(ngModel)]="selectedCampus"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Campuses</option>
+        <option *ngFor="let campus of campuses" [value]="campus.id">
+          {{ campus.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Program</label
+      >
+      <select
+        [(ngModel)]="selectedProgram"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Programs</option>
+        <option *ngFor="let program of programs" [value]="program.id">
+          {{ program.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Filter Action Buttons -->
+  <div class="flex gap-3 mb-6">
+    <button
+      (click)="onFilterChange()"
+      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Apply Filters
+    </button>
+    <button
+      (click)="resetFilters()"
+      class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Reset
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-users text-blue-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Total Interns</p>
+        <p class="text-xl text-gray-800">{{ totalInterns }}</p>
+      </div>
+    </div>
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-briefcase text-green-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">
+          Companies Hosting Interns
+        </p>
+        <p class="text-xl text-gray-800">{{ totalCompanies }}</p>
+      </div>
+    </div>
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-check-circle text-cyan-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Evaluated Interns</p>
+        <p class="text-xl text-gray-800">{{ evaluatedInterns }}</p>
+      </div>
+    </div>
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-exclamation-triangle text-orange-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Pending Evaluations</p>
+        <p class="text-xl text-gray-800">{{ pendingEvaluations }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+    <!-- Interns by Campus -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Interns by Campus</h5>
+      <p-chart
+        type="bar"
+        [data]="campusChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+
+    <!-- Interns by Program -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Interns by Program</h5>
+      <p-chart
+        type="bar"
+        [data]="programChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+  </div>
+</div>
+<!-- Enhanced Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+  <!-- OJT Completion by Program -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">
+      OJT Completion by Program (%)
+    </h5>
+    <p-chart
+      type="bar"
+      [data]="ojtCompletionStackedChartData"
+      [options]="ojtCompletionStackedChartOptions"
+      styleClass="h-72"
+    ></p-chart>
+  </p-card>
+
+  <!-- Internship Listings by Industry -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">
+      Internship Listings by Industry
+    </h5>
+    <p-chart
+      type="pie"
+      [data]="ojtListingsByIndustryChartData"
+      [options]="chartOptions"
+      styleClass="h-72"
+    ></p-chart>
+  </p-card>
+
+  <!-- Internship Opportunities vs Students -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">
+      Internship Opportunities vs Student Count by Program
+    </h5>
+    <p-chart
+      type="bar"
+      [data]="ojtProgramOpportunityMismatch"
+      [options]="ojtProgramOpportunityMismatchOptions"
+      styleClass="h-72"
+    ></p-chart>
+  </p-card>
+
+  <!-- Top Companies with Most Interns -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">
+      Top Companies with Most Interns
+    </h5>
+    <p-chart
+      type="bar"
+      [data]="ojtTopCompaniesChartData"
+      [options]="chartOptions"
+      styleClass="h-72"
+    ></p-chart>
+  </p-card>
+
+  <!-- Evaluation Status -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">Evaluation Status</h5>
+    <p-chart
+      type="doughnut"
+      [data]="evaluationStatusChartData"
+      [options]="chartOptions"
+      styleClass="h-64"
+    ></p-chart>
+  </p-card>
+
+  <!-- Monthly OJT Engagement -->
+  <p-card class="bg-white border border-gray-200 rounded-md p-4">
+    <h5 class="text-gray-700 poppins-medium mb-4">Monthly OJT Engagement</h5>
+    <p-chart
+      type="line"
+      [data]="ojtMonthlyChartData"
+      [options]="chartOptions"
+      styleClass="h-64"
+    ></p-chart>
+  </p-card>
+</div>

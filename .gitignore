@@ -1,0 +1,73 @@
+# Node.js (for Express backend)
+**/node_modules/
+**/logs/
+**/*.log
+**/.env
+**/.env.local
+**/.env.*.local
+**/build/
+**/.tmp/
+**/*.tsbuildinfo
+
+# Angular specific
+**/.angular/
+**/.angular-cache/
+**/angular.json.swp
+**/.browserlistrc
+**/.cache/
+**/.firebase/
+**/coverage/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/*.egg-info/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.coverage
+**/*.cover
+**/venv/
+**/env/
+**/.venv/
+
+# Uploaded files (backend)
+**/uploads/**
+**/upload/
+**/files/
+**/temp/
+**/tmp/
+
+# Database files
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/*.sql
+
+# OS
+.DS_Store
+Thumbs.db
+**/*.swp
+**/*.swo
+**/~*
+
+# IDEs/editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.orig
+*.bak
+*.backup
+
+# Documentation (exclude markdown files)
+*.md
+

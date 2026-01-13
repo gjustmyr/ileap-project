@@ -1,0 +1,247 @@
+<!-- Update OJT Coordinator Modal -->
+<div
+  *ngIf="isVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto z-10"
+  >
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-medium">
+        Update OJT Coordinator
+      </h3>
+      <button
+        type="button"
+        (click)="handleClose()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="coordinatorUpdateForm" (ngSubmit)="handleSubmit()">
+      <div class="p-6">
+        <div class="grid grid-cols-1 gap-4">
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email_address"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Email"
+            />
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('email_address')?.invalid &&
+                coordinatorUpdateForm.get('email_address')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Valid email is required
+            </div>
+          </div>
+
+          <!-- First Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="first_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="First Name"
+            />
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('first_name')?.invalid &&
+                coordinatorUpdateForm.get('first_name')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              First name is required
+            </div>
+          </div>
+
+          <!-- Last Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="last_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Last Name"
+            />
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('last_name')?.invalid &&
+                coordinatorUpdateForm.get('last_name')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Last name is required
+            </div>
+          </div>
+
+          <!-- Contact Number -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Contact Number <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="contact_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="09XXXXXXXXX"
+            />
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('contact_number')?.invalid &&
+                coordinatorUpdateForm.get('contact_number')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Contact number must start with 09 and be 11 digits
+            </div>
+          </div>
+
+          <!-- Position Title -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Position Title <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="position_title"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Position"
+            />
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('position_title')?.invalid &&
+                coordinatorUpdateForm.get('position_title')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Position title is required
+            </div>
+          </div>
+
+          <!-- Campus -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Campus <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="campus_id"
+              (change)="onCampusChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option [value]="null">Select Campus</option>
+              <option
+                *ngFor="let campus of campuses"
+                [value]="campus.campus_id"
+              >
+                {{ campus.campus_name
+                }}{{ campus.is_extension ? " (Extension)" : "" }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('campus_id')?.invalid &&
+                coordinatorUpdateForm.get('campus_id')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Campus is required
+            </div>
+          </div>
+
+          <!-- Department -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Department <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="department_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              [disabled]="
+                !coordinatorUpdateForm.get('campus_id')?.value ||
+                departments.length === 0
+              "
+            >
+              <option [value]="null">
+                {{
+                  coordinatorUpdateForm.get("campus_id")?.value
+                    ? "Select Department"
+                    : "Select Campus First"
+                }}
+              </option>
+              <option
+                *ngFor="let dept of departments"
+                [value]="dept.department_id"
+              >
+                {{ dept.department_name }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('department_id')?.invalid &&
+                coordinatorUpdateForm.get('department_id')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Department is required
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="status"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <div
+              *ngIf="
+                coordinatorUpdateForm.get('status')?.invalid &&
+                coordinatorUpdateForm.get('status')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Status is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t bg-gray-50">
+        <button
+          type="button"
+          (click)="handleClose()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm poppins-medium"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

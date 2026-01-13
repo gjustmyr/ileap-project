@@ -1,0 +1,34 @@
+::ng-deep .p-datatable-thead > tr > th {
+  background-color: rgba(0, 201, 80, 1) !important;
+  color: white;
+}
+
+::ng-deep .p-dialog-header {
+  background-color: #00c950;
+  color: white !important;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+::ng-deep.p-dialog,
+::ng-deep .p-confirmdialog {
+  border: none;
+}
+
+::ng-deep .p-dialog-content {
+  padding: 1rem;
+}
+
+::ng-deep .p-dialog-close-button {
+  color: white !important;
+}
+
+::ng-deep .p-dialog-close-button:hover {
+  color: #00c950 !important;
+}
+
+::ng-deep .update-btn .p-button,
+::ng-deep .add-btn .p-button {
+  background-color: #00c950 !important;
+}

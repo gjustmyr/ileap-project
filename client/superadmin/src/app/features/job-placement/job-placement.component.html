@@ -1,0 +1,348 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Job Placement Officer
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage job placement officers across campuses
+      </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <!-- Campus Filter -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Campus
+        </label>
+        <select
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          [(ngModel)]="selectedCampusId"
+        >
+          <option value="">All Campuses</option>
+          <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Search Box -->
+      <div class="lg:col-span-2">
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Search
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          placeholder="Search by name or email"
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Filter Action Buttons -->
+    <div class="flex gap-3 mb-6">
+      <button
+        (click)="applyFilters()"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Apply Filters
+      </button>
+      <button
+        (click)="resetFilters()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Reset
+      </button>
+      <button
+        (click)="handleAddDialog()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Add JPO
+      </button>
+    </div>
+
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Campus
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[25%] text-sm"
+              >
+                Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Email
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
+                Contact No.
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[12%] text-sm"
+              >
+                Position
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[8%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let jpo of jpoList; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ jpo.campus_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ jpo.last_name }}, {{ jpo.first_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ jpo.email_address }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ jpo.contact_number }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ jpo.position_title }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <button
+                  class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                  (click)="handleUpdateDialog(jpo.user_id)"
+                  title="Edit Job Placement Officer"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="jpoList.length === 0">
+              <td
+                colspan="6"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No job placement officers found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between px-4 py-3 border-t border-gray-300 bg-gray-50"
+      >
+        <div class="text-sm text-gray-600 poppins-regular">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600 poppins-regular"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit JPO Modal -->
+  <div
+    *ngIf="showDialog"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md z-10 relative">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-6 py-4 border-b border-gray-200"
+      >
+        <h2 class="text-lg font-semibold text-gray-800 poppins-semibold">
+          {{ isEditMode ? 'Edit Job Placement Officer' : 'Add Job Placement Officer' }}
+        </h2>
+        <button
+          (click)="closeDialog()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-4">
+        <form [formGroup]="jpoForm" class="space-y-4">
+          <!-- Email -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email_address"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <!-- Password (only show on add) -->
+          <div *ngIf="!isEditMode">
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Password <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Enter password"
+            />
+          </div>
+
+          <!-- First Name -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="first_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Enter first name"
+            />
+          </div>
+
+          <!-- Last Name -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="last_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Enter last name"
+            />
+          </div>
+
+          <!-- Contact Number -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Contact Number
+            </label>
+            <input
+              type="text"
+              formControlName="contact_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="09XXXXXXXXX"
+            />
+          </div>
+
+          <!-- Position Title -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Position Title
+            </label>
+            <input
+              type="text"
+              formControlName="position_title"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Enter position title"
+            />
+          </div>
+
+          <!-- Campus -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Campus <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="campus_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option value="">Select campus</option>
+              <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+                {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="status"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+        <button
+          (click)="closeDialog()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="handleSubmit()"
+          [disabled]="jpoForm.invalid"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ isEditMode ? 'Update' : 'Add' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</main>

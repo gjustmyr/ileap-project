@@ -1,0 +1,445 @@
+<div class="p-4" style="font-family: 'Poppins', sans-serif;">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Internship Opportunities</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">Browse and apply for available internships</p>
+  </div>
+
+  <div class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Filters Column -->
+      <aside
+        class="md:col-span-1 bg-white rounded-lg shadow-sm p-6 mb-8 md:mb-0"
+      >
+        <h3 class="text-lg font-bold mb-4">Filter Opportunities</h3>
+
+        <!-- Smart Search -->
+        <label
+          for="smartSearch"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >Smart Search</label
+        >
+        <input
+          id="smartSearch"
+          type="text"
+          class="w-full mb-4 p-2 border border-gray-300 rounded"
+          [(ngModel)]="searchKeyword"
+          placeholder="Search by keyword..."
+        />
+
+        <!-- Company Checklist -->
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Companies</label
+        >
+        <div
+          class="mb-4 max-h-40 overflow-y-auto rounded p-2 bg-gray-50"
+        >
+          <div *ngFor="let company of companies; let i = index">
+            <label class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                [(ngModel)]="companies[i].selected"
+                [name]="'companyFilter' + i"
+              />
+              <span>{{ company.company_name }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Industry Checklist -->
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Industries</label
+        >
+        <div class="mb-4 rounded p-2 bg-gray-50">
+          <div *ngFor="let industry of industries; let j = index">
+            <label class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                [(ngModel)]="industries[j].selected"
+                [name]="'industryFilter' + j"
+              />
+              <span>{{ industry.industry_name || industry.name }}</span>
+            </label>
+          </div>
+          <!-- Debug: show industries array -->
+          <!-- <pre>{{ industries | json }}</pre> -->
+        </div>
+
+        <button
+          class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+          (click)="applyFilters()"
+        >
+          Apply Filters
+        </button>
+      </aside>
+      <!-- Main Content Column -->
+      <main class="md:col-span-3">
+        <!-- Header -->
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-2xl font-bold">Internship Opportunities</h2>
+            <div class="flex gap-2">
+              <button
+                [class]="!showBookmarksOnly ? 'bg-green-500 text-white px-4 py-2 text-sm poppins-medium rounded' : 'bg-gray-200 text-gray-700 px-4 py-2 text-sm poppins-medium rounded hover:bg-gray-300'"
+                (click)="showBookmarksOnly = false"
+              >
+                All Opportunities
+              </button>
+              <button
+                [class]="showBookmarksOnly ? 'bg-yellow-500 text-white px-4 py-2 text-sm poppins-medium rounded' : 'bg-gray-200 text-gray-700 px-4 py-2 text-sm poppins-medium rounded hover:bg-gray-300'"
+                (click)="showBookmarksOnly = true"
+              >
+                <i class="pi pi-bookmark-fill mr-1"></i>
+                Saved ({{ bookmarkedInternships.length }})
+              </button>
+            </div>
+          </div>
+          <p class="text-gray-600">
+            Find internships that match your skills and interests
+          </p>
+        </div>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-12">
+          <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+          <p class="text-gray-600 mt-4">Loading opportunities...</p>
+        </div>
+        <ng-container *ngIf="!isLoading">
+          <div *ngIf="getDisplayedInternships().length > 0" class="space-y-3">
+            <div
+              *ngFor="let internship of getDisplayedInternships()"
+              class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+              (click)="viewInternship(internship)"
+            >
+              <div class="p-5">
+                <div class="flex gap-4">
+                  <!-- Company Logo Placeholder -->
+                  <div class="flex-shrink-0">
+                    <div
+                      class="w-14 h-14 bg-gray-200 rounded flex items-center justify-center"
+                    >
+                      <i class="pi pi-building text-gray-400 text-2xl"></i>
+                    </div>
+                  </div>
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Title and Company -->
+                    <h3
+                      class="text-lg font-semibold text-gray-900 hover:text-blue-600 mb-1"
+                    >
+                      {{ internship.title }}
+                    </h3>
+                    <p class="text-sm text-gray-700 mb-2">
+                      {{ internship.company_name }}
+                      <span 
+                        class="ml-2 px-2 py-1 text-xs rounded-full"
+                        [ngClass]="internship.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                      >
+                        {{ internship.status === 'open' ? 'Open' : 'Closed' }}
+                      </span>
+                      <span 
+                        *ngIf="internship.isRecommended"
+                        class="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700"
+                      >
+                        Recommended
+                      </span>
+                    </p>
+                    <!-- Meta Info -->
+                    <div
+                      class="flex flex-wrap gap-3 text-sm text-gray-600 mb-3"
+                    >
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-map-marker text-xs"></i>
+                        Batangas City
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-clock text-xs"></i>
+                        {{ internship.duration_months }} months
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-calendar text-xs"></i>
+                        Posted {{ internship.created_at | date : "MMM d" }}
+                      </span>
+                    </div>
+                    <!-- Skills Tags -->
+                    <div
+                      class="flex flex-wrap gap-2 mb-3"
+                      *ngIf="internship.skills?.length > 0"
+                    >
+                      <span
+                        *ngFor="let skill of internship.skills.slice(0, 4)"
+                        class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full"
+                      >
+                        {{ skill }}
+                      </span>
+                      <span
+                        *ngIf="internship.skills.length > 4"
+                        class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full"
+                      >
+                        +{{ internship.skills.length - 4 }} more
+                      </span>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="flex gap-2 mt-3">
+                      <button
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full flex items-center gap-2"
+                        (click)="
+                          openApplyDialog(internship); $event.stopPropagation()
+                        "
+                      >
+                        <i class="pi pi-send text-xs"></i>
+                        Easy Apply
+                      </button>
+                      <button
+                        [class]="isBookmarked(internship.internship_id) ? 'px-4 py-2 bg-yellow-500 text-white hover:bg-yellow-600 text-sm font-medium rounded-full flex items-center gap-2' : 'px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium rounded-full flex items-center gap-2'"
+                        (click)="toggleBookmark(internship.internship_id, $event)"
+                      >
+                        <i [class]="isBookmarked(internship.internship_id) ? 'pi pi-bookmark-fill text-xs' : 'pi pi-bookmark text-xs'"></i>
+                        {{ isBookmarked(internship.internship_id) ? 'Saved' : 'Save' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            *ngIf="internships.length === 0"
+            class="text-center py-12 bg-white rounded-lg shadow-sm"
+          >
+            <i class="pi pi-inbox text-6xl text-gray-300"></i>
+            <p class="text-gray-600 mt-4 text-lg">
+              No internships match your search
+            </p>
+            <p class="text-gray-500 text-sm mt-2">
+              Try adjusting your filters or search terms
+            </p>
+          </div>
+
+          <!-- View Details Modal -->
+          <div
+            *ngIf="showViewDialog"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            (click)="showViewDialog = false"
+          >
+            <div
+              class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              (click)="$event.stopPropagation()"
+            >
+              <!-- Header -->
+              <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Internship Details</h2>
+                <button
+                  (click)="showViewDialog = false"
+                  class="text-gray-500 hover:text-gray-700"
+                >
+                  <i class="pi pi-times text-xl"></i>
+                </button>
+              </div>
+
+              <div class="p-6" *ngIf="selectedInternship">
+                <!-- Company Info -->
+                <div class="flex gap-4 mb-6">
+                  <div
+                    class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0"
+                  >
+                    <i class="pi pi-building text-gray-400 text-3xl"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-2xl mb-1">
+                      {{ selectedInternship.title }}
+                    </h3>
+                    <p class="text-gray-600 text-lg mb-2">
+                      {{ selectedInternship.company_name }}
+                    </p>
+                    <div class="flex flex-wrap gap-3 text-sm text-gray-600">
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-map-marker"></i>
+                        Batangas City
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-clock"></i>
+                        {{ selectedInternship.duration_months }} months
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-6">
+                  <h4 class="font-semibold text-base mb-3">
+                    About this internship
+                  </h4>
+                  <div
+                    [innerHTML]="selectedInternship.full_description"
+                    class="text-gray-700 leading-relaxed"
+                  ></div>
+                </div>
+
+                <!-- Company MOA -->
+                <div class="mb-6">
+                  <h4 class="font-semibold text-base mb-3">
+                    Company Memorandum of Agreement
+                  </h4>
+                  <div *ngIf="selectedInternship.moa_file" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-start gap-3">
+                      <div class="p-2 bg-red-100 rounded">
+                        <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                      <div class="flex-1">
+                        <p class="font-medium text-gray-900">{{ selectedInternship.company_name }} - MOA Document</p>
+                        <p class="text-sm text-gray-600 mt-1">Memorandum of Agreement uploaded by OJT Head</p>
+                        <div class="flex gap-2 mt-3">
+                          <button
+                            (click)="previewInternshipMOA()"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded flex items-center gap-2"
+                          >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            Preview
+                          </button>
+                          <button
+                            (click)="downloadInternshipMOA()"
+                            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded flex items-center gap-2"
+                          >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="!selectedInternship.moa_file" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p class="text-gray-600 text-sm">No MOA document available for this company.</p>
+                  </div>
+                </div>
+
+                <!-- Skills -->
+                <div *ngIf="selectedInternship.skills?.length > 0" class="mb-6">
+                  <h4 class="font-semibold text-base mb-3">Skills</h4>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      *ngFor="let skill of selectedInternship.skills"
+                      class="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200"
+                    >
+                      {{ skill }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex gap-3 pt-4 border-t">
+                  <button
+                    class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full flex items-center justify-center gap-2"
+                    (click)="openApplyDialog(selectedInternship)"
+                  >
+                    <i class="pi pi-send"></i>
+                    Apply Now
+                  </button>
+                  <button
+                    class="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-full"
+                    (click)="showViewDialog = false"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apply Modal -->
+          <div
+            *ngIf="showApplyDialog"
+            class="fixed inset-0 z-50 flex items-center justify-center"
+            (click)="showApplyDialog = false"
+          >
+            <div
+              class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              (click)="$event.stopPropagation()"
+            >
+              <!-- Header -->
+              <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Apply for Internship</h2>
+                <button
+                  (click)="showApplyDialog = false"
+                  class="text-gray-500 hover:text-gray-700"
+                >
+                  <i class="pi pi-times text-xl"></i>
+                </button>
+              </div>
+
+              <div class="p-6">
+                <div class="mb-6 pb-4 border-b">
+                  <h4 class="font-semibold text-lg">
+                    {{ selectedInternship?.title }}
+                  </h4>
+                  <p class="text-gray-600">
+                    {{ selectedInternship?.company_name }}
+                  </p>
+                </div>
+
+                <div class="mb-6">
+                  <label class="font-semibold text-sm block mb-2"
+                    >Cover Letter *</label
+                  >
+                  <p class="text-xs text-gray-600 mb-3">
+                    Tell the employer why you're a great fit for this role
+                  </p>
+                  <textarea
+                    [(ngModel)]="applicationLetter"
+                    rows="10"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Dear Hiring Manager,&#10;&#10;I am excited to apply for the [position] at [company]...&#10;&#10;[Highlight your relevant skills and experience]&#10;&#10;Thank you for considering my application."
+                  ></textarea>
+                </div>
+
+                <div class="mb-6">
+                  <label class="font-semibold text-sm block mb-2"
+                    >Resume (Optional)</label
+                  >
+                  <p class="text-xs text-gray-600 mb-3">
+                    Upload your resume (PDF, DOC, or DOCX - Max 5MB)
+                  </p>
+                  <div class="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      (change)="onResumeSelect($event)"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p *ngIf="selectedResume" class="text-xs text-green-600 mt-2">
+                      <i class="pi pi-check-circle"></i> {{ selectedResume.name }} ({{ (selectedResume.size / 1024).toFixed(0) }} KB)
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                  <button
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 text-sm poppins-medium rounded"
+                    (click)="showApplyDialog = false"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-sm poppins-medium rounded flex items-center justify-center gap-2"
+                    (click)="submitApplication()"
+                  >
+                    <i class="pi pi-send"></i>
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </main>
+    </div>
+  </div>
+  </div>
+</div>

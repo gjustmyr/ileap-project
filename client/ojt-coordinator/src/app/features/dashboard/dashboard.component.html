@@ -1,0 +1,128 @@
+<div class="p-6 bg-white poppins-regular">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Dashboard</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Overview of OJT student progress and statistics
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div>
+      <label
+        for="section"
+        class="block text-sm text-gray-600 mb-1 poppins-medium"
+      >
+        Section
+      </label>
+      <select
+        [(ngModel)]="selectedSection"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Sections</option>
+        <option *ngFor="let section of sectionOptions" [value]="section.value">
+          {{ section.label }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label
+        for="program"
+        class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Program</label
+      >
+      <select
+        [(ngModel)]="selectedProgram"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Programs</option>
+        <option *ngFor="let program of programOptions" [value]="program.value">
+          {{ program.label }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label
+        for="semester"
+        class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Semester</label
+      >
+      <select
+        [(ngModel)]="selectedSemester"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+      >
+        <option [value]="null">All Semesters</option>
+        <option
+          *ngFor="let semester of semesterOptions"
+          [value]="semester.value"
+        >
+          {{ semester.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Filter Action Buttons -->
+  <div class="flex gap-3 mb-6">
+    <button
+      (click)="applyDashboardFilters()"
+      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Apply Filters
+    </button>
+    <button
+      (click)="resetDashboardFilters()"
+      class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Reset Filters
+    </button>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div
+      *ngFor="let metric of metrics"
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i [class]="metric.icon + ' text-lg mt-1 ' + metric.iconColor"></i>
+      <div>
+        <p class="text-sm text-gray-600 font-medium poppins-medium">
+          {{ metric.label }}
+        </p>
+        <p class="text-xl font-semibold text-gray-800 poppins-medium">
+          {{ metric.value }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Pie Chart for OJT Status Distribution -->
+    <div class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-2">OJT Status Distribution</h5>
+      <p class="text-sm text-gray-600 mb-4">
+        Breakdown of student OJT status across all programs.
+      </p>
+      <p-chart
+        type="pie"
+        [data]="ojtStatusData"
+        [options]="chartOptions"
+      ></p-chart>
+    </div>
+
+    <!-- Bar Chart for Total OJT Progress -->
+    <div class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-2">OJT Hours Completed</h5>
+      <p class="text-sm text-gray-600 mb-4">
+        Comparison of completed vs required OJT hours by group.
+      </p>
+      <p-chart
+        type="bar"
+        [data]="ojtProgressData"
+        [options]="barChartOptions"
+      ></p-chart>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,645 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">My Students & Attendance</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      View assigned students and validate their attendance records
+    </p>
+  </div>
+
+  <!-- Search/Filter -->
+  <div class="mb-4 bg-white rounded-lg shadow-sm p-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">Search</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Search by name or SR code..."
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">Program</label>
+        <select
+          [(ngModel)]="filterProgram"
+          (change)="applyFilters()"
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">All Programs</option>
+          <option *ngFor="let program of uniquePrograms" [value]="program">{{ program }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">OJT Status</label>
+        <select
+          [(ngModel)]="filterStatus"
+          (change)="applyFilters()"
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+  </div>
+
+  <!-- Students Table -->
+  <div *ngIf="!isLoading" class="bg-white rounded overflow-x-auto mb-6">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+        <tr class="bg-white text-sm poppins-medium">
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[5%]"
+          >
+            #
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[15%]"
+          >
+            Student Name
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[12%]"
+          >
+            SR Code
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[18%]"
+          >
+            Program
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[15%]"
+          >
+            Email
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-[10%]"
+          >
+            OJT Status
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-[12%]"
+          >
+            Actions
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let student of filteredStudents; let i = index"
+          class="hover:bg-gray-50"
+          [class.bg-green-50]="selectedStudentId === student.student_id"
+        >
+          <td class="border border-gray-300 px-4 py-3 text-sm text-gray-700">{{ i + 1 }}</td>
+          <td class="border border-gray-300 px-4 py-3">
+            <div class="text-sm font-medium text-gray-900 poppins-medium">
+              {{ student.first_name }} {{ student.last_name }}
+            </div>
+          </td>
+          <td class="border border-gray-300 px-4 py-3">
+            <span class="text-sm text-gray-700 poppins-regular">{{ student.student_number }}</span>
+          </td>
+          <td class="border border-gray-300 px-4 py-3">
+            <span class="text-sm text-gray-700 poppins-regular">{{
+              student.program || 'N/A'
+            }}</span>
+          </td>
+          <td class="border border-gray-300 px-4 py-3">
+            <span class="text-sm text-gray-700 poppins-regular">{{ student.email }}</span>
+          </td>
+          <td class="border border-gray-300 px-4 py-3 text-center">
+            <span
+              [ngClass]="{
+                'bg-green-100 text-green-800': student.ojt_status === 'active',
+                'bg-yellow-100 text-yellow-800': student.ojt_status === 'pending',
+                'bg-blue-100 text-blue-800': student.ojt_status === 'completed',
+                'bg-gray-100 text-gray-800': !student.ojt_status
+              }"
+              class="px-2 py-1 rounded-full text-xs poppins-medium"
+            >
+              {{ student.ojt_status || 'N/A' }}
+            </span>
+          </td>
+          <td class="border border-gray-300 px-4 py-3">
+            <div class="flex gap-2 justify-center">
+              <button
+                (click)="viewStudentRecords(student)"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+              >
+                View Records
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredStudents.length === 0">
+          <td
+            colspan="7"
+            class="border border-gray-300 px-4 py-8 text-center text-gray-500 text-sm"
+          >
+            <i class="pi pi-users text-4xl mb-2 block text-gray-400"></i>
+            No students found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Attendance Records Section -->
+  <div *ngIf="selectedStudentId && !isLoadingRecords" class="mt-6">
+    <div
+      class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg px-4 py-3 flex justify-between items-center"
+    >
+      <div>
+        <h2 class="text-lg poppins-semibold">Attendance Records</h2>
+        <p class="text-sm poppins-regular opacity-90">{{ getSelectedStudentName() }}</p>
+      </div>
+      <button
+        (click)="clearSelection()"
+        class="text-white hover:bg-white hover:bg-opacity-20 px-3 py-1.5 rounded transition"
+      >
+        <i class="pi pi-times mr-1"></i> Close
+      </button>
+    </div>
+
+    <!-- Hours Progress Summary -->
+    <div class="bg-white border-x border-gray-300 px-6 py-6">
+      <h3 class="text-sm poppins-semibold text-gray-600 uppercase mb-3">Overall Progress</h3>
+
+      <!-- Progress Bar -->
+      <div class="mb-2">
+        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div
+            class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
+            [style.width.%]="getProgressPercentage()"
+          ></div>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-600 poppins-regular mb-6">
+        {{ getProgressPercentage() }}% of required hours completed ({{
+          getApprovedDaysCount()
+        }}
+        days logged)
+      </p>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white border-2 border-gray-300 p-6 rounded-lg text-center">
+          <p class="text-xs text-gray-500 poppins-semibold uppercase mb-2">Total Required Hours</p>
+          <p class="text-5xl poppins-bold text-gray-800">486</p>
+          <p class="text-sm text-gray-500 poppins-regular mt-2">hours</p>
+        </div>
+        <div class="bg-green-50 border-2 border-green-200 p-6 rounded-lg text-center">
+          <p class="text-xs text-green-700 poppins-semibold uppercase mb-2">Accomplished</p>
+          <p class="text-5xl poppins-bold text-green-600">{{ getTotalApprovedHours() }}</p>
+          <p class="text-sm text-green-700 poppins-regular mt-2">hours</p>
+        </div>
+        <div class="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-lg text-center">
+          <p class="text-xs text-yellow-700 poppins-semibold uppercase mb-2">Remaining</p>
+          <p class="text-5xl poppins-bold text-yellow-600">{{ getRemainingHours() }}</p>
+          <p class="text-sm text-yellow-700 poppins-regular mt-2">hours</p>
+        </div>
+      </div>
+
+      <!-- Date Filters -->
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm poppins-semibold text-gray-700">Filter Records</h4>
+          <button
+            *ngIf="filterYear || filterMonth"
+            (click)="clearDateFilters()"
+            class="text-xs text-red-600 hover:text-red-700 poppins-medium"
+          >
+            Clear Filters
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1 poppins-medium">Year</label>
+            <select
+              [(ngModel)]="filterYear"
+              (change)="onDateFilterChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">All Years</option>
+              <option *ngFor="let year of uniqueYears" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1 poppins-medium">Month</label>
+            <select
+              [(ngModel)]="filterMonth"
+              (change)="onDateFilterChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">All Months</option>
+              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+            </select>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2 poppins-regular">
+          Showing {{ filteredRecords.length }} of {{ records.length }} record(s)
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-b-lg overflow-x-auto">
+      <table class="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-50 text-sm poppins-medium">
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[12%]"
+            >
+              Date
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[8%]"
+            >
+              Time In
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[8%]"
+            >
+              Time Out
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[20%]"
+            >
+              Tasks
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[20%]"
+            >
+              Accomplishments
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase w-[12%]"
+            >
+              Remarks
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-[8%]"
+            >
+              Status
+            </td>
+            <td
+              class="border border-gray-300 px-4 py-2 text-center text-xs font-semibold text-gray-700 uppercase w-[12%]"
+            >
+              Actions
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of filteredRecords" class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-4 py-3">
+              <span class="poppins-medium text-gray-900 text-sm">{{
+                formatDate(record.date)
+              }}</span>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <span class="text-sm text-gray-700 poppins-regular flex items-center gap-1">
+                <i class="pi pi-sign-in text-green-600"></i>
+                {{ formatTime(record.time_in) }}
+              </span>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <span class="text-sm text-gray-700 poppins-regular flex items-center gap-1">
+                <i class="pi pi-sign-out text-red-600"></i>
+                {{ formatTime(record.time_out) }}
+              </span>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <p class="text-sm text-gray-600 poppins-regular">
+                {{ record.tasks || 'No tasks recorded' }}
+              </p>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <p class="text-sm text-gray-600 poppins-regular">
+                {{ record.accomplishments || 'No accomplishments recorded' }}
+              </p>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <p class="text-sm text-gray-600 poppins-regular">
+                {{ record.supervisor_remarks || '-' }}
+              </p>
+            </td>
+            <td class="border border-gray-300 px-4 py-3 text-center">
+              <span
+                [ngClass]="{
+                  'bg-green-100 text-green-800':
+                    record.validation_status === 'approved' ||
+                    record.validation_status === 'complete',
+                  'bg-yellow-100 text-yellow-800':
+                    record.validation_status === 'pending' ||
+                    record.validation_status === 'submitted' ||
+                    record.validation_status === 'incomplete',
+                  'bg-red-100 text-red-800': record.validation_status === 'rejected'
+                }"
+                class="px-2 py-1 rounded-full text-xs poppins-medium inline-flex items-center gap-1"
+              >
+                <i
+                  [ngClass]="{
+                    'pi pi-check-circle':
+                      record.validation_status === 'approved' ||
+                      record.validation_status === 'complete',
+                    'pi pi-clock':
+                      record.validation_status === 'pending' ||
+                      record.validation_status === 'submitted' ||
+                      record.validation_status === 'incomplete',
+                    'pi pi-times-circle': record.validation_status === 'rejected'
+                  }"
+                ></i>
+                {{
+                  record.validation_status === 'complete'
+                    ? 'Approved'
+                    : record.validation_status === 'incomplete'
+                    ? 'Pending'
+                    : record.validation_status || 'Pending'
+                }}
+              </span>
+              <span *ngIf="record.modified_after_date" class="block mt-1">
+                <span
+                  class="px-2 py-1 rounded-full text-xs poppins-medium bg-orange-100 text-orange-800 inline-flex items-center gap-1"
+                >
+                  <i class="pi pi-pencil"></i>
+                  Modified
+                </span>
+              </span>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <div class="flex gap-2 justify-center">
+                <button
+                  (click)="viewRecordDetails(record)"
+                  class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                  title="View Details"
+                >
+                  View Details
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredRecords.length === 0">
+            <td
+              colspan="8"
+              class="border border-gray-300 px-4 py-8 text-center text-gray-500 text-sm"
+            >
+              <i class="pi pi-calendar-times text-4xl mb-2 block text-gray-400"></i>
+              {{
+                records.length > 0
+                  ? 'No records match the selected filters'
+                  : 'No attendance records found'
+              }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div
+    *ngIf="isLoadingRecords"
+    class="mt-6 flex justify-center items-center py-12 bg-white rounded-lg"
+  >
+    <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div
+  *ngIf="showViewModal"
+  class="fixed inset-0 flex items-center justify-center z-50"
+  (click)="closeViewModal()"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4"
+    (click)="$event.stopPropagation()"
+  >
+    <div *ngIf="viewingRecord" class="p-6">
+      <!-- Header -->
+      <div class="flex justify-between items-start mb-6 pb-4 border-b border-gray-200">
+        <div>
+          <h2 class="text-2xl poppins-bold text-gray-800">Attendance Record Details</h2>
+          <p class="text-sm text-gray-500 poppins-regular mt-1">{{ getSelectedStudentName() }}</p>
+        </div>
+        <button (click)="closeViewModal()" class="text-gray-400 hover:text-gray-600 transition">
+          <i class="pi pi-times text-2xl"></i>
+        </button>
+      </div>
+
+      <!-- Date and Time Info - Simple Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="border-2 border-gray-300 bg-white p-4 rounded-lg">
+          <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Date</p>
+          <p class="text-lg poppins-bold text-gray-800">{{ formatDate(viewingRecord.date) }}</p>
+        </div>
+        <div class="border-2 border-gray-300 bg-white p-4 rounded-lg">
+          <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Time In</p>
+          <p class="text-lg poppins-bold text-gray-800">{{ formatTime(viewingRecord.time_in) }}</p>
+        </div>
+        <div class="border-2 border-gray-300 bg-white p-4 rounded-lg">
+          <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Time Out</p>
+          <p class="text-lg poppins-bold text-gray-800">{{ formatTime(viewingRecord.time_out) }}</p>
+        </div>
+        <div class="border-2 border-green-300 bg-green-50 p-4 rounded-lg">
+          <p class="text-xs text-green-700 poppins-medium uppercase mb-2">Hours</p>
+          <p class="text-2xl poppins-bold text-green-600">
+            {{ calculateHours(viewingRecord.time_in, viewingRecord.time_out) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-6">
+        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Status</p>
+        <div class="flex flex-wrap gap-2">
+          <span
+            [ngClass]="{
+              'bg-green-100 text-green-800':
+                viewingRecord.validation_status === 'approved' ||
+                viewingRecord.validation_status === 'complete',
+              'bg-yellow-100 text-yellow-800':
+                viewingRecord.validation_status === 'pending' ||
+                viewingRecord.validation_status === 'submitted' ||
+                viewingRecord.validation_status === 'incomplete',
+              'bg-red-100 text-red-800': viewingRecord.validation_status === 'rejected'
+            }"
+            class="px-3 py-1 rounded-full text-sm poppins-medium"
+          >
+            {{
+              viewingRecord.validation_status === 'complete'
+                ? 'Approved'
+                : viewingRecord.validation_status === 'incomplete'
+                ? 'Pending'
+                : viewingRecord.validation_status || 'Pending'
+            }}
+          </span>
+          <span
+            *ngIf="viewingRecord.modified_after_date"
+            class="px-3 py-1 rounded-full text-sm poppins-medium bg-orange-100 text-orange-800 inline-flex items-center gap-1"
+          >
+            <i class="pi pi-pencil"></i>
+            Modified After Date
+          </span>
+        </div>
+      </div>
+
+      <!-- Tasks -->
+      <div class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-4">
+        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Tasks for the Day</p>
+        <p class="text-sm text-gray-700 poppins-regular whitespace-pre-wrap">
+          {{ viewingRecord.tasks || 'No tasks recorded' }}
+        </p>
+      </div>
+
+      <!-- Accomplishments -->
+      <div class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-4">
+        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Accomplishments</p>
+        <p class="text-sm text-gray-700 poppins-regular whitespace-pre-wrap">
+          {{ viewingRecord.accomplishments || 'No accomplishments recorded' }}
+        </p>
+      </div>
+
+      <!-- Supervisor Remarks -->
+      <div
+        *ngIf="viewingRecord.supervisor_remarks"
+        class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-6"
+      >
+        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Supervisor Remarks</p>
+        <p class="text-sm text-gray-700 poppins-regular whitespace-pre-wrap">
+          {{ viewingRecord.supervisor_remarks }}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3 justify-end pt-4 border-t border-gray-200">
+        <button
+          (click)="closeViewModal()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Close
+        </button>
+        <button
+          (click)="openEditFromView()"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Edit
+        </button>
+        <button
+          *ngIf="
+            viewingRecord.validation_status === 'pending' ||
+            viewingRecord.validation_status === 'submitted' ||
+            viewingRecord.validation_status === 'incomplete'
+          "
+          (click)="validateFromView('approved')"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Approve
+        </button>
+        <button
+          *ngIf="
+            viewingRecord.validation_status === 'pending' ||
+            viewingRecord.validation_status === 'submitted' ||
+            viewingRecord.validation_status === 'incomplete'
+          "
+          (click)="validateFromView('rejected')"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Reject
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal" class="fixed inset-0 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl poppins-bold text-gray-800">Edit Attendance Record</h2>
+      <button (click)="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+        <i class="pi pi-times text-2xl"></i>
+      </button>
+    </div>
+
+    <div *ngIf="editingRecord" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm poppins-medium text-gray-700 mb-2">Time In</label>
+          <input
+            type="time"
+            [(ngModel)]="editingRecord.time_in"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 poppins-regular"
+          />
+        </div>
+        <div>
+          <label class="block text-sm poppins-medium text-gray-700 mb-2">Time Out</label>
+          <input
+            type="time"
+            [(ngModel)]="editingRecord.time_out"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 poppins-regular"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Tasks</label>
+        <textarea
+          [(ngModel)]="editingRecord.tasks"
+          rows="3"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 poppins-regular"
+          placeholder="Enter tasks performed..."
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Accomplishments</label>
+        <textarea
+          [(ngModel)]="editingRecord.accomplishments"
+          rows="3"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 poppins-regular"
+          placeholder="Enter accomplishments..."
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Supervisor Remarks</label>
+        <textarea
+          [(ngModel)]="editingRecord.supervisor_remarks"
+          rows="3"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 poppins-regular"
+          placeholder="Add remarks for any discrepancies..."
+        ></textarea>
+      </div>
+
+      <div class="flex gap-2 justify-end mt-6">
+        <button
+          (click)="closeEditModal()"
+          [disabled]="isSaving"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveRecord()"
+          [disabled]="isSaving"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 flex items-center gap-2"
+        >
+          <span
+            *ngIf="isSaving"
+            class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+          ></span>
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

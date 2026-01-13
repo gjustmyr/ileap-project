@@ -1,0 +1,121 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      OJT Requirements Templates
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Download requirement templates for students
+    </p>
+  </div>
+
+  <!-- Requirement Templates Section -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b">
+        <tr>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Title
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Type
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Required
+          </th>
+          <th
+            class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr
+          *ngFor="let template of requirementTemplates"
+          class="hover:bg-gray-50"
+        >
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">
+              {{ template.title }}
+            </div>
+            <div class="text-xs text-gray-500">{{ template.description }}</div>
+          </td>
+          <td class="px-4 py-3">
+            <span
+              class="px-2 py-1 text-xs rounded-full"
+              [class.bg-blue-100]="template.type === 'pre'"
+              [class.text-blue-800]="template.type === 'pre'"
+              [class.bg-purple-100]="template.type === 'post'"
+              [class.text-purple-800]="template.type === 'post'"
+            >
+              {{ template.type === "pre" ? "Pre-OJT" : "Post-OJT" }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span
+              class="px-2 py-1 text-xs rounded-full"
+              [class.bg-green-100]="template.is_required"
+              [class.text-green-800]="template.is_required"
+              [class.bg-gray-100]="!template.is_required"
+              [class.text-gray-800]="!template.is_required"
+            >
+              {{ template.is_required ? "Required" : "Optional" }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center justify-center gap-2">
+              <button
+                *ngIf="template.template_url"
+                (click)="previewTemplate(template)"
+                class="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-1"
+                title="Preview Template"
+              >
+                <i class="pi pi-eye"></i>
+                Preview
+              </button>
+              <button
+                *ngIf="template.template_url"
+                (click)="downloadTemplate(template)"
+                class="px-3 py-1.5 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center gap-1"
+                title="Download Template"
+              >
+                <i class="pi pi-download"></i>
+                Download
+              </button>
+              <span *ngIf="!template.template_url" class="text-gray-400 text-xs"
+                >No template</span
+              >
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="requirementTemplates.length === 0">
+          <td colspan="4" class="px-4 py-8 text-center text-gray-500 text-sm">
+            <i class="pi pi-inbox text-4xl mb-2 block text-gray-400"></i>
+            No requirement templates available
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Info Box -->
+  <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex items-start gap-3">
+      <i class="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
+      <div>
+        <h3 class="font-semibold text-blue-900 mb-1 poppins-medium">Note</h3>
+        <p class="text-sm text-blue-800 poppins-regular">
+          To review and approve student requirement submissions, please go to
+          the <strong>Class Listing</strong> tab.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

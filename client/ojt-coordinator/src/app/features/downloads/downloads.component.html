@@ -1,0 +1,69 @@
+<div class="p-4 poppins-regular">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Downloads</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">Download OJT requirements summary and reports</p>
+  </div>
+
+  <p-card
+    header="Downloadable OJT Requirements Summary"
+    styleClass="poppins-regular"
+  >
+    <p class="text-sm text-gray-600 mb-4">
+      Summary of Pre-OJT and Post-OJT requirements across programs. You can
+      export this data for reporting purposes.
+    </p>
+
+    <!-- ⬇️ Download CSV Button -->
+
+    <p-table
+      [value]="requirementsList"
+      [paginator]="true"
+      [rows]="5"
+      responsiveLayout="scroll"
+      class="poppins-regular"
+    >
+      <ng-template pTemplate="header">
+        <tr class="bg-gray-100 text-gray-700 poppins-medium text-sm">
+          <th>Pre-OJT Requirements</th>
+          <th>Post-OJT Requirements</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="text-sm text-gray-700">
+            <ul class="space-y-2">
+              <li *ngFor="let file of item.preOjt">
+                <a [href]="file.url" download>
+                  <button
+                    type="button"
+                    class="w-full text-left bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-medium poppins-medium px-3 py-2 rounded"
+                  >
+                    <i class="pi pi-file"></i>
+                    {{ file.name }}
+                  </button>
+                </a>
+              </li>
+            </ul>
+          </td>
+          <td class="text-sm text-gray-700">
+            <ul class="space-y-2">
+              <li *ngFor="let file of item.postOjt">
+                <a [href]="file.url" download>
+                  <button
+                    type="button"
+                    class="w-full text-left bg-green-100 hover:bg-green-200 text-green-700 text-xs font-medium poppins-medium px-3 py-2 rounded"
+                  >
+                    <i class="pi pi-file"></i>
+
+                    {{ file.name }}
+                  </button>
+                </a>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

@@ -1,0 +1,454 @@
+<div class="p-4">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      OJT Tracker
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Track your internship progress and hours
+    </p>
+  </div>
+
+  <!-- Not Hired Alert -->
+  <div
+    *ngIf="!isHired"
+    class="flex items-center justify-center h-96 poppins-regular no-print"
+  >
+    <div class="text-center max-w-md">
+      <i class="pi pi-briefcase text-6xl text-gray-300 mb-4"></i>
+      <h3 class="text-xl text-gray-600 mb-2 poppins-semibold">Not Yet Hired</h3>
+      <p class="text-sm text-gray-500 mb-4">
+        You need to be hired by an employer before you can start tracking your
+        OJT. Please check the Internships tab to apply for available positions.
+      </p>
+    </div>
+  </div>
+
+  <!-- Requirements Not Validated Alert -->
+  <div
+    *ngIf="isHired && !allRequirementsValidated"
+    class="flex items-center justify-center h-96 poppins-regular no-print"
+  >
+    <div class="text-center max-w-md">
+      <i class="pi pi-file-edit text-6xl text-yellow-400 mb-4"></i>
+      <h3 class="text-xl text-gray-600 mb-2 poppins-semibold">
+        Pending Requirements Validation
+      </h3>
+      <p class="text-sm text-gray-500 mb-4">
+        You have been hired by <strong>{{ employerInfo?.company_name }}</strong
+        >, but your Pre-OJT requirements need to be validated by your OJT
+        Coordinator before you can start tracking your OJT hours.
+      </p>
+      <p class="text-sm text-blue-600">
+        Please ensure all requirements are submitted in the Requirements tab.
+      </p>
+    </div>
+  </div>
+
+  <!-- Ready to Start OJT -->
+  <div
+    *ngIf="canStartOJT && !hasOngoingOJT"
+    class="flex items-center justify-center h-96 poppins-regular no-print"
+  >
+    <div class="text-center max-w-md">
+      <i class="pi pi-check-circle text-6xl text-green-500 mb-4"></i>
+      <h3 class="text-xl text-gray-600 mb-2 poppins-semibold">
+        Ready to Start OJT
+      </h3>
+      <p class="text-sm text-gray-500 mb-4">
+        All your Pre-OJT requirements have been validated! You can now start
+        your OJT with
+        <strong>{{ employerInfo?.company_name }}</strong> based on your agreed
+        schedule.
+      </p>
+      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+        <p class="text-sm text-blue-700 poppins-medium mb-2">Next Steps:</p>
+        <ul class="text-left text-sm text-blue-600 space-y-1">
+          <li>• Coordinate with your employer for your start date</li>
+          <li>• Follow the agreed OJT schedule and timeframe</li>
+          <li>• Log your hours and activities regularly</li>
+          <li>• Maintain communication with your OJT Coordinator</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- OJT Status Overview -->
+  <div *ngIf="hasOngoingOJT" class="p-6 poppins-regular no-print">
+    <h2
+      class="text-xl font-semibold text-gray-800 poppins-medium mb-6 border-l-4 border-red-500 pl-3"
+    >
+      OJT Status Overview
+    </h2>
+
+    <!-- Assigned Company -->
+    <div class="mb-6">
+      <p class="uppercase text-[10px] text-gray-500 tracking-wide">
+        Assigned Company
+      </p>
+      <p class="text-sm text-gray-800">
+        {{ employerInfo?.company_name || "Not Assigned" }}
+      </p>
+    </div>
+
+    <!-- OJT Details Section -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="border border-black p-4 text-sm">
+        <p class="text-[10px] text-gray-500 uppercase tracking-wide">
+          Immediate Supervisor
+        </p>
+        <p class="text-gray-800">{{ supervisorName }}</p>
+      </div>
+      <div class="border border-black p-4 text-sm">
+        <p class="text-[10px] text-gray-500 uppercase tracking-wide">
+          OJT Start Date
+        </p>
+        <p class="text-gray-800">
+          {{
+            employerInfo?.ojt_start_date
+              ? (employerInfo.ojt_start_date | date : "MMM dd, yyyy")
+              : "Not Set"
+          }}
+        </p>
+      </div>
+      <div class="border border-black p-4 text-sm">
+        <p class="text-[10px] text-gray-500 uppercase tracking-wide">
+          Presumed End Date
+        </p>
+        <p class="text-gray-800">
+          {{
+            presumedEndDate ? (presumedEndDate | date : "MMM dd, yyyy") : "TBD"
+          }}
+        </p>
+      </div>
+      <div class="border border-black p-4 text-sm">
+        <p class="text-[10px] text-gray-500 uppercase tracking-wide">
+          Position
+        </p>
+        <p class="text-gray-800">
+          {{ employerInfo?.position || "Not Assigned" }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-6">
+      <p class="uppercase text-[10px] text-gray-500 tracking-wide mb-1">
+        Overall Progress
+      </p>
+      <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div
+          class="bg-green-500 h-full rounded-full transition-all duration-500"
+          [style.width.%]="progressPercentage"
+        ></div>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">
+        {{ progressPercentage }}% of required hours completed ({{ totalDays }}
+        days logged)
+      </p>
+    </div>
+
+    <!-- Training Hours -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-gray-50 rounded-md border p-4 text-center">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">
+          Total Required Hours
+        </p>
+        <p class="text-lg font-bold text-gray-800">{{ hoursRequired }}</p>
+      </div>
+      <div
+        class="bg-green-50 rounded-md border border-green-200 p-4 text-center"
+      >
+        <p class="text-xs text-gray-500 uppercase tracking-wide">
+          Accomplished
+        </p>
+        <p class="text-lg font-bold text-green-600">{{ hoursCompleted }}</p>
+      </div>
+      <div
+        class="bg-yellow-50 rounded-md border border-yellow-200 p-4 text-center"
+      >
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Remaining</p>
+        <p class="text-lg font-bold text-yellow-600">{{ remainingHours }}</p>
+      </div>
+    </div>
+
+    <div class="poppins-regular bg-white">
+      <!-- Filters and Print -->
+      <div class="flex flex-wrap items-end gap-4 mb-6 no-print">
+        <div class="flex flex-col">
+          <label for="startDate" class="text-xs text-gray-500"
+            >Start Date</label
+          >
+          <input
+            type="date"
+            id="startDate"
+            [(ngModel)]="filterStartDate"
+            class="py-2 px-3 border text-sm poppins-regular w-44"
+          />
+        </div>
+        <div class="flex flex-col">
+          <label for="endDate" class="text-xs text-gray-500">End Date</label>
+          <input
+            type="date"
+            id="endDate"
+            [(ngModel)]="filterEndDate"
+            class="py-2 px-3 border text-sm poppins-regular w-44"
+          />
+        </div>
+        <button
+          onclick="window.print()"
+          class="px-3 py-2 text-sm bg-red-500 text-white hover:bg-red-600"
+        >
+          Print
+        </button>
+        <button
+          (click)="generatePDF()"
+          class="px-3 py-2 text-sm bg-blue-500 text-white hover:bg-blue-600"
+        >
+          Download PDF
+        </button>
+      </div>
+
+      <!-- Report Table -->
+      <div
+        id="printable-report"
+        class="border-2 border-black overflow-hidden text-sm bg-white"
+      >
+        <!-- Title -->
+        <div class="p-4 text-center font-bold text-lg border-b-2 border-black">
+          ACCOMPLISHMENT REPORT
+        </div>
+
+        <!-- Period -->
+        <div class="p-3 text-center border-b-2 border-black">
+          <span *ngIf="filterStartDate || filterEndDate">
+            For the period
+            {{
+              filterStartDate
+                ? (filterStartDate | date : "MMMM dd, yyyy")
+                : "Start"
+            }}
+            to
+            {{
+              filterEndDate ? (filterEndDate | date : "MMMM dd, yyyy") : "End"
+            }}
+          </span>
+          <span *ngIf="!filterStartDate && !filterEndDate">
+            For the period
+            {{
+              employerInfo?.ojt_start_date
+                ? (employerInfo.ojt_start_date | date : "MMMM dd, yyyy")
+                : ""
+            }}
+            to
+            {{
+              presumedEndDate
+                ? (presumedEndDate | date : "MMMM dd, yyyy")
+                : "Present"
+            }}
+          </span>
+        </div>
+
+        <!-- Personnel Info Table -->
+        <table class="w-full border-collapse">
+          <tr>
+            <td
+              class="p-2 border-2 border-black bg-orange-500 text-white font-medium w-1/4"
+            >
+              Name of personnel
+            </td>
+            <td class="p-2 border-2 border-black font-medium">
+              {{ studentName.toUpperCase() || "Loading..." }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-2 border-2 border-black bg-orange-500 text-white font-medium"
+            >
+              Position and Employment Status
+            </td>
+            <td class="p-2 border-2 border-black">
+              {{ employerInfo?.position || "OJT Student / Trainee" }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-2 border-2 border-black bg-orange-500 text-white font-medium"
+            >
+              Office/College/Department/Division/Unit
+            </td>
+            <td class="p-2 border-2 border-black">
+              {{ employerInfo?.company_name || "N/A" }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-2 border-2 border-black bg-orange-500 text-white font-medium"
+            >
+              Immediate Supervisor
+            </td>
+            <td class="p-2 border-2 border-black">
+              {{ supervisorName.toUpperCase() }}
+            </td>
+          </tr>
+        </table>
+
+        <!-- Daily Records Table -->
+        <table class="w-full border-collapse">
+          <!-- Table Header -->
+          <thead>
+            <tr class="bg-orange-500 text-white">
+              <th
+                class="p-2 border-2 border-black font-medium text-center w-16"
+              >
+                Day
+              </th>
+              <th
+                class="p-2 border-2 border-black font-medium text-center w-32"
+              >
+                Dates of Attendance
+              </th>
+              <th
+                class="p-2 border-2 border-black font-medium text-center w-24"
+              >
+                Time-in
+              </th>
+              <th
+                class="p-2 border-2 border-black font-medium text-center w-24"
+              >
+                Time-out
+              </th>
+              <th class="p-2 border-2 border-black font-medium text-center">
+                Planned Task/Activities
+              </th>
+              <th class="p-2 border-2 border-black font-medium text-center">
+                Actual Accomplishments
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <!-- Empty State -->
+            <tr *ngIf="filteredLogs.length === 0">
+              <td colspan="6" class="p-8 text-center text-gray-500">
+                <i class="pi pi-inbox text-4xl mb-2 block"></i>
+                <p>No time logs found for the selected period</p>
+              </td>
+            </tr>
+
+            <!-- Data Rows -->
+            <tr
+              *ngFor="let log of filteredLogs"
+              [class.bg-red-50]="log.validation_warning"
+            >
+              <td class="p-2 border-2 border-black text-center font-medium">
+                {{ getDayOfWeek(log.log_date).toUpperCase() }}
+              </td>
+              <td class="p-2 border-2 border-black text-center">
+                {{ log.log_date | date : "dd-MMM-yyyy" | uppercase }}
+              </td>
+              <td
+                class="p-2 border-2 border-black text-center"
+                [class.text-red-600]="log.validation_warning"
+              >
+                {{ log.time_in ? (log.time_in | date : "h:mm a") : "" }}
+                <span
+                  *ngIf="log.validation_warning"
+                  class="block text-xs text-red-500 mt-1"
+                  >⚠️</span
+                >
+              </td>
+              <td
+                class="p-2 border-2 border-black text-center"
+                [class.text-red-600]="log.validation_warning"
+              >
+                {{ log.time_out ? (log.time_out | date : "h:mm a") : "" }}
+                <span
+                  *ngIf="log.validation_warning"
+                  class="block text-xs text-red-500 mt-1"
+                  >⚠️</span
+                >
+              </td>
+              <td class="p-2 border-2 border-black align-top">
+                <div class="text-xs whitespace-pre-wrap">
+                  {{ log.tasks || "" }}
+                </div>
+                <div
+                  *ngIf="log.validation_warning"
+                  class="text-xs text-red-600 font-semibold mt-2 p-1 bg-red-100 border border-red-300 rounded"
+                >
+                  ⚠️ {{ log.validation_warning }}
+                </div>
+              </td>
+              <td class="p-2 border-2 border-black align-top">
+                <div class="text-xs whitespace-pre-wrap">
+                  {{ log.accomplishments || "" }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- Total Row -->
+          <tfoot>
+            <tr class="bg-orange-500 text-white font-bold">
+              <td colspan="3" class="p-2 border-2 border-black text-right">
+                Total Hours Rendered:
+              </td>
+              <td colspan="4" class="p-2 border-2 border-black">
+                {{ filteredTotalHours.toFixed(2) }} Hours ({{
+                  filteredValidDays
+                }}
+                valid days)
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Signatures Section -->
+        <table class="w-full border-collapse">
+          <tr>
+            <td
+              class="p-4 border-2 border-black text-center text-xs text-gray-600 w-1/4"
+            >
+              Submitted By
+            </td>
+            <td class="p-4 border-2 border-black text-center font-bold">
+              {{ studentName.toUpperCase() || "" }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-2 border-2 border-black text-center text-xs text-gray-500"
+            >
+              Name and Signature of Employee
+            </td>
+            <td class="p-2 border-2 border-black text-center text-xs">
+              Date: {{ today | date : "MMMM dd, yyyy" }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-4 border-2 border-black text-center text-xs leading-tight"
+            >
+              Certified:<br />
+              Actual services rendered are necessary, lawful and under my direct
+              supervision.
+            </td>
+            <td class="p-4 border-2 border-black text-center font-bold">
+              {{ supervisorName.toUpperCase() }}
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="p-2 border-2 border-black text-center text-xs text-gray-500"
+            >
+              Name and Signature of Immediate Supervisor
+            </td>
+            <td class="p-2 border-2 border-black text-center">
+              _____________________
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+# Git Attributes for ILEAP Project
+
+# Exclude from production exports
+*.sql export-ignore
+*.md export-ignore
+!README.md export-ignore
+deployment/ export-ignore
+
+# Server-side development files
+server-fastapi/database/ export-ignore
+server-fastapi/create_*.py export-ignore
+server-fastapi/check_*.py export-ignore
+server-fastapi/fix_*.py export-ignore
+server-fastapi/approve_test_records.py export-ignore
+server-fastapi/recalculate_hours.py export-ignore
+server-fastapi/run_migration.py export-ignore
+server-fastapi/init_db.py export-ignore
+server-fastapi/nul export-ignore
+
+# Documentation files
+MODAL_EXTRACTION_GUIDE.md export-ignore
+REQUIREMENTS_FEATURE_SUMMARY.md export-ignore
+UAT_Survey_Questionnaire.md export-ignore
+UAT_Survey_Questionnaire.docx.md export-ignore
+
+# Test files
+*.spec.ts export-ignore
+*_test.py export-ignore
+test_*.py export-ignore
+
+# Line endings
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

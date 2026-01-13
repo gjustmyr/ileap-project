@@ -1,0 +1,89 @@
+<div
+  *ngIf="visible"
+  class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Preview Requirement
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedRequirement?.name }}
+        </p>
+      </div>
+      <button (click)="closeModal()" class="text-gray-500 hover:text-gray-700">
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info -->
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-gray-600 poppins-medium">Student:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.student?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-gray-600 poppins-medium">Requirement:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.name }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Preview Area -->
+      <div
+        class="border-2 border-gray-300 rounded-lg p-8 text-center bg-gray-50"
+      >
+        <i class="pi pi-file-pdf text-6xl text-blue-400 mb-4"></i>
+        <p class="text-gray-700 poppins-semibold mb-2 text-lg">
+          {{ selectedRequirement?.name }}
+        </p>
+        <p class="text-sm text-gray-600 poppins-regular mb-4">
+          {{ selectedRequirement?.file_url }}
+        </p>
+        <button
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm poppins-medium"
+        >
+          <i class="pi pi-download mr-2"></i>
+          Download File
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <button
+        (click)="closeModal()"
+        class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+      >
+        Close
+      </button>
+      <div class="flex gap-2">
+        <button
+          (click)="validateRequirement()"
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate
+        </button>
+        <button
+          (click)="returnRequirement()"
+          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-replay"></i>
+          Return
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

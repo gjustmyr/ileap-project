@@ -1,0 +1,139 @@
+<div
+  *ngIf="visible && internship"
+  class="fixed inset-0 flex items-center justify-center z-50"
+  (click)="onOverlayClick($event)"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto pointer-events-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-medium">
+        View {{ internship.posting_type === 'internship' ? 'Internship' : 'Job Posting' }}
+      </h3>
+      <button
+        type="button"
+        (click)="close()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <!-- Title -->
+      <div class="flex flex-col">
+        <label class="text-sm font-medium mb-1 poppins-medium">
+          Title
+        </label>
+        <p class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50">
+          {{ internship.title }}
+        </p>
+      </div>
+
+      <!-- Full Description -->
+      <div class="flex flex-col">
+        <label class="text-sm font-medium mb-1 poppins-medium">
+          Full Description
+        </label>
+        <div 
+          class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50 min-h-50" 
+          [innerHTML]="internship.full_description"
+        ></div>
+      </div>
+
+      <!-- Skills -->
+      <div class="flex flex-col">
+        <label class="text-sm font-medium mb-1 poppins-medium">
+          Required Skills
+        </label>
+        <div class="border py-2 px-3 poppins-regular rounded-sm text-sm bg-gray-50 min-h-12.5">
+          <div class="flex flex-wrap gap-2" *ngIf="internship.skills && internship.skills.length > 0">
+            <span 
+              *ngFor="let skill of internship.skills" 
+              class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
+            >
+              {{ skill.skill_name }}
+            </span>
+          </div>
+          <span *ngIf="!internship.skills || internship.skills.length === 0" class="text-gray-400">
+            No skills specified
+          </span>
+        </div>
+      </div>
+
+      <!-- Status with Dropdown -->
+      <div class="flex flex-col">
+        <label class="text-sm font-medium mb-1 poppins-medium">
+          Status
+        </label>
+        <select
+          [(ngModel)]="internship.status"
+          (change)="changeStatus(internship.status)"
+          class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 outline-none focus:border-green-500"
+          [disabled]="internship.status === 'pending'">
+          <!-- Draft: can submit for approval -->
+          <option value="draft" *ngIf="internship.status === 'draft'">Draft</option>
+          <option value="pending" *ngIf="internship.status === 'draft'">Submit for Approval</option>
+          
+          <!-- Pending: waiting for OJT Head approval (read-only) -->
+          <option value="pending" *ngIf="internship.status === 'pending'">Pending Approval</option>
+          
+          <!-- Approved/Open: can close -->
+          <option value="open" *ngIf="internship.status === 'approved' || internship.status === 'open'">Open</option>
+          <option value="closed" *ngIf="internship.status === 'approved' || internship.status === 'open'">Close</option>
+          
+          <!-- Closed: can reopen -->
+          <option value="closed" *ngIf="internship.status === 'closed'">Closed</option>
+          <option value="open" *ngIf="internship.status === 'closed'">Reopen</option>
+          
+          <!-- Rejected: can edit and resubmit -->
+          <option value="rejected" *ngIf="internship.status === 'rejected'">Rejected</option>
+          <option value="pending" *ngIf="internship.status === 'rejected'">Resubmit for Approval</option>
+        </select>
+        <span *ngIf="internship.status === 'pending'" class="text-xs text-gray-500 italic mt-1">
+          Waiting for OJT Head approval
+        </span>
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Posted On
+          </label>
+          <p class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50">
+            {{ internship.created_at | date : 'mediumDate' }}
+          </p>
+        </div>
+        <div class="flex flex-col" *ngIf="internship.updated_at !== internship.created_at">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Last Updated
+          </label>
+          <p class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50">
+            {{ internship.updated_at | date : 'mediumDate' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-2 pt-4">
+        <button
+          type="button"
+          (click)="close()"
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 poppins-medium"
+        >
+          Close
+        </button>
+        <button
+          *ngIf="internship.status === 'draft' || internship.status === 'rejected'"
+          type="button"
+          (click)="editInternship()"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

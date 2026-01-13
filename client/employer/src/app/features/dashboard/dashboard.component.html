@@ -1,0 +1,170 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Dashboard</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">Overview of employer operations and student progress</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="mb-6">
+    <h5 class="text-gray-700 poppins-medium mb-3">Filters</h5>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-gray-600 poppins-regular mb-2">Year</label>
+        <p-dropdown 
+          [options]="yearOptions" 
+          [(ngModel)]="selectedYear"
+          (onChange)="onFilterChange()"
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select Year"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 poppins-regular mb-2">OJT Status</label>
+        <p-dropdown 
+          [options]="statusOptions" 
+          [(ngModel)]="selectedStatus"
+          (onChange)="onFilterChange()"
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select Status"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3">
+      <i class="pi pi-briefcase text-blue-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Active Job Listings</p>
+        <p class="text-xl text-gray-800">{{ stats.totalJobListings }}</p>
+      </div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3">
+      <i class="pi pi-users text-green-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Active Trainees</p>
+        <p class="text-xl text-gray-800">{{ stats.activeTrainees }}</p>
+      </div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3">
+      <i class="pi pi-file text-purple-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Pending Applications</p>
+        <p class="text-xl text-gray-800">{{ stats.pendingApplications }}</p>
+      </div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3">
+      <i class="pi pi-user-edit text-orange-500 text-lg mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Training Supervisors</p>
+        <p class="text-xl text-gray-800">{{ stats.totalSupervisors }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+    <!-- OJT Status Distribution -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">OJT Status Distribution</h5>
+      <p-chart
+        type="doughnut"
+        [data]="ojtStatusChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+
+    <!-- Applications by Position -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Applications by Position</h5>
+      <p-chart
+        type="bar"
+        [data]="applicationsByPositionChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+
+    <!-- Application Status -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Application Status</h5>
+      <p-chart
+        type="pie"
+        [data]="applicationStatusChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+
+    <!-- Monthly Trainee Progress -->
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Monthly Trainee Progress</h5>
+      <p-chart
+        type="line"
+        [data]="monthlyProgressChartData"
+        [options]="chartOptions"
+        styleClass="h-64"
+      ></p-chart>
+    </p-card>
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="mt-8">
+    <p-card class="bg-white border border-gray-200 rounded-md p-4">
+      <h5 class="text-gray-700 poppins-medium mb-4">Recent Applications</h5>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left py-2 px-3 text-sm text-gray-600 poppins-medium">Student Name</th>
+              <th class="text-left py-2 px-3 text-sm text-gray-600 poppins-medium">Position</th>
+              <th class="text-left py-2 px-3 text-sm text-gray-600 poppins-medium">Applied Date</th>
+              <th class="text-left py-2 px-3 text-sm text-gray-600 poppins-medium">Status</th>
+              <th class="text-left py-2 px-3 text-sm text-gray-600 poppins-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="recentApplications.length === 0">
+              <td colspan="5" class="text-center py-8 text-gray-400">
+                <i class="pi pi-inbox text-4xl mb-2"></i>
+                <p class="text-sm poppins-regular">No recent applications</p>
+              </td>
+            </tr>
+            <tr *ngFor="let app of recentApplications" class="border-b hover:bg-gray-50">
+              <td class="py-3 px-3 text-sm text-gray-800 poppins-regular">{{ app.student_name }}</td>
+              <td class="py-3 px-3 text-sm text-gray-600 poppins-regular">{{ app.position }}</td>
+              <td class="py-3 px-3 text-sm text-gray-600 poppins-regular">{{ app.applied_date | date: 'MMM dd, yyyy' }}</td>
+              <td class="py-3 px-3">
+                <span 
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-700': app.status === 'pending',
+                    'bg-green-100 text-green-700': app.status === 'accepted',
+                    'bg-red-100 text-red-700': app.status === 'rejected'
+                  }"
+                  class="px-2 py-1 rounded-full text-xs poppins-medium capitalize"
+                >
+                  {{ app.status }}
+                </span>
+              </td>
+              <td class="py-3 px-3">
+                <button 
+                  (click)="navigateToTab(2)"
+                  class="text-blue-600 hover:text-blue-800 text-sm poppins-medium"
+                >
+                  View Details
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </p-card>
+  </div>
+</div>

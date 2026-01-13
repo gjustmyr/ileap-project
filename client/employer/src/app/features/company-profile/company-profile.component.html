@@ -1,0 +1,834 @@
+<div class="p-4 max-w-6xl mx-auto">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      Company Profile
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      View and manage your company information
+    </p>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+    <!-- Company Logo & Edit Button -->
+    <div class="flex items-start justify-between mb-8">
+      <div class="flex items-center gap-6">
+        <div class="relative">
+          <img
+            [src]="
+              logoPreview || companyProfile?.logo || 'assets/company-logo.png'
+            "
+            alt="Company Logo"
+            class="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+          />
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 poppins-bold mb-1">
+            {{ companyProfile?.company_name || "Company Name" }}
+          </h2>
+          <p class="text-sm text-gray-500 poppins-regular">
+            {{ companyProfile?.industry_name || "Not specified" }}
+          </p>
+        </div>
+      </div>
+      <button
+        (click)="showUpdateProfileDialog()"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm poppins-medium flex items-center gap-2 transition-colors"
+      >
+        <i class="pi pi-pencil"></i>
+        Edit Profile
+      </button>
+    </div>
+
+    <hr class="border-gray-200 mb-6" />
+
+    <!-- Information Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Representative -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Representative Name</label
+        >
+        <p class="text-gray-800 poppins-regular">
+          {{ companyProfile?.representative_name || "Not specified" }}
+        </p>
+      </div>
+
+      <!-- Company Size -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Company Size</label
+        >
+        <p class="text-gray-800 poppins-regular">
+          {{ companyProfile?.company_size || "Not specified" }} employees
+        </p>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Email</label
+        >
+        <div class="flex items-center gap-2">
+          <i class="pi pi-envelope text-gray-400 text-sm"></i>
+          <span class="text-gray-800 poppins-regular">{{
+            companyProfile?.email || "Not specified"
+          }}</span>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Phone Number</label
+        >
+        <div class="flex items-center gap-2">
+          <i class="pi pi-phone text-gray-400 text-sm"></i>
+          <span class="text-gray-800 poppins-regular">{{
+            companyProfile?.phone_number || "Not specified"
+          }}</span>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="md:col-span-2">
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Address</label
+        >
+        <p class="text-gray-800 poppins-regular">
+          {{ companyProfile?.address || "Not specified" }}
+        </p>
+      </div>
+
+      <!-- Website -->
+      <div *ngIf="companyProfile?.website">
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Website</label
+        >
+        <div class="flex items-center gap-2">
+          <i class="pi pi-globe text-gray-400 text-sm"></i>
+          <a
+            [href]="companyProfile.website"
+            target="_blank"
+            class="text-blue-600 hover:underline poppins-regular"
+          >
+            {{ companyProfile.website }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Social Media -->
+      <div
+        *ngIf="
+          companyProfile?.facebook ||
+          companyProfile?.linkedin ||
+          companyProfile?.twitter ||
+          companyProfile?.instagram
+        "
+        class="md:col-span-2"
+      >
+        <label
+          class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 poppins-medium"
+          >Social Media</label
+        >
+        <div class="flex flex-wrap gap-2">
+          <a
+            *ngIf="companyProfile?.facebook"
+            [href]="companyProfile.facebook"
+            target="_blank"
+            class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs poppins-medium hover:bg-blue-100 flex items-center gap-1 transition-colors"
+          >
+            <i class="pi pi-facebook"></i>
+            Facebook
+          </a>
+          <a
+            *ngIf="companyProfile?.linkedin"
+            [href]="companyProfile.linkedin"
+            target="_blank"
+            class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs poppins-medium hover:bg-blue-100 flex items-center gap-1 transition-colors"
+          >
+            <i class="pi pi-linkedin"></i>
+            LinkedIn
+          </a>
+          <a
+            *ngIf="companyProfile?.twitter"
+            [href]="companyProfile.twitter"
+            target="_blank"
+            class="px-3 py-1.5 bg-blue-50 text-blue-400 rounded-full text-xs poppins-medium hover:bg-blue-100 flex items-center gap-1 transition-colors"
+          >
+            <i class="pi pi-twitter"></i>
+            Twitter
+          </a>
+          <a
+            *ngIf="companyProfile?.instagram"
+            [href]="companyProfile.instagram"
+            target="_blank"
+            class="px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-xs poppins-medium hover:bg-pink-100 flex items-center gap-1 transition-colors"
+          >
+            <i class="pi pi-instagram"></i>
+            Instagram
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-gray-200 my-6" />
+
+    <!-- Working Hours -->
+    <div class="mb-6">
+      <label
+        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 poppins-medium"
+        >Official Working Hours</label
+      >
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+        *ngIf="companyProfile?.work_schedule"
+      >
+        <div
+          *ngFor="let day of getWorkScheduleDays()"
+          class="p-3 border border-gray-200 rounded-lg bg-gray-50"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-700 poppins-semibold">{{
+              day.name
+            }}</span>
+            <span
+              class="text-xs text-gray-600 poppins-regular"
+              [class.text-gray-400]="!day.schedule"
+              [class.italic]="!day.schedule"
+            >
+              {{
+                day.schedule
+                  ? day.schedule.start + " - " + day.schedule.end
+                  : "Closed"
+              }}
+            </span>
+          </div>
+          <div
+            *ngIf="day.schedule?.breaks && day.schedule.breaks.length > 0"
+            class="text-xs text-gray-500 mt-1 poppins-regular"
+          >
+            Breaks:
+            <span *ngFor="let break of day.schedule.breaks; let last = last"
+              >{{ break.start }}-{{ break.end
+              }}<span *ngIf="!last">, </span></span
+            >
+          </div>
+        </div>
+      </div>
+      <div
+        *ngIf="!companyProfile?.work_schedule"
+        class="text-gray-500 text-sm italic poppins-regular"
+      >
+        Not specified
+      </div>
+    </div>
+
+    <hr class="border-gray-200 my-6" />
+
+    <!-- MOA Document -->
+    <div *ngIf="companyProfile?.moa_file">
+      <label
+        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 poppins-medium"
+        >Memorandum of Agreement</label
+      >
+      <div
+        class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50"
+      >
+        <i class="pi pi-file-pdf text-red-500 text-2xl"></i>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-800 poppins-medium">
+            MOA Document
+          </p>
+          <p class="text-xs text-gray-500 poppins-regular">
+            Uploaded by OJT Head during account creation
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="previewMOA()"
+            class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs poppins-medium hover:bg-blue-600 transition-colors flex items-center gap-1"
+          >
+            <i class="pi pi-eye"></i>
+            Preview
+          </button>
+          <button
+            (click)="downloadMOA()"
+            class="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs poppins-medium hover:bg-green-600 transition-colors flex items-center gap-1"
+          >
+            <i class="pi pi-download"></i>
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-gray-200 my-6" />
+    <div>
+      <label
+        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 poppins-medium"
+        >About Company</label
+      >
+      <div
+        class="text-sm text-gray-700 leading-relaxed poppins-regular prose prose-sm max-w-none"
+        [innerHTML]="
+          companyProfile?.company_overview ||
+          'No company overview provided yet.'
+        "
+      ></div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Profile Modal -->
+<div
+  *ngIf="isUpdateProfileVisible"
+  class="fixed inset-0 z-50 overflow-y-auto"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <!-- Modal Content -->
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Header -->
+      <div
+        class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+      >
+        <h2 class="text-xl font-semibold text-gray-800">
+          Update Company Profile
+        </h2>
+        <button
+          (click)="isUpdateProfileVisible = false"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 bg-white text-sm">
+        <form [formGroup]="profileForm" class="space-y-6">
+          <!-- Company Logo Upload -->
+          <div class="space-y-3">
+            <label class="poppins-medium text-gray-700">Company Logo</label>
+
+            <!-- Logo Preview -->
+            <div class="flex items-center gap-4">
+              <div
+                class="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-50"
+              >
+                <img
+                  [src]="
+                    logoPreview ||
+                    companyProfile?.logo ||
+                    'assets/company-logo.png'
+                  "
+                  alt="Logo Preview"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <!-- Upload Button -->
+              <div class="flex flex-col gap-2">
+                <label
+                  for="logoUpload"
+                  class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded cursor-pointer inline-flex items-center gap-2"
+                >
+                  <i class="pi pi-upload"></i>
+                  <span>Choose Image</span>
+                </label>
+                <input
+                  id="logoUpload"
+                  type="file"
+                  accept="image/*"
+                  (change)="onLogoSelected($event)"
+                  class="hidden"
+                />
+
+                <button
+                  *ngIf="logoPreview"
+                  type="button"
+                  (click)="removeLogo()"
+                  class="text-red-600 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500">
+              Supported formats: JPG, PNG. Max size: 5MB
+            </p>
+          </div>
+
+          <hr />
+
+          <!-- Company Name -->
+          <div>
+            <label class="poppins-medium text-gray-700">Company Name *</label>
+            <input
+              type="text"
+              formControlName="company_name"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter company name"
+            />
+            <div
+              *ngIf="
+                profileForm.get('company_name')?.touched &&
+                profileForm.get('company_name')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Company name is required (min 3 characters).
+            </div>
+          </div>
+
+          <!-- Industry -->
+          <div>
+            <label class="poppins-medium text-gray-700">Industry *</label>
+            <select
+              formControlName="industry_id"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Select Industry</option>
+              <option
+                *ngFor="let industry of industries"
+                [value]="industry.industry_id"
+              >
+                {{ industry.industry_name }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                profileForm.get('industry_id')?.touched &&
+                profileForm.get('industry_id')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Industry is required.
+            </div>
+          </div>
+
+          <!-- Representative Name -->
+          <div>
+            <label class="poppins-medium text-gray-700"
+              >Representative Name</label
+            >
+            <input
+              type="text"
+              formControlName="representative_name"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter representative's name"
+            />
+          </div>
+
+          <!-- Company Overview -->
+          <div>
+            <label class="poppins-medium text-gray-700"
+              >Company Overview *</label
+            >
+            <p-editor
+              formControlName="company_overview"
+              [style]="{ height: '320px' }"
+            >
+              <ng-template pTemplate="header">
+                <span class="ql-formats">
+                  <button
+                    type="button"
+                    class="ql-bold"
+                    aria-label="Bold"
+                  ></button>
+                  <button
+                    type="button"
+                    class="ql-italic"
+                    aria-label="Italic"
+                  ></button>
+                  <button
+                    type="button"
+                    class="ql-underline"
+                    aria-label="Underline"
+                  ></button>
+                </span>
+                <span class="ql-formats">
+                  <button
+                    type="button"
+                    class="ql-list"
+                    value="ordered"
+                    aria-label="Ordered List"
+                  ></button>
+                  <button
+                    type="button"
+                    class="ql-list"
+                    value="bullet"
+                    aria-label="Bullet List"
+                  ></button>
+                </span>
+                <span class="ql-formats">
+                  <button
+                    type="button"
+                    class="ql-link"
+                    aria-label="Link"
+                  ></button>
+                </span>
+              </ng-template>
+            </p-editor>
+            <div
+              *ngIf="
+                profileForm.get('company_overview')?.touched &&
+                profileForm.get('company_overview')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Overview is required (min 30 characters).
+            </div>
+          </div>
+
+          <!-- Company Size -->
+          <div>
+            <label class="poppins-medium text-gray-700">Company Size *</label>
+            <input
+              type="number"
+              formControlName="company_size"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Number of employees"
+              min="1"
+            />
+            <div
+              *ngIf="
+                profileForm.get('company_size')?.touched &&
+                profileForm.get('company_size')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Company size is required.
+            </div>
+          </div>
+
+          <hr />
+
+          <!-- Contact Information -->
+          <h3 class="poppins-medium text-lg text-gray-800">
+            Contact Information
+          </h3>
+
+          <!-- Email -->
+          <div>
+            <label class="poppins-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="company@example.com"
+            />
+            <div
+              *ngIf="
+                profileForm.get('email')?.touched &&
+                profileForm.get('email')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Valid email is required.
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="poppins-medium text-gray-700">Phone Number *</label>
+            <input
+              type="text"
+              formControlName="phone_number"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="09123456789"
+            />
+            <div
+              *ngIf="
+                profileForm.get('phone_number')?.touched &&
+                profileForm.get('phone_number')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Phone number must start with 09 and be 11 digits.
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label class="poppins-medium text-gray-700">Address *</label>
+            <input
+              type="text"
+              formControlName="address"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Company address"
+            />
+            <div
+              *ngIf="
+                profileForm.get('address')?.touched &&
+                profileForm.get('address')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Address is required.
+            </div>
+          </div>
+
+          <!-- Website -->
+          <div>
+            <label class="poppins-medium text-gray-700">Website</label>
+            <input
+              type="text"
+              formControlName="website"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://example.com"
+            />
+            <div
+              *ngIf="
+                profileForm.get('website')?.touched &&
+                profileForm.get('website')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Please enter a valid website URL.
+            </div>
+          </div>
+
+          <hr />
+
+          <!-- Working Hours Configuration -->
+          <h3 class="poppins-medium text-lg text-gray-800">
+            Official Working Hours
+          </h3>
+          <p class="text-xs text-gray-500 mb-4">
+            Set your company's working hours for each day. Student time logs
+            outside these hours will not be counted. Break times will be
+            automatically deducted.
+          </p>
+
+          <div class="space-y-4">
+            <div
+              *ngFor="let day of weekDays"
+              class="border rounded-lg p-4"
+              [class.bg-gray-50]="!isDayActive(day)"
+            >
+              <!-- Day Header -->
+              <div class="flex items-center justify-between mb-3">
+                <label class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [checked]="isDayActive(day)"
+                    (change)="toggleDayActive(day)"
+                    class="rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span class="text-sm poppins-semibold text-gray-700">{{
+                    day
+                  }}</span>
+                </label>
+                <span
+                  *ngIf="!isDayActive(day)"
+                  class="text-xs text-gray-400 italic"
+                  >Closed</span
+                >
+              </div>
+
+              <!-- Working Hours -->
+              <div *ngIf="isDayActive(day)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label
+                      class="text-xs text-gray-600 poppins-medium mb-1 block"
+                      >Start Time</label
+                    >
+                    <input
+                      type="time"
+                      [value]="getDayStartTime(day)"
+                      (change)="setDayStartTime(day, $event)"
+                      class="w-full border border-gray-300 p-2 rounded poppins-regular text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs text-gray-600 poppins-medium mb-1 block"
+                      >End Time</label
+                    >
+                    <input
+                      type="time"
+                      [value]="getDayEndTime(day)"
+                      (change)="setDayEndTime(day, $event)"
+                      class="w-full border border-gray-300 p-2 rounded poppins-regular text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <!-- Breaks -->
+                <div class="border-t pt-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs text-gray-600 poppins-medium"
+                      >Break Times</label
+                    >
+                    <button
+                      type="button"
+                      (click)="addBreak(day)"
+                      class="text-xs text-green-600 hover:text-green-700 poppins-medium flex items-center gap-1"
+                    >
+                      <i class="pi pi-plus"></i>
+                      Add Break
+                    </button>
+                  </div>
+
+                  <div
+                    *ngFor="let break of getDayBreaks(day); let i = index"
+                    class="grid grid-cols-12 gap-2 mb-2 items-center"
+                  >
+                    <div class="col-span-5">
+                      <input
+                        type="time"
+                        [value]="break.start"
+                        (change)="setBreakStart(day, i, $event)"
+                        class="w-full border border-gray-300 p-1.5 rounded poppins-regular text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Start"
+                      />
+                    </div>
+                    <div class="col-span-1 text-center text-xs text-gray-400">
+                      -
+                    </div>
+                    <div class="col-span-5">
+                      <input
+                        type="time"
+                        [value]="break.end"
+                        (change)="setBreakEnd(day, i, $event)"
+                        class="w-full border border-gray-300 p-1.5 rounded poppins-regular text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="End"
+                      />
+                    </div>
+                    <div class="col-span-1">
+                      <button
+                        type="button"
+                        (click)="removeBreak(day, i)"
+                        class="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <p
+                    *ngIf="getDayBreaks(day).length === 0"
+                    class="text-xs text-gray-400 italic"
+                  >
+                    No breaks configured
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <!-- Social Media Links -->
+          <h3 class="poppins-medium text-lg text-gray-800">
+            Social Media (Optional)
+          </h3>
+
+          <!-- Facebook -->
+          <div>
+            <label class="poppins-medium text-gray-700">Facebook</label>
+            <input
+              type="text"
+              formControlName="facebook"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://facebook.com/yourpage"
+            />
+            <div
+              *ngIf="
+                profileForm.get('facebook')?.touched &&
+                profileForm.get('facebook')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Please enter a valid Facebook URL.
+            </div>
+          </div>
+
+          <!-- LinkedIn -->
+          <div>
+            <label class="poppins-medium text-gray-700">LinkedIn</label>
+            <input
+              type="text"
+              formControlName="linkedin"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://linkedin.com/company/yourcompany"
+            />
+            <div
+              *ngIf="
+                profileForm.get('linkedin')?.touched &&
+                profileForm.get('linkedin')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Please enter a valid LinkedIn URL.
+            </div>
+          </div>
+
+          <!-- Twitter -->
+          <div>
+            <label class="poppins-medium text-gray-700">Twitter</label>
+            <input
+              type="text"
+              formControlName="twitter"
+              class="w-full border border-gray-300 p-2 rounded poppins-regular mt-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://twitter.com/yourcompany"
+            />
+            <div
+              *ngIf="
+                profileForm.get('twitter')?.touched &&
+                profileForm.get('twitter')?.invalid
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              Please enter a valid Twitter URL.
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              (click)="isUpdateProfileVisible = false"
+              class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded poppins-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              (click)="submitEmployerProfile()"
+              [disabled]="isLoading"
+              class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded poppins-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <i *ngIf="isLoading" class="pi pi-spin pi-spinner"></i>
+              <span>{{ isLoading ? "Updating..." : "Update Profile" }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

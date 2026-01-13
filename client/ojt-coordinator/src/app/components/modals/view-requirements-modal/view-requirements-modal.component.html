@@ -1,0 +1,377 @@
+<div
+  *ngIf="visible"
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements Validation
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedStudent?.name }}
+        </p>
+      </div>
+      <button (click)="closeModal()" class="text-gray-500 hover:text-gray-700">
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info Card -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Student Name:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">Company:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.company || "Not assigned" }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Pre-OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.accomplished === selectedStudent?.total,
+                  'bg-red-100 text-red-700':
+                    selectedStudent?.accomplished < selectedStudent?.total
+                }"
+              >
+                {{
+                  selectedStudent?.accomplished === selectedStudent?.total
+                    ? "Completed"
+                    : "Incomplete"
+                }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Requirements Progress:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.accomplished }} of
+              {{ selectedStudent?.total }} validated
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700':
+                    selectedStudent?.ojtStatus === 'Ongoing',
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.ojtStatus === 'Completed',
+                  'bg-gray-100 text-gray-700':
+                    selectedStudent?.ojtStatus === 'Not Started'
+                }"
+              >
+                {{ selectedStudent?.ojtStatus }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">OJT Hours:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              <span
+                *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+              >
+                {{ selectedStudent?.hoursCompleted }} /
+                {{ selectedStudent?.hoursRequired }} hrs
+              </span>
+              <span
+                *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+                class="text-gray-400 italic text-sm"
+              >
+                Complete requirements first
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requirements Checklist -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements
+        </h3>
+
+        <!-- Profile Validation -->
+        <div class="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100"
+              >
+                <i class="pi pi-user text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-800 poppins-semibold">
+                  Student Profile
+                </p>
+                <p class="text-xs text-gray-600 poppins-regular">
+                  Personal information and contact details
+                </p>
+              </div>
+            </div>
+            <button
+              (click)="validateRequirement(0, 'Profile')"
+              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs poppins-medium transition-colors"
+            >
+              <i class="pi pi-check-circle mr-1"></i>
+              Validate
+            </button>
+          </div>
+        </div>
+
+        <!-- Pre-OJT File Submissions -->
+        <div class="space-y-2">
+          <div
+            *ngFor="let requirement of preOjtRequirements; let i = index"
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            <div class="flex items-center gap-3 flex-1">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center"
+                [ngClass]="{
+                  'bg-green-100': isRequirementSubmitted(i + 1),
+                  'bg-orange-100': getRequirementSubmission(i + 1)?.returned,
+                  'bg-gray-100':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                <i
+                  *ngIf="isRequirementSubmitted(i + 1)"
+                  class="pi pi-check text-green-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="getRequirementSubmission(i + 1)?.returned"
+                  class="pi pi-replay text-orange-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                  "
+                  class="pi pi-circle text-gray-400 text-xs"
+                ></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800 poppins-medium">
+                  {{ requirement }}
+                </p>
+                <p class="text-xs text-gray-500 poppins-regular">
+                  Pre-OJT Requirement {{ i + 1 }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-700': isRequirementValidated(i + 1),
+                  'bg-green-100 text-green-700':
+                    isRequirementSubmitted(i + 1) &&
+                    !isRequirementValidated(i + 1),
+                  'bg-orange-100 text-orange-700': getRequirementSubmission(
+                    i + 1
+                  )?.returned,
+                  'bg-gray-100 text-gray-600':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                {{
+                  isRequirementValidated(i + 1)
+                    ? "Validated"
+                    : getRequirementSubmission(i + 1)?.returned
+                    ? "Returned"
+                    : isRequirementSubmitted(i + 1)
+                    ? "Submitted"
+                    : "Pending"
+                }}
+              </span>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) ||
+                  getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="
+                  openPreviewRequirement(
+                    getRequirementSubmission(i + 1),
+                    requirement
+                  )
+                "
+                class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs poppins-medium transition-colors flex items-center gap-1"
+              >
+                <i class="pi pi-eye"></i>
+                View
+              </button>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) &&
+                  !isRequirementValidated(i + 1) &&
+                  !getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="validateRequirement(i + 1, requirement)"
+                class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+              >
+                <i class="pi pi-check-circle mr-1"></i>
+                Validate
+              </button>
+              <span
+                *ngIf="isRequirementValidated(i + 1)"
+                class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs poppins-semibold flex items-center gap-1"
+              >
+                <i class="pi pi-verified"></i>
+                Already Validated
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-OJT Requirements Section -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 poppins-semibold mb-4">
+            Post-OJT Requirements
+          </h3>
+
+          <div
+            *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+            class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <div class="flex items-center gap-2 text-gray-600">
+              <i class="pi pi-lock"></i>
+              <span class="text-sm poppins-regular"
+                >Complete all Pre-OJT requirements to access Post-OJT
+                requirements</span
+              >
+            </div>
+          </div>
+
+          <div
+            *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+            class="space-y-2"
+          >
+            <div
+              *ngFor="let requirement of postOjtRequirements; let i = index"
+              class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <div class="flex items-center gap-3 flex-1">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center"
+                  [ngClass]="{
+                    'bg-green-100': i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100': i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  <i
+                    *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                    class="pi pi-check text-green-600 text-xs"
+                  ></i>
+                  <i
+                    *ngIf="i + 1 > selectedStudent?.postCompleted"
+                    class="pi pi-circle text-gray-400 text-xs"
+                  ></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800 poppins-medium">
+                    {{ requirement }}
+                  </p>
+                  <p class="text-xs text-gray-500 poppins-regular">
+                    Post-OJT Requirement {{ i + 1 }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':
+                      i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100 text-gray-600':
+                      i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  {{
+                    i + 1 <= selectedStudent?.postCompleted
+                      ? "Submitted"
+                      : "Pending"
+                  }}
+                </span>
+                <button
+                  *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                  (click)="validateRequirement(i + 1, requirement)"
+                  class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+                >
+                  <i class="pi pi-check-circle mr-1"></i>
+                  Validate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note for future implementation -->
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex gap-3">
+            <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-medium text-blue-800 poppins-medium">
+                Note:
+              </p>
+              <p class="text-sm text-blue-700 poppins-regular mt-1">
+                File submissions and actual validation will be implemented when
+                connected to the backend requirements system.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <div class="text-sm text-gray-600 poppins-regular">
+        <i class="pi pi-info-circle mr-1"></i>
+        Validate requirements individually or all at once
+      </div>
+      <div class="flex gap-3">
+        <button
+          (click)="closeModal()"
+          class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+        >
+          Close
+        </button>
+        <button
+          (click)="validateAllRequirements()"
+          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium text-sm flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate All
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

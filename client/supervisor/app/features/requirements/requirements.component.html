@@ -1,0 +1,561 @@
+<div class="p-4">
+  <p-toast></p-toast>
+
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">OJT Requirements</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">Upload and manage your Pre-OJT and Post-OJT documents</p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="flex gap-4">
+      <button 
+        (click)="activeTab = 'pre-ojt'"
+        [class.border-b-2]="activeTab === 'pre-ojt'"
+        [class.border-green-500]="activeTab === 'pre-ojt'"
+        [class.text-green-600]="activeTab === 'pre-ojt'"
+        class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+      >
+        <i class="pi pi-file-check mr-2"></i>
+        Pre-OJT Requirements
+      </button>
+      <button 
+        (click)="activeTab = 'post-ojt'"
+        [class.border-b-2]="activeTab === 'post-ojt'"
+        [class.border-green-500]="activeTab === 'post-ojt'"
+        [class.text-green-600]="activeTab === 'post-ojt'"
+        class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+      >
+        <i class="pi pi-file-edit mr-2"></i>
+        Post-OJT Requirements
+      </button>
+      <button 
+        (click)="activeTab = 'templates'"
+        [class.border-b-2]="activeTab === 'templates'"
+        [class.border-green-500]="activeTab === 'templates'"
+        [class.text-green-600]="activeTab === 'templates'"
+        class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+      >
+        <i class="pi pi-download mr-2"></i>
+        Download Templates
+      </button>
+    </nav>
+  </div>
+
+  <!-- Pre-OJT Tab -->
+  <div *ngIf="activeTab === 'pre-ojt'">
+    <!-- Hiring Status Alert -->
+    <div *ngIf="!isHired" class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-400 rounded-r">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-info-circle text-blue-600 text-xl mt-0.5"></i>
+        <div>
+          <h4 class="font-semibold text-blue-800 poppins-semibold mb-1">Prepare Your Requirements</h4>
+          <p class="text-sm text-blue-700 poppins-regular">
+            You can prepare and submit your Pre-OJT requirements in advance. 
+            While you're not yet hired by an employer, getting these documents ready will help you start your OJT faster once you're hired.
+            Check the <strong>Internships</strong> tab to apply for available positions.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employer Info -->
+    <div *ngIf="isHired && employerInfo" class="mb-6 p-5 bg-green-50 border-l-4 border-green-500 rounded-r">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-check-circle text-green-600 text-xl mt-0.5"></i>
+        <div class="flex-1">
+          <h4 class="font-semibold text-green-800 poppins-semibold mb-2">Hired by Employer</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div>
+              <span class="text-gray-600 poppins-medium">Company:</span>
+              <span class="ml-2 text-gray-800 poppins-regular">{{ employerInfo?.company_name }}</span>
+            </div>
+            <div>
+              <span class="text-gray-600 poppins-medium">Position:</span>
+              <span class="ml-2 text-gray-800 poppins-regular">{{ employerInfo?.position }}</span>
+            </div>
+            <div *ngIf="employerInfo?.ojt_start_date">
+              <span class="text-gray-600 poppins-medium">Start Date:</span>
+              <span class="ml-2 text-gray-800 poppins-regular">{{ employerInfo.ojt_start_date | date: 'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+          <p class="text-sm text-green-700 poppins-regular mt-2">
+            You can now submit your Pre-OJT requirements. Once all requirements are validated by your OJT Coordinator, you can start your OJT.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation Status -->
+    <div *ngIf="isHired && allRequirementsValidated" class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-verified text-blue-600 text-xl mt-0.5"></i>
+        <div>
+          <h4 class="font-semibold text-blue-800 poppins-semibold mb-1">All Requirements Validated</h4>
+          <p class="text-sm text-blue-700 poppins-regular">
+            Your OJT Coordinator has validated all your Pre-OJT requirements. 
+            You can now start your OJT based on the agreement with your employer. 
+            Check the <strong>OJT Tracker</strong> tab to log your hours and progress.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-OJT Requirements Table -->
+    <p-table [value]="preOjtRequirements" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 20%">Requirement</th>
+          <th style="width: 25%">Description</th>
+          <th style="width: 12%">Status</th>
+          <th style="width: 15%">Validation</th>
+          <th style="width: 23%">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-requirement let-i="rowIndex">
+        <tr>
+          <td class="text-center">
+            <div class="w-6 h-6 rounded-full mx-auto flex items-center justify-center"
+                 [ngClass]="{
+                   'bg-green-100': requirement.validated,
+                   'bg-orange-100': requirement.returned,
+                   'bg-blue-100': requirement.status === 'submitted' && !requirement.validated && !requirement.returned,
+                   'bg-gray-100': requirement.status === 'pending' && !requirement.returned
+                 }">
+              <i *ngIf="requirement.validated" class="pi pi-check text-green-600 text-xs"></i>
+              <i *ngIf="requirement.returned" class="pi pi-replay text-orange-600 text-xs"></i>
+              <i *ngIf="!requirement.validated && !requirement.returned && requirement.status === 'submitted'" class="pi pi-clock text-blue-600 text-xs"></i>
+              <span *ngIf="requirement.status === 'pending' && !requirement.returned" class="text-xs text-gray-500">{{ i + 1 }}</span>
+            </div>
+          </td>
+          <td>
+            <strong class="poppins-medium">{{ requirement.name }}</strong>
+          </td>
+          <td class="text-sm text-gray-600 poppins-regular">{{ requirement.description }}</td>
+          <td>
+            <p-tag
+              *ngIf="requirement.status === 'pending' && !requirement.returned"
+              value="Pending"
+              severity="warn"
+              icon="pi pi-exclamation-circle"
+            ></p-tag>
+            <p-tag
+              *ngIf="requirement.status === 'submitted' && !requirement.validated && !requirement.returned"
+              value="Submitted"
+              severity="info"
+              icon="pi pi-clock"
+            ></p-tag>
+            <p-tag
+              *ngIf="requirement.returned"
+              value="Returned"
+              severity="danger"
+              icon="pi pi-replay"
+            ></p-tag>
+            <p-tag
+              *ngIf="requirement.validated"
+              value="Validated"
+              severity="success"
+              icon="pi pi-check-circle"
+            ></p-tag>
+          </td>
+          <td>
+            <div class="flex flex-col gap-2">
+              <!-- Validation Status -->
+              <div class="flex items-center gap-2">
+                <div *ngIf="requirement.validated" class="flex items-center gap-2 p-2 bg-green-50 rounded">
+                  <i class="pi pi-verified text-green-600 text-sm"></i>
+                  <span class="text-xs text-green-800 poppins-semibold">Coordinator Validated</span>
+                </div>
+                <div *ngIf="requirement.returned" class="flex items-center gap-2 p-2 bg-orange-50 rounded">
+                  <i class="pi pi-exclamation-triangle text-orange-600 text-sm"></i>
+                  <span class="text-xs text-orange-800 poppins-semibold">Needs Revision</span>
+                </div>
+                <div *ngIf="!requirement.validated && !requirement.returned && requirement.status === 'submitted'" class="flex items-center gap-2 p-2 bg-blue-50 rounded">
+                  <i class="pi pi-hourglass text-blue-600 text-sm"></i>
+                  <span class="text-xs text-blue-800 poppins-semibold">Pending Review</span>
+                </div>
+                <div *ngIf="requirement.status === 'pending' && !requirement.returned" class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                  <i class="pi pi-minus-circle text-gray-500 text-sm"></i>
+                  <span class="text-xs text-gray-600 poppins-semibold">Not Submitted</span>
+                </div>
+              </div>
+              <!-- Coordinator Remarks -->
+              <div *ngIf="requirement.returned && requirement.remarks" class="mt-1 p-2 bg-orange-50 border-l-4 border-orange-400 rounded">
+                <p class="text-xs font-semibold text-orange-800 poppins-semibold mb-1">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Coordinator Remarks:
+                </p>
+                <p class="text-xs text-orange-700 poppins-regular">{{ requirement.remarks }}</p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="flex gap-2 items-center">
+              <p-fileUpload
+                *ngIf="canSubmitRequirements && !requirement.file_url"
+                mode="basic"
+                chooseLabel="Upload"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                [maxFileSize]="5000000"
+                (onSelect)="onFileSelect($event, requirement, 'pre-ojt')"
+                [auto]="true"
+                chooseIcon="pi pi-upload"
+                [disabled]="!canSubmitRequirements"
+                styleClass="custom-upload-btn"
+              ></p-fileUpload>
+              
+              <button
+                *ngIf="requirement.file_url"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 text-xs poppins-medium rounded flex items-center gap-1"
+                (click)="viewFile(requirement.file_url)"
+              >
+                <i class="pi pi-eye"></i>
+                View
+              </button>
+              
+              <p-fileUpload
+                *ngIf="canSubmitRequirements && requirement.file_url && !requirement.validated"
+                mode="basic"
+                chooseLabel="Replace"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                [maxFileSize]="5000000"
+                (onSelect)="onFileSelect($event, requirement, 'pre-ojt')"
+                [auto]="true"
+                chooseIcon="pi pi-refresh"
+                styleClass="custom-upload-btn"
+              ></p-fileUpload>
+            
+            <span *ngIf="!canSubmitRequirements && !requirement.file_url" class="text-xs text-gray-400 italic poppins-regular">
+              Not available
+            </span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+    <h4 class="font-semibold mb-2 flex items-center gap-2 poppins-semibold">
+      <i class="pi pi-info-circle text-blue-600"></i>
+      Important Notes:
+    </h4>
+    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 poppins-regular">
+      <li>You can prepare and submit requirements in advance, even before being hired</li>
+      <li>All documents should be clear and readable</li>
+      <li>Maximum file size: 5MB per document</li>
+      <li>Accepted formats: PDF, DOC, DOCX, JPG, PNG</li>
+      <li>Ensure all required signatures are present</li>
+      <li>Your OJT Coordinator will validate each requirement</li>
+      <li>You must be hired and have all requirements validated to start OJT</li>
+      <li>Contact your OJT Coordinator if you have questions</li>
+    </ul>
+  </div>
+  </div>
+
+  <!-- Post-OJT Tab -->
+  <div *ngIf="activeTab === 'post-ojt'">
+    <!-- Access Control -->
+    <div *ngIf="!allPreOjtValidated" class="p-5 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-lock text-yellow-600 text-xl mt-0.5"></i>
+        <div>
+          <h4 class="font-semibold text-yellow-800 poppins-semibold mb-1">Complete Pre-OJT Requirements First</h4>
+          <p class="text-sm text-yellow-700 poppins-regular">
+            You need to complete and have all your Pre-OJT requirements validated before you can submit Post-OJT requirements.
+            Switch to the <strong>Pre-OJT Requirements</strong> tab to complete your initial requirements.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- OJT Completion Alert -->
+    <div *ngIf="allPreOjtValidated && ojtStatus !== 'completed'" class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-400 rounded-r">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-info-circle text-blue-600 text-xl mt-0.5"></i>
+        <div>
+          <h4 class="font-semibold text-blue-800 poppins-semibold mb-1">Post-OJT Requirements</h4>
+          <p class="text-sm text-blue-700 poppins-regular">
+            These documents should be submitted after completing your OJT hours. 
+            Make sure to have all required signatures from your training supervisor before uploading.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post-OJT Requirements Table -->
+    <div [class.opacity-50]="!allPreOjtValidated" [class.pointer-events-none]="!allPreOjtValidated">
+      <p-table [value]="postOjtRequirements" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 20%">Requirement</th>
+            <th style="width: 25%">Description</th>
+            <th style="width: 12%">Status</th>
+            <th style="width: 15%">Validation</th>
+            <th style="width: 23%">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-requirement let-i="rowIndex">
+          <tr>
+            <td class="text-center">
+              <div class="w-6 h-6 rounded-full mx-auto flex items-center justify-center"
+                   [ngClass]="{
+                     'bg-green-100': requirement.validated,
+                     'bg-orange-100': requirement.returned,
+                     'bg-blue-100': requirement.status === 'submitted' && !requirement.validated && !requirement.returned,
+                     'bg-gray-100': requirement.status === 'pending' && !requirement.returned
+                   }">
+                <i *ngIf="requirement.validated" class="pi pi-check text-green-600 text-xs"></i>
+                <i *ngIf="requirement.returned" class="pi pi-replay text-orange-600 text-xs"></i>
+                <i *ngIf="!requirement.validated && !requirement.returned && requirement.status === 'submitted'" class="pi pi-clock text-blue-600 text-xs"></i>
+                <span *ngIf="requirement.status === 'pending' && !requirement.returned" class="text-xs text-gray-500">{{ i + 1 }}</span>
+              </div>
+            </td>
+            <td>
+              <strong class="poppins-medium">{{ requirement.name }}</strong>
+            </td>
+            <td class="text-sm text-gray-600 poppins-regular">{{ requirement.description }}</td>
+            <td>
+              <p-tag
+                *ngIf="requirement.status === 'pending' && !requirement.returned"
+                value="Pending"
+                severity="warn"
+                icon="pi pi-exclamation-circle"
+              ></p-tag>
+              <p-tag
+                *ngIf="requirement.status === 'submitted' && !requirement.validated && !requirement.returned"
+                value="Submitted"
+                severity="info"
+                icon="pi pi-clock"
+              ></p-tag>
+              <p-tag
+                *ngIf="requirement.returned"
+                value="Returned"
+                severity="danger"
+                icon="pi pi-replay"
+              ></p-tag>
+              <p-tag
+                *ngIf="requirement.validated"
+                value="Validated"
+                severity="success"
+                icon="pi pi-check-circle"
+              ></p-tag>
+            </td>
+            <td>
+              <div class="flex flex-col gap-2">
+                <!-- Validation Status -->
+                <div class="flex items-center gap-2">
+                  <div *ngIf="requirement.validated" class="flex items-center gap-2 p-2 bg-green-50 rounded">
+                    <i class="pi pi-verified text-green-600 text-sm"></i>
+                    <span class="text-xs text-green-800 poppins-semibold">Coordinator Validated</span>
+                  </div>
+                  <div *ngIf="requirement.returned" class="flex items-center gap-2 p-2 bg-orange-50 rounded">
+                    <i class="pi pi-exclamation-triangle text-orange-600 text-sm"></i>
+                    <span class="text-xs text-orange-800 poppins-semibold">Needs Revision</span>
+                  </div>
+                  <div *ngIf="!requirement.validated && !requirement.returned && requirement.status === 'submitted'" class="flex items-center gap-2 p-2 bg-blue-50 rounded">
+                    <i class="pi pi-hourglass text-blue-600 text-sm"></i>
+                    <span class="text-xs text-blue-800 poppins-semibold">Pending Review</span>
+                  </div>
+                  <div *ngIf="requirement.status === 'pending' && !requirement.returned" class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                    <i class="pi pi-minus-circle text-gray-500 text-sm"></i>
+                    <span class="text-xs text-gray-600 poppins-semibold">Not Submitted</span>
+                  </div>
+                </div>
+                <!-- Coordinator Remarks -->
+                <div *ngIf="requirement.returned && requirement.remarks" class="mt-1 p-2 bg-orange-50 border-l-4 border-orange-400 rounded">
+                  <p class="text-xs font-semibold text-orange-800 poppins-semibold mb-1">
+                    <i class="pi pi-info-circle mr-1"></i>
+                    Coordinator Remarks:
+                  </p>
+                  <p class="text-xs text-orange-700 poppins-regular">{{ requirement.remarks }}</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex gap-2 items-center">
+                <!-- Supervisor-submitted requirements -->
+                <div *ngIf="requirement.supervisor_submitted" class="flex items-center gap-2 p-2 bg-purple-50 rounded">
+                  <i class="pi pi-user text-purple-600 text-sm"></i>
+                  <span class="text-xs text-purple-800 poppins-medium">
+                    {{ requirement.file_url ? 'Submitted by Supervisor' : 'Awaiting Supervisor Submission' }}
+                  </span>
+                </div>
+
+                <!-- Student-submitted requirements -->
+                <ng-container *ngIf="!requirement.supervisor_submitted">
+                  <p-fileUpload
+                    *ngIf="allPreOjtValidated && !requirement.file_url"
+                    mode="basic"
+                    chooseLabel="Upload"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    [maxFileSize]="5000000"
+                    (onSelect)="onFileSelect($event, requirement, 'post-ojt')"
+                    [auto]="true"
+                    chooseIcon="pi pi-upload"
+                    [disabled]="!allPreOjtValidated"
+                    styleClass="custom-upload-btn"
+                  ></p-fileUpload>
+                  
+                  <p-fileUpload
+                    *ngIf="allPreOjtValidated && requirement.file_url && !requirement.validated"
+                    mode="basic"
+                    chooseLabel="Replace"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    [maxFileSize]="5000000"
+                    (onSelect)="onFileSelect($event, requirement, 'post-ojt')"
+                    [auto]="true"
+                    chooseIcon="pi pi-refresh"
+                    styleClass="custom-upload-btn"
+                  ></p-fileUpload>
+                
+                  <span *ngIf="!allPreOjtValidated && !requirement.file_url" class="text-xs text-gray-400 italic poppins-regular">
+                    Complete Pre-OJT first
+                  </span>
+                </ng-container>
+
+                <!-- View button for all requirements -->
+                <button
+                  *ngIf="requirement.file_url"
+                  class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 text-xs poppins-medium rounded flex items-center gap-1"
+                  (click)="viewFile(requirement.file_url)"
+                >
+                  <i class="pi pi-eye"></i>
+                  View
+                </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+      <h4 class="font-semibold mb-2 flex items-center gap-2 poppins-semibold">
+        <i class="pi pi-info-circle text-blue-600"></i>
+        Important Notes:
+      </h4>
+      <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 poppins-regular">
+        <li>Submit these requirements only after completing your OJT hours</li>
+        <li>Ensure all documents have required signatures from your training supervisor</li>
+        <li>Maximum file size: 5MB per document</li>
+        <li>Accepted formats: PDF, DOC, DOCX, JPG, PNG</li>
+        <li>Your narrative report should reflect your learning experiences during OJT</li>
+        <li>Performance appraisal should be completed by your training supervisor</li>
+        <li>Contact your OJT Coordinator if you need assistance</li>
+      </ul>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Download Templates Tab -->
+<div *ngIf="activeTab === 'templates'">
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-xl font-semibold text-gray-800 poppins-semibold">Requirement Templates</h3>
+        <p class="text-sm text-gray-500 poppins-regular mt-1">Download all requirement templates for your OJT submission</p>
+      </div>
+      <button
+        (click)="loadTemplates()"
+        class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-2"
+      >
+        <i class="pi pi-refresh"></i>
+        Refresh Templates
+      </button>
+    </div>
+
+    <!-- Pre-OJT Templates Section -->
+    <div class="mb-8">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-800">
+          <i class="pi pi-file mr-2"></i>Pre-OJT Requirements
+        </span>
+        <span class="text-sm text-gray-500">({{ requirementTemplates.length }} templates)</span>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let template of requirementTemplates" class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <h4 class="text-sm font-medium text-gray-800 poppins-medium mb-1">{{ template.title }}</h4>
+              <p class="text-xs text-gray-500 poppins-regular line-clamp-2">{{ template.description }}</p>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button
+              *ngIf="template.template_url"
+              (click)="previewTemplate(template)"
+              class="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center justify-center gap-2"
+              title="Preview Template"
+            >
+              <i class="pi pi-eye"></i>
+              Preview
+            </button>
+            <button
+              *ngIf="template.template_url"
+              (click)="downloadTemplate(template)"
+              class="flex-1 px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center justify-center gap-2"
+              title="Download Template"
+            >
+              <i class="pi pi-download"></i>
+              Download
+            </button>
+          </div>
+          <span *ngIf="!template.template_url" class="text-xs text-gray-400 italic">No template available</span>
+        </div>
+        <div *ngIf="requirementTemplates.length === 0" class="col-span-full text-center py-8 text-gray-400">
+          <i class="pi pi-inbox text-4xl mb-3 block"></i>
+          <p class="text-sm">No pre-OJT templates available</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post-OJT Templates Section -->
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-3 py-1.5 text-sm font-medium rounded-lg bg-purple-100 text-purple-800">
+          <i class="pi pi-file-check mr-2"></i>Post-OJT Requirements
+        </span>
+        <span class="text-sm text-gray-500">({{ postOjtTemplates.length }} templates)</span>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let template of postOjtTemplates" class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <h4 class="text-sm font-medium text-gray-800 poppins-medium mb-1">{{ template.title }}</h4>
+              <p class="text-xs text-gray-500 poppins-regular line-clamp-2">{{ template.description }}</p>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button
+              *ngIf="template.template_url"
+              (click)="previewTemplate(template)"
+              class="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center justify-center gap-2"
+              title="Preview Template"
+            >
+              <i class="pi pi-eye"></i>
+              Preview
+            </button>
+            <button
+              *ngIf="template.template_url"
+              (click)="downloadTemplate(template)"
+              class="flex-1 px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center justify-center gap-2"
+              title="Download Template"
+            >
+              <i class="pi pi-download"></i>
+              Download
+            </button>
+          </div>
+          <span *ngIf="!template.template_url" class="text-xs text-gray-400 italic">No template available</span>
+        </div>
+        <div *ngIf="postOjtTemplates.length === 0" class="col-span-full text-center py-8 text-gray-400">
+          <i class="pi pi-inbox text-4xl mb-3 block"></i>
+          <p class="text-sm">No post-OJT templates available</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

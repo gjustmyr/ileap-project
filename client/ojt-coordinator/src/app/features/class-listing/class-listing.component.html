@@ -1,0 +1,301 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      Class Listing
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Manage and view all class sections
+    </p>
+  </div>
+
+  <!-- Header: Filters + Create Button -->
+  <div class="mb-4 flex justify-between items-start gap-4">
+    <!-- Filters Section -->
+    <div class="flex-1">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+            >Search</label
+          >
+          <input
+            type="text"
+            [(ngModel)]="classListFilters.searchTerm"
+            placeholder="Search by class or year..."
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          />
+        </div>
+
+        <!-- School Year Filter -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+            >School Year</label
+          >
+          <select
+            [(ngModel)]="classListFilters.schoolYear"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          >
+            <option [value]="null">All Years</option>
+            <option *ngFor="let year of schoolYearOptions" [value]="year.value">
+              {{ year.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Semester Filter -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+            >Semester</label
+          >
+          <select
+            [(ngModel)]="classListFilters.semester"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          >
+            <option [value]="null">All Semesters</option>
+            <option
+              *ngFor="let semester of semesterOptions"
+              [value]="semester.value"
+            >
+              {{ semester.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Program Filter -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+            >Program</label
+          >
+          <select
+            [(ngModel)]="classListFilters.program"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          >
+            <option [value]="null">All Programs</option>
+            <option
+              *ngFor="let program of programOptions"
+              [value]="program.value"
+            >
+              {{ program.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter Action Buttons -->
+      <div class="mt-3 flex gap-3">
+        <button
+          (click)="applyClassListFilters()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Apply Filters
+        </button>
+        <button
+          (click)="clearClassListFilters()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Create Class Button -->
+    <div class="flex-shrink-0">
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >&nbsp;</label
+      >
+      <button
+        (click)="showCreateClassModal = true"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2 whitespace-nowrap"
+      >
+        <i class="pi pi-plus"></i>
+        Create Class
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+        <tr class="bg-white text-sm poppins-medium">
+          <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[5%]">
+            #
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[12%]"
+          >
+            School Year
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[10%]"
+          >
+            Semester
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]"
+          >
+            Class Section
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm w-[8%]"
+          >
+            Students
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[10%]"
+          >
+            Submitted
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]"
+          >
+            Total Submitted
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm w-[8%]"
+          >
+            Passed
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm w-[8%]"
+          >
+            Failed
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm w-[9%]"
+          >
+            Actions
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="
+            let class of getPaginatedClassList();
+            let i = index;
+            let rowIndex = index
+          "
+          class="transition-colors duration-200 hover:bg-gray-200"
+        >
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ (classListPageNo - 1) * classListPageSize + i + 1 }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.schoolyear }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.semester }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.classSection }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.students }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <span
+              class="text-green-600 font-medium poppins-medium cursor-pointer"
+              >Yes/All</span
+            >
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <div class="flex-1 bg-gray-200 rounded-full h-2">
+              <div
+                class="bg-green-500 h-2 rounded-full transition-all"
+                [style.width.%]="
+                  ((class.passed + class.failed) / class.students) * 100
+                "
+              ></div>
+            </div>
+            <div class="text-sm text-gray-500 mt-1 text-center">
+              {{ class.passed + class.failed }} of {{ class.students }}
+            </div>
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm text-green-700 font-semibold poppins-semibold"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.passed }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm text-red-600 font-semibold poppins-semibold"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            {{ class.failed }}
+          </td>
+          <td
+            class="border border-gray-300 px-4 py-2 text-center text-sm"
+            [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+          >
+            <button
+              (click)="openDialog(class.classSection)"
+              class="action-btn action-btn-primary"
+              title="Open Class"
+            >
+              <i class="pi pi-eye text-base"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredClassList.length === 0">
+          <td
+            colspan="10"
+            class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+          >
+            No classes found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div
+      class="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-300"
+    >
+      <div class="text-sm text-gray-600 poppins-regular">
+        Showing {{ getClassListShowingStart() }} to
+        {{ getClassListShowingEnd() }} of {{ filteredClassList.length }} entries
+      </div>
+      <div class="flex gap-2">
+        <button
+          (click)="previousClassListPage()"
+          [disabled]="classListPageNo === 1"
+          class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+        >
+          Previous
+        </button>
+        <span class="px-3 py-1 text-sm poppins-regular">
+          Page {{ classListPageNo }} of {{ getClassListTotalPages() }}
+        </span>
+        <button
+          (click)="nextClassListPage()"
+          [disabled]="classListPageNo >= getClassListTotalPages()"
+          class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

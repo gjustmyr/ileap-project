@@ -1,0 +1,503 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        OJT Coordinators
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage and view all OJT coordinators
+      </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <!-- Campus Filter Dropdown -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Campus
+        </label>
+        <select
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          [(ngModel)]="selectedCampusId"
+          (change)="onCampusFilterChange($event)"
+        >
+          <option value="">All Campuses</option>
+          <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Department Filter Dropdown -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Department
+        </label>
+        <select
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          [disabled]="!selectedCampusId"
+          [(ngModel)]="selectedDepartmentId"
+        >
+          <option value="">
+            {{ selectedCampusId ? "All Departments" : "Select Campus First" }}
+          </option>
+          <option *ngFor="let dept of departments" [value]="dept.department_id">
+            {{ dept.department_name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Search Box -->
+      <div class="lg:col-span-2">
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Search
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          placeholder="Search by name, email, campus, or department"
+          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Filter Action Buttons -->
+    <div class="flex gap-3 mb-6">
+      <button
+        (click)="applyFilters()"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Apply Filters
+      </button>
+      <button
+        (click)="resetFilters()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Reset
+      </button>
+      <button
+        (click)="handleSendAccountDialog()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded ml-auto"
+      >
+        <i class="pi pi-plus mr-2"></i>
+        Add OJT Coordinator
+      </button>
+    </div>
+
+
+    <div class="bg-white rounded">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]">Email</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]">Name</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]">Campus</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[15%]">Department</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[12%]">Contact</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[12%]">Position</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[8%]">Status</td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[8%]">Actions</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let coordinator of filteredCoordinators; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.email_address }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.last_name }}, {{ coordinator.first_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.campus_name || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.department_name || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.contact_number || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ coordinator.position_title || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-xs poppins-medium"
+                  [ngClass]="coordinator.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                >
+                  {{ coordinator.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular text-xs"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex gap-1">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="handleUpdateDialog(coordinator)"
+                    title="Edit Coordinator"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="handleSendNewPassword(coordinator.user_id, coordinator.email_address)"
+                    title="Send New Password"
+                  >
+                    <i class="pi pi-key"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredCoordinators.length === 0">
+              <td
+                colspan="8"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No OJT Coordinators found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Update OJT Coordinator Modal -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-medium">
+        Update OJT Coordinator
+      </h3>
+      <button
+        type="button"
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="coordinatorUpdateForm" (ngSubmit)="submitUpdateForm()">
+      <div class="p-6">
+        <div class="grid grid-cols-1 gap-4">
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email_address"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Email"
+            />
+          </div>
+
+          <!-- First Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="first_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="First Name"
+            />
+          </div>
+
+          <!-- Last Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="last_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Last Name"
+            />
+          </div>
+
+          <!-- Contact Number -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Contact Number
+            </label>
+            <input
+              type="text"
+              formControlName="contact_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="09XXXXXXXXX"
+            />
+          </div>
+
+          <!-- Position Title -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Position Title
+            </label>
+            <input
+              type="text"
+              formControlName="position_title"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Position"
+            />
+          </div>
+
+          <!-- Campus -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Campus <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="campus_id"
+              (change)="onCampusChangeUpdate($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option [value]="null">Select Campus</option>
+              <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+                {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Department -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Department <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="department_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              [disabled]="!coordinatorUpdateForm.get('campus_id')?.value || departments.length === 0"
+            >
+              <option [value]="null">
+                {{ coordinatorUpdateForm.get("campus_id")?.value ? "Select Department" : "Select Campus First" }}
+              </option>
+              <option *ngFor="let dept of departments" [value]="dept.department_id">
+                {{ dept.department_name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Status <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="status"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm poppins-medium"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add/Send New Account Modal -->
+<div
+  *ngIf="isSendAccountDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-medium">
+        Add OJT Coordinator
+      </h3>
+      <button
+        type="button"
+        (click)="handleSendAccountDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="sendAccountForm" (ngSubmit)="submitSendAccount()">
+      <div class="p-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p class="text-sm text-blue-800">
+            <i class="pi pi-info-circle mr-2"></i>
+            <strong>Note:</strong> Password will be auto-generated and sent to the email address.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email_address"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Email"
+            />
+          </div>
+
+          <!-- First Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="first_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="First Name"
+            />
+          </div>
+
+          <!-- Last Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="last_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Last Name"
+            />
+          </div>
+
+          <!-- Contact Number -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Contact Number
+            </label>
+            <input
+              type="text"
+              formControlName="contact_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="09XXXXXXXXX"
+            />
+          </div>
+
+          <!-- Position Title -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Position Title
+            </label>
+            <input
+              type="text"
+              formControlName="position_title"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              placeholder="Position"
+            />
+          </div>
+
+          <!-- Campus -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Campus <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="campus_id"
+              (change)="onCampusChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            >
+              <option [value]="null">Select Campus</option>
+              <option *ngFor="let campus of campuses" [value]="campus.campus_id">
+                {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Department -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              Department <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="department_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              [disabled]="!sendAccountForm.get('campus_id')?.value || departments.length === 0"
+            >
+              <option [value]="null">
+                {{ sendAccountForm.get("campus_id")?.value ? "Select Department" : "Select Campus First" }}
+              </option>
+              <option *ngFor="let dept of departments" [value]="dept.department_id">
+                {{ dept.department_name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="handleSendAccountDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm poppins-medium"
+        >
+          Register
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

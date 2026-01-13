@@ -1,0 +1,19 @@
+<!-- <div class="h-screen flex">
+  <app-sidebar class="w-[16rem] h-full"></app-sidebar>
+  <div class="flex flex-col flex-1">
+    <app-header class="h-[10%]"></app-header>
+    <div class="flex-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div> -->
+
+<div class="h-screen flex">
+  <app-sidebar [isCollapsed]="isSidebarCollapsed" class="h-full"></app-sidebar>
+  <div class="flex flex-col flex-1">
+    <app-header (toggleSidebar)="toggleSidebar()" class="h-[10%]"></app-header>
+    <div class="flex-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

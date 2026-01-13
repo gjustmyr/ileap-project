@@ -1,0 +1,82 @@
+# Deployment Ignore File
+# Files and directories to exclude from production deployment
+
+# Development and test files
+*.sql
+*.md
+!requirements.txt
+!README.md
+
+# Database migration scripts
+server-fastapi/database/
+server-fastapi/create_*.py
+server-fastapi/check_*.py
+server-fastapi/fix_*.py
+server-fastapi/approve_test_records.py
+server-fastapi/recalculate_hours.py
+server-fastapi/run_migration.py
+server-fastapi/init_db.py
+
+# Documentation
+*.docx.md
+MODAL_EXTRACTION_GUIDE.md
+REQUIREMENTS_FEATURE_SUMMARY.md
+UAT_Survey_Questionnaire.md
+UAT_Survey_Questionnaire.docx.md
+server-fastapi/MVC_ARCHITECTURE.md
+
+# Development files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files (should be created on server)
+.env
+.env.local
+.env.*.local
+
+# Node modules (will be installed on server)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Deployment folder itself
+deployment/
+
+# Test files
+*.spec.ts
+*.test.py
+test_*.py
+*_test.py
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.log
+nul

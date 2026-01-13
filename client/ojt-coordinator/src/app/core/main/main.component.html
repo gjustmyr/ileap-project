@@ -1,0 +1,2574 @@
+<div class="flex px-20 bg-gray-100 h-full">
+  <div class="flex flex-col flex-1">
+    <app-header></app-header>
+    <!-- Header Extras: Clock + Logout -->
+    <div
+      class="flex justify-end items-center gap-6 p-4 bg-white border-b border-gray-200"
+    >
+      <!-- Real-time Clock -->
+      <div class="text-sm text-gray-600 poppins-medium">
+        {{ dateTime }}
+      </div>
+
+      <!-- Logout Button -->
+      <button
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+    </div>
+
+    <div class="flex-1 bg-white p-4">
+      <div class="border-b border-gray-200 mb-4">
+        <nav class="flex gap-4">
+          <button
+            (click)="activeTab = 0"
+            [class.border-b-2]="activeTab === 0"
+            [class.border-green-500]="activeTab === 0"
+            [class.text-green-600]="activeTab === 0"
+            class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+          >
+            Dashboard
+          </button>
+          <button
+            (click)="activeTab = 1"
+            [class.border-b-2]="activeTab === 1"
+            [class.border-green-500]="activeTab === 1"
+            [class.text-green-600]="activeTab === 1"
+            class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+          >
+            Class Listing
+          </button>
+          <button
+            (click)="activeTab = 2"
+            [class.border-b-2]="activeTab === 2"
+            [class.border-green-500]="activeTab === 2"
+            [class.text-green-600]="activeTab === 2"
+            class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+          >
+            Job Listing
+          </button>
+          <button
+            (click)="activeTab = 3"
+            [class.border-b-2]="activeTab === 3"
+            [class.border-green-500]="activeTab === 3"
+            [class.text-green-600]="activeTab === 3"
+            class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+          >
+            Requirements
+          </button>
+        </nav>
+      </div>
+
+      <div [hidden]="activeTab !== 0">
+        <div class="p-6 bg-white poppins-regular">
+          <!-- Title -->
+          <div class="mb-4">
+            <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+              Dashboard
+            </h1>
+            <p class="text-sm text-gray-500 poppins-regular mt-1">
+              Overview of OJT student progress and statistics
+            </p>
+          </div>
+
+          <!-- Filters -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label
+                for="section"
+                class="block text-sm text-gray-600 mb-1 poppins-medium"
+              >
+                Section
+              </label>
+              <select
+                [(ngModel)]="selectedSection"
+                class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              >
+                <option [value]="null">All Sections</option>
+                <option
+                  *ngFor="let section of sectionOptions"
+                  [value]="section.value"
+                >
+                  {{ section.label }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="program"
+                class="block text-sm text-gray-600 mb-1 poppins-medium"
+                >Program</label
+              >
+              <select
+                [(ngModel)]="selectedProgram"
+                class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              >
+                <option [value]="null">All Programs</option>
+                <option
+                  *ngFor="let program of programOptions"
+                  [value]="program.value"
+                >
+                  {{ program.label }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="semester"
+                class="block text-sm text-gray-600 mb-1 poppins-medium"
+                >Semester</label
+              >
+              <select
+                [(ngModel)]="selectedSemester"
+                class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+              >
+                <option [value]="null">All Semesters</option>
+                <option
+                  *ngFor="let semester of semesterOptions"
+                  [value]="semester.value"
+                >
+                  {{ semester.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filter Action Buttons -->
+          <div class="flex gap-3 mb-6">
+            <button
+              (click)="applyDashboardFilters()"
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+            >
+              Apply Filters
+            </button>
+            <button
+              (click)="resetDashboardFilters()"
+              class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+            >
+              Reset Filters
+            </button>
+          </div>
+
+          <!-- Metric Cards -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+          >
+            <div
+              *ngFor="let metric of metrics"
+              class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+            >
+              <i
+                [class]="metric.icon + ' text-lg mt-1 ' + metric.iconColor"
+              ></i>
+              <div>
+                <p class="text-sm text-gray-600 font-medium poppins-medium">
+                  {{ metric.label }}
+                </p>
+                <p class="text-xl font-semibold text-gray-800 poppins-medium">
+                  {{ metric.value }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pie Chart for OJT Status Distribution -->
+            <div class="bg-white border border-gray-200 rounded-md p-4">
+              <h5 class="text-gray-700 poppins-medium mb-2">
+                OJT Status Distribution
+              </h5>
+              <p class="text-sm text-gray-600 mb-4">
+                Breakdown of student OJT status across all programs.
+              </p>
+              <p-chart
+                type="pie"
+                [data]="ojtStatusData"
+                [options]="chartOptions"
+              ></p-chart>
+            </div>
+
+            <!-- Bar Chart for Total OJT Progress -->
+            <div class="bg-white border border-gray-200 rounded-md p-4">
+              <h5 class="text-gray-700 poppins-medium mb-2">
+                OJT Hours Completed
+              </h5>
+              <p class="text-sm text-gray-600 mb-4">
+                Comparison of completed vs required OJT hours by group.
+              </p>
+              <p-chart
+                type="bar"
+                [data]="ojtProgressData"
+                [options]="barChartOptions"
+              ></p-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div [hidden]="activeTab !== 1">
+        <div class="p-6 bg-white rounded-md">
+          <!-- Title -->
+          <div class="mb-4">
+            <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+              Class Listing
+            </h1>
+            <p class="text-sm text-gray-500 poppins-regular mt-1">
+              Manage and view all class sections
+            </p>
+          </div>
+
+          <!-- Header: Filters + Create Button -->
+          <div class="mb-4 flex justify-between items-start gap-4">
+            <!-- Filters Section -->
+            <div class="flex-1">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <!-- Search -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Search</label
+                  >
+                  <input
+                    type="text"
+                    [(ngModel)]="classListFilters.searchTerm"
+                    placeholder="Search by class or year..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  />
+                </div>
+
+                <!-- School Year Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >School Year</label
+                  >
+                  <select
+                    [(ngModel)]="classListFilters.schoolYear"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Years</option>
+                    <option
+                      *ngFor="let year of schoolYearOptions"
+                      [value]="year.value"
+                    >
+                      {{ year.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Semester Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Semester</label
+                  >
+                  <select
+                    [(ngModel)]="classListFilters.semester"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Semesters</option>
+                    <option
+                      *ngFor="let semester of semesterOptions"
+                      [value]="semester.value"
+                    >
+                      {{ semester.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Program Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Program</label
+                  >
+                  <select
+                    [(ngModel)]="classListFilters.program"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Programs</option>
+                    <option
+                      *ngFor="let program of programOptions"
+                      [value]="program.value"
+                    >
+                      {{ program.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter Action Buttons -->
+              <div class="mt-3 flex gap-3">
+                <button
+                  (click)="applyClassListFilters()"
+                  class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  (click)="clearClassListFilters()"
+                  class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+
+            <!-- Create Class Button -->
+            <div class="flex-shrink-0">
+              <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                >&nbsp;</label
+              >
+              <button
+                (click)="showCreateClassModal = true"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2 whitespace-nowrap"
+              >
+                <i class="pi pi-plus"></i>
+                Create Class
+              </button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="bg-white rounded overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-white text-xs poppins-medium">
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[5%]"
+                  >
+                    #
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[12%]"
+                  >
+                    School Year
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[10%]"
+                  >
+                    Semester
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[15%]"
+                  >
+                    Class Section
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs w-[8%]"
+                  >
+                    Students
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[10%]"
+                  >
+                    Submitted
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-left text-xs w-[15%]"
+                  >
+                    Total Submitted
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs w-[8%]"
+                  >
+                    Passed
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs w-[8%]"
+                  >
+                    Failed
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs w-[9%]"
+                  >
+                    Actions
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="
+                    let class of getPaginatedClassList();
+                    let i = index;
+                    let rowIndex = index
+                  "
+                  class="transition-colors duration-200 hover:bg-gray-200"
+                >
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ (classListPageNo - 1) * classListPageSize + i + 1 }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.schoolyear }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.semester }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.classSection }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.students }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    <span class="text-green-600 font-medium cursor-pointer"
+                      >Yes/All</span
+                    >
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                      <div
+                        class="bg-green-500 h-2 rounded-full transition-all"
+                        [style.width.%]="
+                          ((class.passed + class.failed) / class.students) * 100
+                        "
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 text-center">
+                      {{ class.passed + class.failed }} of {{ class.students }}
+                    </div>
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs text-green-700 font-semibold"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.passed }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs text-red-600 font-semibold"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    {{ class.failed }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-4 py-2 text-center text-xs"
+                    [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+                  >
+                    <button
+                      (click)="openDialog(class.classSection)"
+                      class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded"
+                      title="Open Class"
+                    >
+                      <i class="pi pi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredClassList.length === 0">
+                  <td
+                    colspan="10"
+                    class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+                  >
+                    No classes found
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination Controls -->
+            <div
+              class="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-300"
+            >
+              <div class="text-sm text-gray-600 poppins-regular">
+                Showing {{ getClassListShowingStart() }} to
+                {{ getClassListShowingEnd() }} of
+                {{ filteredClassList.length }} entries
+              </div>
+              <div class="flex gap-2">
+                <button
+                  (click)="previousClassListPage()"
+                  [disabled]="classListPageNo === 1"
+                  class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+                >
+                  Previous
+                </button>
+                <span class="px-3 py-1 text-sm poppins-regular">
+                  Page {{ classListPageNo }} of {{ getClassListTotalPages() }}
+                </span>
+                <button
+                  (click)="nextClassListPage()"
+                  [disabled]="classListPageNo >= getClassListTotalPages()"
+                  class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div [hidden]="activeTab !== 2">
+        <div class="p-6 bg-gray-50">
+          <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+              <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+                Internship Opportunities
+              </h1>
+              <p class="text-sm text-gray-500 poppins-regular mt-1">
+                Browse and view all available internship positions
+              </p>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Search</label
+                  >
+                  <input
+                    type="text"
+                    [(ngModel)]="internshipFilters.searchKeyword"
+                    placeholder="Search by title or company..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  />
+                </div>
+
+                <!-- Industry Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Industry</label
+                  >
+                  <select
+                    [(ngModel)]="internshipFilters.industry"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Industries</option>
+                    <option
+                      *ngFor="let industry of internshipIndustries"
+                      [value]="industry.industry_id"
+                    >
+                      {{ industry.industry_name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Company Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Company</label
+                  >
+                  <select
+                    [(ngModel)]="internshipFilters.company"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Companies</option>
+                    <option
+                      *ngFor="let company of internshipCompanies"
+                      [value]="company.employer_id"
+                    >
+                      {{ company.company_name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+                    >Status</label
+                  >
+                  <select
+                    [(ngModel)]="internshipFilters.status"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+                  >
+                    <option [value]="null">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter Action Buttons -->
+              <div class="mt-4 flex gap-3">
+                <button
+                  (click)="applyInternshipFilters()"
+                  class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  (click)="resetInternshipFilters()"
+                  class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+
+            <!-- Results Count -->
+            <div class="mb-4 text-sm text-gray-600 poppins-regular">
+              Showing {{ filteredInternships.length }} of
+              {{ internships.length }} opportunities
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoadingInternships" class="text-center py-12">
+              <i class="pi pi-spin pi-spinner text-4xl text-green-500"></i>
+              <p class="text-gray-600 mt-4 poppins-regular">
+                Loading internship opportunities...
+              </p>
+            </div>
+
+            <!-- Internship Cards -->
+            <div *ngIf="!isLoadingInternships" class="space-y-4">
+              <div
+                *ngFor="let internship of filteredInternships"
+                class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+              >
+                <div class="p-6">
+                  <div class="flex gap-4">
+                    <!-- Company Logo Placeholder -->
+                    <div class="flex-shrink-0">
+                      <div
+                        class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center"
+                      >
+                        <i class="pi pi-building text-gray-400 text-2xl"></i>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                      <!-- Title and Company -->
+                      <h3
+                        class="text-lg font-semibold text-gray-900 mb-1 poppins-semibold"
+                      >
+                        {{ internship.title }}
+                      </h3>
+                      <p class="text-sm text-gray-700 mb-2 poppins-regular">
+                        {{ internship.company_name }}
+                        <span
+                          class="ml-2 px-2 py-1 text-xs rounded-full"
+                          [ngClass]="
+                            internship.status === 'open'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          "
+                        >
+                          {{ internship.status === "open" ? "Open" : "Closed" }}
+                        </span>
+                      </p>
+
+                      <!-- Meta Info -->
+                      <div
+                        class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3 poppins-regular"
+                      >
+                        <span class="flex items-center gap-1">
+                          <i class="pi pi-map-marker text-xs"></i>
+                          {{ internship.address || "Batangas City" }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <i class="pi pi-clock text-xs"></i>
+                          {{ internship.duration_months }} months
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <i class="pi pi-calendar text-xs"></i>
+                          Posted
+                          {{ internship.created_at | date : "MMM d, yyyy" }}
+                        </span>
+                      </div>
+
+                      <!-- Description -->
+                      <p
+                        class="text-sm text-gray-600 mb-3 line-clamp-2 poppins-regular"
+                      >
+                        {{ internship.description }}
+                      </p>
+
+                      <!-- Action Buttons -->
+                      <div class="flex gap-2">
+                        <button
+                          (click)="viewInternshipDetails(internship)"
+                          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+                        >
+                          <i class="pi pi-eye mr-1"></i>
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Results -->
+              <div
+                *ngIf="filteredInternships.length === 0"
+                class="text-center py-12 bg-white rounded-lg"
+              >
+                <i class="pi pi-inbox text-5xl text-gray-300 mb-4"></i>
+                <p class="text-gray-600 poppins-regular">
+                  No internship opportunities found
+                </p>
+                <p class="text-sm text-gray-500 mt-2 poppins-regular">
+                  Try adjusting your filters
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div [hidden]="activeTab !== 3">
+        <app-requirements></app-requirements>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Class Modal -->
+<div
+  *ngIf="showCreateClassModal"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+        Create New Class
+      </h2>
+      <button
+        (click)="closeCreateClassModal()"
+        class="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+        [disabled]="isLoading"
+      >
+        &times;
+      </button>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="mx-6 mt-4 bg-blue-50 border border-blue-200 rounded-md p-3">
+      <p class="text-sm text-blue-700 poppins-regular">
+        <i class="pi pi-info-circle mr-2"></i>
+        Upload a CSV file containing student information. Each student will
+        receive an email with their account credentials. The CSV should include
+        SR Code (format: XX-XXXXX), First Name, Last Name, Email, etc.
+      </p>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <form [formGroup]="createClassForm" (ngSubmit)="submitCreateClass()">
+        <!-- School Year -->
+        <div class="mb-4">
+          <label
+            class="block text-sm font-semibold text-gray-700 mb-2 poppins-semibold"
+          >
+            School Year <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            formControlName="schoolYear"
+            [options]="schoolYearOptions"
+            placeholder="Select School Year"
+            styleClass="w-full"
+            [disabled]="isLoading"
+          ></p-dropdown>
+          <div
+            *ngIf="
+              createClassForm.get('schoolYear')?.invalid &&
+              createClassForm.get('schoolYear')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            School year is required
+          </div>
+        </div>
+
+        <!-- Semester -->
+        <div class="mb-4">
+          <label
+            class="block text-sm font-semibold text-gray-700 mb-2 poppins-semibold"
+          >
+            Semester <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            formControlName="semester"
+            [options]="semesterOptions"
+            placeholder="Select Semester"
+            styleClass="w-full"
+            [disabled]="isLoading"
+          ></p-dropdown>
+          <div
+            *ngIf="
+              createClassForm.get('semester')?.invalid &&
+              createClassForm.get('semester')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Semester is required
+          </div>
+        </div>
+
+        <!-- Program -->
+        <div class="mb-4">
+          <label
+            class="block text-sm font-semibold text-gray-700 mb-2 poppins-semibold"
+          >
+            Program <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            formControlName="program"
+            [options]="programOptions"
+            placeholder="Select Program"
+            styleClass="w-full"
+            [disabled]="isLoading"
+            (onChange)="onProgramChange($event)"
+          ></p-dropdown>
+          <div
+            *ngIf="
+              createClassForm.get('program')?.invalid &&
+              createClassForm.get('program')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Program is required
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            Programs are filtered by your assigned department
+          </p>
+        </div>
+
+        <!-- Section -->
+        <div class="mb-4">
+          <label
+            class="block text-sm font-semibold text-gray-700 mb-2 poppins-semibold"
+          >
+            Section <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            formControlName="section"
+            [options]="sectionOptions"
+            placeholder="Select Section"
+            styleClass="w-full"
+            [disabled]="isLoading || sectionOptions.length === 0"
+          ></p-dropdown>
+          <div
+            *ngIf="
+              createClassForm.get('section')?.invalid &&
+              createClassForm.get('section')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Section is required
+          </div>
+          <p
+            class="text-xs text-gray-500 mt-1"
+            *ngIf="
+              createClassForm.get('program')?.value &&
+              sectionOptions.length === 0
+            "
+          >
+            No sections available for the selected program
+          </p>
+          <p
+            class="text-xs text-gray-500 mt-1"
+            *ngIf="!createClassForm.get('program')?.value"
+          >
+            Please select a program first
+          </p>
+        </div>
+
+        <!-- CSV Upload -->
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <label
+              class="block text-sm font-semibold text-gray-700 poppins-semibold"
+            >
+              Student List (CSV) <span class="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              (click)="downloadCSVTemplate()"
+              class="text-xs text-green-600 hover:text-green-700 underline poppins-medium flex items-center gap-1"
+            >
+              <i class="pi pi-download"></i>
+              Download Template
+            </button>
+          </div>
+
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors"
+          >
+            <div class="flex items-center justify-center" *ngIf="!csvFileName">
+              <label class="cursor-pointer flex flex-col items-center">
+                <i class="pi pi-upload text-3xl text-gray-400 mb-2"></i>
+                <span class="text-sm text-gray-600 poppins-regular"
+                  >Click to upload CSV file</span
+                >
+                <span class="text-xs text-gray-500 mt-1">CSV format only</span>
+                <input
+                  type="file"
+                  class="hidden"
+                  accept=".csv"
+                  (change)="onCSVFileSelected($event)"
+                  [disabled]="isLoading"
+                />
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between" *ngIf="csvFileName">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-file text-green-600"></i>
+                <span class="text-sm text-gray-700 poppins-regular">{{
+                  csvFileName
+                }}</span>
+              </div>
+              <button
+                type="button"
+                (click)="clearCSVFile()"
+                class="text-red-500 hover:text-red-700"
+                [disabled]="isLoading"
+              >
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div
+            *ngIf="
+              createClassForm.get('csvRequired')?.invalid &&
+              createClassForm.get('csvRequired')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            CSV file is required
+          </div>
+
+          <p class="text-xs text-gray-500 mt-2">
+            <i class="pi pi-info-circle mr-1"></i>
+            CSV should contain: SR Code (XX-XXXXX format), First Name, Last
+            Name, Email. Accounts will be auto-created and credentials sent via
+            email.
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <button
+            type="button"
+            (click)="closeCreateClassModal()"
+            class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+            [disabled]="isLoading"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+            [disabled]="isLoading"
+          >
+            <i class="pi pi-spin pi-spinner" *ngIf="isLoading"></i>
+            <span>{{ isLoading ? "Creating..." : "Create Class" }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Students Modal -->
+<div
+  *ngIf="dialogVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+        Student OJT Status - {{ selectedClassSection }}
+      </h2>
+      <button
+        (click)="dialogVisible = false"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+      <!-- Search Bar -->
+      <div class="mb-4">
+        <div class="relative w-full md:w-96">
+          <i class="pi pi-search absolute left-3 top-3 text-gray-400"></i>
+          <input
+            type="text"
+            [(ngModel)]="studentSearch"
+            placeholder="Search by name or company..."
+            class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 poppins-regular"
+          />
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div *ngIf="filteredStudents().length === 0" class="text-center py-12">
+        <i class="pi pi-users text-5xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 poppins-regular">No students found.</p>
+      </div>
+
+      <!-- Students Table -->
+      <div *ngIf="filteredStudents().length > 0" class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th
+                class="px-4 py-3 text-left text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Student Name
+              </th>
+              <th
+                class="px-4 py-3 text-left text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Company
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Pre-OJT
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                OJT Status
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Hours
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Post-OJT
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let student of filteredStudents()"
+              class="border-b hover:bg-gray-50"
+            >
+              <td class="px-4 py-3 text-sm text-gray-800 poppins-regular">
+                {{ student.name }}
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+                {{ student.company || "Not assigned" }}
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':
+                      student.accomplished === student.total,
+                    'bg-red-100 text-red-700':
+                      student.accomplished < student.total
+                  }"
+                >
+                  {{ student.accomplished }}/{{ student.total }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 poppins-medium"
+                >
+                  Not Allowed
+                </span>
+                <span
+                  *ngIf="student.accomplished === student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-700':
+                      student.ojtStatus === 'Ongoing',
+                    'bg-green-100 text-green-700':
+                      student.ojtStatus === 'Completed',
+                    'bg-gray-100 text-gray-700':
+                      student.ojtStatus === 'Not Started'
+                  }"
+                >
+                  {{ student.ojtStatus }}
+                </span>
+              </td>
+              <td
+                class="px-4 py-3 text-center text-sm text-gray-700 poppins-regular"
+              >
+                <span *ngIf="student.accomplished === student.total">
+                  {{ student.hoursCompleted }}/{{ student.hoursRequired }}
+                  <span
+                    *ngIf="student.invalidLogsCount > 0"
+                    class="ml-1 text-xs text-red-600"
+                    title="{{ student.invalidLogsCount }} invalid time log(s)"
+                    >⚠️</span
+                  >
+                </span>
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="text-gray-400 italic"
+                >
+                  N/A
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  *ngIf="student.accomplished === student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 poppins-medium"
+                >
+                  {{ student.postCompleted }}/{{ student.postTotal }}
+                </span>
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="text-gray-400 italic text-xs"
+                >
+                  N/A
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <button
+                  (click)="openViewRequirements(student)"
+                  class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+                >
+                  <i class="pi pi-eye mr-1"></i>
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Requirements Modal -->
+<div
+  *ngIf="viewRequirementsVisible"
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements Validation
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedStudent?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closeViewRequirements()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info Card -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Student Name:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">Company:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.company || "Not assigned" }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Pre-OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.accomplished === selectedStudent?.total,
+                  'bg-red-100 text-red-700':
+                    selectedStudent?.accomplished < selectedStudent?.total
+                }"
+              >
+                {{
+                  selectedStudent?.accomplished === selectedStudent?.total
+                    ? "Completed"
+                    : "Incomplete"
+                }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Requirements Progress:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.accomplished }} of
+              {{ selectedStudent?.total }} validated
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700':
+                    selectedStudent?.ojtStatus === 'Ongoing',
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.ojtStatus === 'Completed',
+                  'bg-gray-100 text-gray-700':
+                    selectedStudent?.ojtStatus === 'Not Started'
+                }"
+              >
+                {{ selectedStudent?.ojtStatus }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">OJT Hours:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              <span
+                *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+              >
+                {{ selectedStudent?.hoursCompleted }} /
+                {{ selectedStudent?.hoursRequired }} hrs
+              </span>
+              <span
+                *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+                class="text-gray-400 italic text-sm"
+              >
+                Complete requirements first
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requirements Checklist -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements
+        </h3>
+
+        <!-- Profile Validation -->
+        <div class="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100"
+              >
+                <i class="pi pi-user text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-800 poppins-semibold">
+                  Student Profile
+                </p>
+                <p class="text-xs text-gray-600 poppins-regular">
+                  Personal information and contact details
+                </p>
+              </div>
+            </div>
+            <button
+              (click)="validateRequirement(0, 'Profile')"
+              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs poppins-medium transition-colors"
+            >
+              <i class="pi pi-check-circle mr-1"></i>
+              Validate
+            </button>
+          </div>
+        </div>
+
+        <!-- Pre-OJT File Submissions -->
+        <div class="space-y-2">
+          <div
+            *ngFor="let requirement of preOjtRequirements; let i = index"
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            <div class="flex items-center gap-3 flex-1">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center"
+                [ngClass]="{
+                  'bg-green-100': isRequirementSubmitted(i + 1),
+                  'bg-orange-100': getRequirementSubmission(i + 1)?.returned,
+                  'bg-gray-100':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                <i
+                  *ngIf="isRequirementSubmitted(i + 1)"
+                  class="pi pi-check text-green-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="getRequirementSubmission(i + 1)?.returned"
+                  class="pi pi-replay text-orange-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                  "
+                  class="pi pi-circle text-gray-400 text-xs"
+                ></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800 poppins-medium">
+                  {{ requirement }}
+                </p>
+                <p class="text-xs text-gray-500 poppins-regular">
+                  Pre-OJT Requirement {{ i + 1 }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-700': isRequirementValidated(i + 1),
+                  'bg-green-100 text-green-700':
+                    isRequirementSubmitted(i + 1) &&
+                    !isRequirementValidated(i + 1),
+                  'bg-orange-100 text-orange-700': getRequirementSubmission(
+                    i + 1
+                  )?.returned,
+                  'bg-gray-100 text-gray-600':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                {{
+                  isRequirementValidated(i + 1)
+                    ? "Validated"
+                    : getRequirementSubmission(i + 1)?.returned
+                    ? "Returned"
+                    : isRequirementSubmitted(i + 1)
+                    ? "Submitted"
+                    : "Pending"
+                }}
+              </span>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) ||
+                  getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="
+                  openPreviewRequirement(
+                    getRequirementSubmission(i + 1),
+                    requirement
+                  )
+                "
+                class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs poppins-medium transition-colors flex items-center gap-1"
+              >
+                <i class="pi pi-eye"></i>
+                View
+              </button>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) &&
+                  !isRequirementValidated(i + 1) &&
+                  !getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="validateRequirement(i + 1, requirement)"
+                class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+              >
+                <i class="pi pi-check-circle mr-1"></i>
+                Validate
+              </button>
+              <span
+                *ngIf="isRequirementValidated(i + 1)"
+                class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs poppins-semibold flex items-center gap-1"
+              >
+                <i class="pi pi-verified"></i>
+                Already Validated
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-OJT Requirements Section -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 poppins-semibold mb-4">
+            Post-OJT Requirements
+          </h3>
+
+          <div
+            *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+            class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <div class="flex items-center gap-2 text-gray-600">
+              <i class="pi pi-lock"></i>
+              <span class="text-sm poppins-regular"
+                >Complete all Pre-OJT requirements to access Post-OJT
+                requirements</span
+              >
+            </div>
+          </div>
+
+          <div
+            *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+            class="space-y-2"
+          >
+            <div
+              *ngFor="let requirement of postOjtRequirements; let i = index"
+              class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <div class="flex items-center gap-3 flex-1">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center"
+                  [ngClass]="{
+                    'bg-green-100': i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100': i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  <i
+                    *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                    class="pi pi-check text-green-600 text-xs"
+                  ></i>
+                  <i
+                    *ngIf="i + 1 > selectedStudent?.postCompleted"
+                    class="pi pi-circle text-gray-400 text-xs"
+                  ></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800 poppins-medium">
+                    {{ requirement }}
+                  </p>
+                  <p class="text-xs text-gray-500 poppins-regular">
+                    Post-OJT Requirement {{ i + 1 }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':
+                      i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100 text-gray-600':
+                      i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  {{
+                    i + 1 <= selectedStudent?.postCompleted
+                      ? "Submitted"
+                      : "Pending"
+                  }}
+                </span>
+                <button
+                  *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                  (click)="validateRequirement(i + 1, requirement)"
+                  class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+                >
+                  <i class="pi pi-check-circle mr-1"></i>
+                  Validate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note for future implementation -->
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex gap-3">
+            <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-medium text-blue-800 poppins-medium">
+                Note:
+              </p>
+              <p class="text-sm text-blue-700 poppins-regular mt-1">
+                File submissions and actual validation will be implemented when
+                connected to the backend requirements system.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <div class="text-sm text-gray-600 poppins-regular">
+        <i class="pi pi-info-circle mr-1"></i>
+        Validate requirements individually or all at once
+      </div>
+      <div class="flex gap-3">
+        <button
+          (click)="closeViewRequirements()"
+          class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+        >
+          Close
+        </button>
+        <button
+          (click)="validateAllRequirements()"
+          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium text-sm flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate All
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Requirement Modal -->
+<div
+  *ngIf="previewRequirementVisible"
+  class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Preview Requirement
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedRequirement?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closePreviewRequirement()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info -->
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-gray-600 poppins-medium">Student:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.student?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-gray-600 poppins-medium">Requirement:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.name }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Preview Area -->
+      <div
+        class="border-2 border-gray-300 rounded-lg p-8 text-center bg-gray-50"
+      >
+        <i class="pi pi-file-pdf text-6xl text-blue-400 mb-4"></i>
+        <p class="text-gray-700 poppins-semibold mb-2 text-lg">
+          {{ selectedRequirement?.name }}
+        </p>
+        <p class="text-sm text-gray-600 poppins-regular mb-4">
+          {{ selectedRequirement?.file_url }}
+        </p>
+        <button
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm poppins-medium"
+        >
+          <i class="pi pi-download mr-2"></i>
+          Download File
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <button
+        (click)="closePreviewRequirement()"
+        class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+      >
+        Close
+      </button>
+      <div class="flex gap-2">
+        <button
+          (click)="
+            validateRequirement(
+              selectedRequirement?.requirement_id,
+              selectedRequirement?.name
+            )
+          "
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate
+        </button>
+        <button
+          (click)="
+            closePreviewRequirement();
+            openReturnRequirement(
+              selectedRequirement,
+              selectedRequirement?.name
+            )
+          "
+          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-replay"></i>
+          Return
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Return Requirement Modal -->
+<div
+  *ngIf="returnRequirementVisible"
+  class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Return Requirement
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedRequirement?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closeReturnRequirement()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <!-- Student Info -->
+      <div class="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-exclamation-triangle text-orange-600 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-medium text-orange-800 poppins-semibold">
+              Returning Requirement
+            </p>
+            <p class="text-sm text-orange-700 poppins-regular mt-1">
+              The student will be notified and asked to resubmit this
+              requirement. Please provide clear remarks explaining what needs to
+              be corrected.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remarks Field -->
+      <div class="mb-4">
+        <label
+          class="block text-sm font-medium text-gray-700 mb-2 poppins-semibold"
+        >
+          Remarks <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          [(ngModel)]="returnRemarks"
+          rows="6"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 poppins-regular text-sm"
+          placeholder="Explain what needs to be corrected or improved in this requirement..."
+        ></textarea>
+        <p class="text-xs text-gray-500 mt-1 poppins-regular">
+          Be specific about what needs to be changed so the student can resubmit
+          correctly.
+        </p>
+      </div>
+
+      <!-- Student Info -->
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm">
+          <span class="text-gray-600 poppins-medium">Student:</span>
+          <span class="ml-2 text-gray-800 poppins-regular">{{
+            selectedRequirement?.student?.name
+          }}</span>
+        </div>
+        <div class="text-sm mt-2">
+          <span class="text-gray-600 poppins-medium">Requirement:</span>
+          <span class="ml-2 text-gray-800 poppins-regular">{{
+            selectedRequirement?.name
+          }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+      <button
+        (click)="closeReturnRequirement()"
+        class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="submitReturnRequirement()"
+        class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 poppins-medium text-sm flex items-center gap-2"
+      >
+        <i class="pi pi-replay"></i>
+        Return Requirement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Students Modal -->
+<div
+  *ngIf="dialogVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+        Student OJT Status - {{ selectedClassSection }}
+      </h2>
+      <button
+        (click)="dialogVisible = false"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+      <!-- Search Bar -->
+      <div class="mb-4">
+        <div class="relative w-full md:w-96">
+          <i class="pi pi-search absolute left-3 top-3 text-gray-400"></i>
+          <input
+            type="text"
+            [(ngModel)]="studentSearch"
+            placeholder="Search by name or company..."
+            class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 poppins-regular"
+          />
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div *ngIf="filteredStudents().length === 0" class="text-center py-12">
+        <i class="pi pi-users text-5xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 poppins-regular">No students found.</p>
+      </div>
+
+      <!-- Students Table -->
+      <div *ngIf="filteredStudents().length > 0" class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th
+                class="px-4 py-3 text-left text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Student Name
+              </th>
+              <th
+                class="px-4 py-3 text-left text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Company
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Pre-OJT
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                OJT Status
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Hours
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Post-OJT
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Grade
+              </th>
+              <th
+                class="px-4 py-3 text-center text-sm font-semibold text-gray-700 poppins-semibold border-b"
+              >
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let student of filteredStudents()"
+              class="border-b hover:bg-gray-50"
+            >
+              <td class="px-4 py-3 text-sm text-gray-800 poppins-regular">
+                {{ student.name }}
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+                {{ student.company || "Not assigned" }}
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':
+                      student.accomplished === student.total,
+                    'bg-red-100 text-red-700':
+                      student.accomplished < student.total
+                  }"
+                >
+                  {{ student.accomplished }}/{{ student.total }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 poppins-medium"
+                >
+                  Not Allowed
+                </span>
+                <span
+                  *ngIf="student.accomplished === student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-700':
+                      student.ojtStatus === 'Ongoing',
+                    'bg-green-100 text-green-700':
+                      student.ojtStatus === 'Completed',
+                    'bg-gray-100 text-gray-700':
+                      student.ojtStatus === 'Not Started'
+                  }"
+                >
+                  {{ student.ojtStatus }}
+                </span>
+              </td>
+              <td
+                class="px-4 py-3 text-center text-sm text-gray-700 poppins-regular"
+              >
+                <span *ngIf="student.accomplished === student.total">
+                  {{ student.hoursCompleted }}/{{ student.hoursRequired }}
+                </span>
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="text-gray-400 italic"
+                >
+                  N/A
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  *ngIf="student.accomplished === student.total"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 poppins-medium"
+                >
+                  {{ student.postCompleted }}/{{ student.postTotal }}
+                </span>
+                <span
+                  *ngIf="student.accomplished < student.total"
+                  class="text-gray-400 italic text-xs"
+                >
+                  N/A
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <!-- Grade Section -->
+                <!-- Show grade if already submitted -->
+                <span
+                  *ngIf="student.finalGrade"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 poppins-medium"
+                >
+                  {{ student.finalGrade }}
+                </span>
+
+                <!-- Show dropdown + submit if eligible and no grade yet -->
+                <div
+                  *ngIf="!student.finalGrade && canSubmitGrade(student)"
+                  class="flex items-center justify-center gap-2"
+                >
+                  <select
+                    [(ngModel)]="student.selectedGrade"
+                    class="px-2 py-1 border border-gray-300 rounded text-xs poppins-regular outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="" disabled selected>Select Grade</option>
+                    <option value="1.0">1.0 (Excellent)</option>
+                    <option value="1.5">1.5</option>
+                    <option value="2.0">2.0 (Very Good)</option>
+                    <option value="2.5">2.5</option>
+                    <option value="3.0">3.0 (Good)</option>
+                    <option value="3.5">3.5</option>
+                    <option value="4.0">4.0 (Pass)</option>
+                    <option value="5.0">5.0 (Failed)</option>
+                  </select>
+                  <button
+                    (click)="submitGrade(student)"
+                    [disabled]="!student.selectedGrade || student.gradeSaving"
+                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded text-xs poppins-medium transition-colors"
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        student.gradeSaving ? 'pi-spin pi-spinner' : 'pi-check'
+                      "
+                    ></i>
+                    {{ student.gradeSaving ? "Saving..." : "Submit" }}
+                  </button>
+                </div>
+
+                <!-- Show pending if not eligible and no grade -->
+                <span
+                  *ngIf="!student.finalGrade && !canSubmitGrade(student)"
+                  class="text-gray-400 italic text-xs"
+                >
+                  Pending
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <button
+                  (click)="openViewRequirements(student)"
+                  class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+                >
+                  <i class="pi pi-eye mr-1"></i>
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Requirements Modal -->
+<div
+  *ngIf="viewRequirementsVisible"
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements Validation
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedStudent?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closeViewRequirements()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info Card -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Student Name:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">Company:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.company || "Not assigned" }}
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Pre-OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.accomplished === selectedStudent?.total,
+                  'bg-red-100 text-red-700':
+                    selectedStudent?.accomplished < selectedStudent?.total
+                }"
+              >
+                {{
+                  selectedStudent?.accomplished === selectedStudent?.total
+                    ? "Completed"
+                    : "Incomplete"
+                }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >Requirements Progress:</span
+            >
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              {{ selectedStudent?.accomplished }} of
+              {{ selectedStudent?.total }} validated
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium"
+              >OJT Status:</span
+            >
+            <p class="mt-1">
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700':
+                    selectedStudent?.ojtStatus === 'Ongoing',
+                  'bg-green-100 text-green-700':
+                    selectedStudent?.ojtStatus === 'Completed',
+                  'bg-gray-100 text-gray-700':
+                    selectedStudent?.ojtStatus === 'Not Started'
+                }"
+              >
+                {{ selectedStudent?.ojtStatus }}
+              </span>
+            </p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600 poppins-medium">OJT Hours:</span>
+            <p class="text-base text-gray-800 poppins-regular mt-1">
+              <span
+                *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+              >
+                {{ selectedStudent?.hoursCompleted }} /
+                {{ selectedStudent?.hoursRequired }} hrs
+              </span>
+              <span
+                *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+                class="text-gray-400 italic text-sm"
+              >
+                Complete requirements first
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requirements Checklist -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-800 poppins-semibold">
+          Pre-OJT Requirements
+        </h3>
+
+        <!-- Profile Validation -->
+        <div class="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100"
+              >
+                <i class="pi pi-user text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-800 poppins-semibold">
+                  Student Profile
+                </p>
+                <p class="text-xs text-gray-600 poppins-regular">
+                  Personal information and contact details
+                </p>
+              </div>
+            </div>
+            <button
+              (click)="validateRequirement(0, 'Profile')"
+              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs poppins-medium transition-colors"
+            >
+              <i class="pi pi-check-circle mr-1"></i>
+              Validate
+            </button>
+          </div>
+        </div>
+
+        <!-- Pre-OJT File Submissions -->
+        <div class="space-y-2">
+          <div
+            *ngFor="let requirement of preOjtRequirements; let i = index"
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            <div class="flex items-center gap-3 flex-1">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center"
+                [ngClass]="{
+                  'bg-green-100': isRequirementSubmitted(i + 1),
+                  'bg-orange-100': getRequirementSubmission(i + 1)?.returned,
+                  'bg-gray-100':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                <i
+                  *ngIf="isRequirementSubmitted(i + 1)"
+                  class="pi pi-check text-green-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="getRequirementSubmission(i + 1)?.returned"
+                  class="pi pi-replay text-orange-600 text-xs"
+                ></i>
+                <i
+                  *ngIf="
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                  "
+                  class="pi pi-circle text-gray-400 text-xs"
+                ></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800 poppins-medium">
+                  {{ requirement }}
+                </p>
+                <p class="text-xs text-gray-500 poppins-regular">
+                  Pre-OJT Requirement {{ i + 1 }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-700': isRequirementValidated(i + 1),
+                  'bg-green-100 text-green-700':
+                    isRequirementSubmitted(i + 1) &&
+                    !isRequirementValidated(i + 1),
+                  'bg-orange-100 text-orange-700': getRequirementSubmission(
+                    i + 1
+                  )?.returned,
+                  'bg-gray-100 text-gray-600':
+                    !isRequirementSubmitted(i + 1) &&
+                    !getRequirementSubmission(i + 1)?.returned
+                }"
+              >
+                {{
+                  isRequirementValidated(i + 1)
+                    ? "Validated"
+                    : getRequirementSubmission(i + 1)?.returned
+                    ? "Returned"
+                    : isRequirementSubmitted(i + 1)
+                    ? "Submitted"
+                    : "Pending"
+                }}
+              </span>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) ||
+                  getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="
+                  openPreviewRequirement(
+                    getRequirementSubmission(i + 1),
+                    requirement
+                  )
+                "
+                class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs poppins-medium transition-colors flex items-center gap-1"
+              >
+                <i class="pi pi-eye"></i>
+                View
+              </button>
+              <button
+                *ngIf="
+                  isRequirementSubmitted(i + 1) &&
+                  !isRequirementValidated(i + 1) &&
+                  !getRequirementSubmission(i + 1)?.returned
+                "
+                (click)="validateRequirement(i + 1, requirement)"
+                class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+              >
+                <i class="pi pi-check-circle mr-1"></i>
+                Validate
+              </button>
+              <span
+                *ngIf="isRequirementValidated(i + 1)"
+                class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs poppins-semibold flex items-center gap-1"
+              >
+                <i class="pi pi-verified"></i>
+                Already Validated
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-OJT Requirements Section -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 poppins-semibold mb-4">
+            Post-OJT Requirements
+          </h3>
+
+          <div
+            *ngIf="selectedStudent?.accomplished < selectedStudent?.total"
+            class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <div class="flex items-center gap-2 text-gray-600">
+              <i class="pi pi-lock"></i>
+              <span class="text-sm poppins-regular"
+                >Complete all Pre-OJT requirements to access Post-OJT
+                requirements</span
+              >
+            </div>
+          </div>
+
+          <div
+            *ngIf="selectedStudent?.accomplished === selectedStudent?.total"
+            class="space-y-2"
+          >
+            <div
+              *ngFor="let requirement of postOjtRequirements; let i = index"
+              class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <div class="flex items-center gap-3 flex-1">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center"
+                  [ngClass]="{
+                    'bg-green-100': i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100': i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  <i
+                    *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                    class="pi pi-check text-green-600 text-xs"
+                  ></i>
+                  <i
+                    *ngIf="i + 1 > selectedStudent?.postCompleted"
+                    class="pi pi-circle text-gray-400 text-xs"
+                  ></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800 poppins-medium">
+                    {{ requirement }}
+                  </p>
+                  <p class="text-xs text-gray-500 poppins-regular">
+                    Post-OJT Requirement {{ i + 1 }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium poppins-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':
+                      i + 1 <= selectedStudent?.postCompleted,
+                    'bg-gray-100 text-gray-600':
+                      i + 1 > selectedStudent?.postCompleted
+                  }"
+                >
+                  {{
+                    i + 1 <= selectedStudent?.postCompleted
+                      ? "Submitted"
+                      : "Pending"
+                  }}
+                </span>
+                <button
+                  *ngIf="i + 1 <= selectedStudent?.postCompleted"
+                  (click)="validateRequirement(i + 1, requirement)"
+                  class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs poppins-medium transition-colors"
+                >
+                  <i class="pi pi-check-circle mr-1"></i>
+                  Validate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note for future implementation -->
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex gap-3">
+            <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-medium text-blue-800 poppins-medium">
+                Note:
+              </p>
+              <p class="text-sm text-blue-700 poppins-regular mt-1">
+                File submissions and actual validation will be implemented when
+                connected to the backend requirements system.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <div class="text-sm text-gray-600 poppins-regular">
+        <i class="pi pi-info-circle mr-1"></i>
+        Validate requirements individually or all at once
+      </div>
+      <div class="flex gap-3">
+        <button
+          (click)="closeViewRequirements()"
+          class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+        >
+          Close
+        </button>
+        <button
+          (click)="validateAllRequirements()"
+          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium text-sm flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate All
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Requirement Modal -->
+<div
+  *ngIf="previewRequirementVisible"
+  class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Preview Requirement
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedRequirement?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closePreviewRequirement()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+      <!-- Student Info -->
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-gray-600 poppins-medium">Student:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.student?.name }}
+            </p>
+          </div>
+          <div>
+            <span class="text-gray-600 poppins-medium">Requirement:</span>
+            <p class="text-gray-800 poppins-regular">
+              {{ selectedRequirement?.name }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Preview Area -->
+      <div
+        class="border-2 border-gray-300 rounded-lg p-8 text-center bg-gray-50"
+      >
+        <i class="pi pi-file-pdf text-6xl text-blue-400 mb-4"></i>
+        <p class="text-gray-700 poppins-semibold mb-2 text-lg">
+          {{ selectedRequirement?.name }}
+        </p>
+        <p class="text-sm text-gray-600 poppins-regular mb-4">
+          {{ selectedRequirement?.file_url }}
+        </p>
+        <button
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm poppins-medium"
+        >
+          <i class="pi pi-download mr-2"></i>
+          Download File
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-between items-center p-6 border-t border-gray-200">
+      <button
+        (click)="closePreviewRequirement()"
+        class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+      >
+        Close
+      </button>
+      <div class="flex gap-2">
+        <button
+          (click)="
+            validateRequirement(
+              selectedRequirement?.requirement_id,
+              selectedRequirement?.name
+            )
+          "
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-check-circle"></i>
+          Validate
+        </button>
+        <button
+          (click)="
+            closePreviewRequirement();
+            openReturnRequirement(
+              selectedRequirement,
+              selectedRequirement?.name
+            )
+          "
+          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm poppins-medium transition-colors flex items-center gap-2"
+        >
+          <i class="pi pi-replay"></i>
+          Return
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Return Requirement Modal -->
+<div
+  *ngIf="returnRequirementVisible"
+  class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          Return Requirement
+        </h2>
+        <p class="text-sm text-gray-600 mt-1 poppins-regular">
+          {{ selectedRequirement?.name }}
+        </p>
+      </div>
+      <button
+        (click)="closeReturnRequirement()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <!-- Student Info -->
+      <div class="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-exclamation-triangle text-orange-600 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-medium text-orange-800 poppins-semibold">
+              Returning Requirement
+            </p>
+            <p class="text-sm text-orange-700 poppins-regular mt-1">
+              The student will be notified and asked to resubmit this
+              requirement. Please provide clear remarks explaining what needs to
+              be corrected.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remarks Field -->
+      <div class="mb-4">
+        <label
+          class="block text-sm font-medium text-gray-700 mb-2 poppins-semibold"
+        >
+          Remarks <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          [(ngModel)]="returnRemarks"
+          rows="6"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 poppins-regular text-sm"
+          placeholder="Explain what needs to be corrected or improved in this requirement..."
+        ></textarea>
+        <p class="text-xs text-gray-500 mt-1 poppins-regular">
+          Be specific about what needs to be changed so the student can resubmit
+          correctly.
+        </p>
+      </div>
+
+      <!-- Student Info -->
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm">
+          <span class="text-gray-600 poppins-medium">Student:</span>
+          <span class="ml-2 text-gray-800 poppins-regular">{{
+            selectedRequirement?.student?.name
+          }}</span>
+        </div>
+        <div class="text-sm mt-2">
+          <span class="text-gray-600 poppins-medium">Requirement:</span>
+          <span class="ml-2 text-gray-800 poppins-regular">{{
+            selectedRequirement?.name
+          }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+      <button
+        (click)="closeReturnRequirement()"
+        class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 poppins-medium text-sm"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="submitReturnRequirement()"
+        class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 poppins-medium text-sm flex items-center gap-2"
+      >
+        <i class="pi pi-replay"></i>
+        Return Requirement
+      </button>
+    </div>
+  </div>
+</div>

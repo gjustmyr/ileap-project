@@ -1,0 +1,646 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="mb-4">
+      <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+        <li>
+          <a routerLink="/dashboard" class="hover:text-green-600">Home</a>
+        </li>
+        <li><i class="pi pi-angle-right text-xs"></i></li>
+        <li>
+          <a
+            routerLink="/school-information/campuses"
+            class="hover:text-green-600"
+            >Campuses</a
+          >
+        </li>
+        <li><i class="pi pi-angle-right text-xs"></i></li>
+        <li class="text-green-600 font-semibold">
+          {{ currentCampusName || "Departments" }}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Title -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Departments<span *ngIf="currentCampusName">
+          - {{ currentCampusName }}</span
+        >
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage departments and assign deans<span *ngIf="currentCampusName">
+          for {{ currentCampusName }}</span
+        >
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls mb-4 flex justify-between items-center gap-3">
+      <div class="flex gap-3 flex-1">
+        <div class="w-[300px]">
+          <p-inputgroup>
+            <input
+              pInputText
+              placeholder="Search departments..."
+              [(ngModel)]="keyword"
+              (keyup.enter)="handleSearch()"
+            />
+            <p-inputgroup-addon>
+              <button
+                pButton
+                icon="pi pi-search"
+                severity="secondary"
+                variant="text"
+                (click)="handleSearch()"
+                class="cursor-pointer"
+              ></button>
+            </p-inputgroup-addon>
+          </p-inputgroup>
+        </div>
+      </div>
+      <button
+        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2 cursor-pointer"
+        (click)="handleAddDialog()"
+      >
+        <i class="pi pi-plus"></i>
+        Add Department
+      </button>
+    </div>
+
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Department
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[8%] text-sm"
+              >
+                Code
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
+                Campus
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[17%] text-sm"
+              >
+                Dean
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[12%] text-sm"
+              >
+                Contact
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[18%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let dept of departments; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ dept.department_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium"
+                  >{{ dept.abbrev || "N/A" }}</span
+                >
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ dept.campus_name || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div>{{ dept.dean_name || "N/A" }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ dept.dean_email || "" }}
+                </div>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ dept.dean_contact || "N/A" }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-white"
+                  [ngClass]="
+                    dept.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  "
+                >
+                  {{ dept.status === "active" ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="bg-purple-500 hover:bg-purple-600 p-2 text-white text-sm rounded cursor-pointer"
+                    [routerLink]="['/school-information/programs']"
+                    [queryParams]="{
+                      departmentId: dept.department_id,
+                      departmentName: dept.department_name,
+                      campusId: currentCampusId,
+                      campusName: currentCampusName
+                    }"
+                    title="View Programs"
+                  >
+                    <i class="pi pi-list"></i>
+                  </button>
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleUpdateDialog(dept.department_id)"
+                    title="Edit Department"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    [ngClass]="{
+                      'bg-green-500 hover:bg-green-600':
+                        dept.status === 'inactive',
+                      'bg-red-500 hover:bg-red-600': dept.status === 'active'
+                    }"
+                    class="p-2 text-white rounded cursor-pointer text-sm"
+                    (click)="
+                      handleUpdateStatus(
+                        $event,
+                        dept.department_id,
+                        dept.status
+                      )
+                    "
+                    [title]="
+                      dept.status === 'active'
+                        ? 'Disable Department'
+                        : 'Enable Department'
+                    "
+                  >
+                    <i
+                      class="pi"
+                      [ngClass]="
+                        dept.status === 'active' ? 'pi-ban' : 'pi-check-circle'
+                      "
+                    ></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="departments.length === 0">
+              <td
+                colspan="7"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No departments found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-between items-center mt-4 poppins-regular">
+        <div class="flex items-center gap-2">
+          <span class="text-sm">Show</span>
+          <select
+            [(ngModel)]="pageSize"
+            (change)="onPageSizeChange()"
+            class="border rounded px-3 py-1.5 text-sm poppins-regular"
+          >
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="30">30</option>
+          </select>
+          <span class="text-sm">entries</span>
+        </div>
+        <div class="text-sm">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-4 py-2 border rounded text-sm disabled:opacity-50 poppins-regular cursor-pointer"
+          >
+            <i class="pi pi-angle-left"></i> Previous
+          </button>
+          <span class="text-sm px-2"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-4 py-2 border rounded text-sm disabled:opacity-50 poppins-regular cursor-pointer"
+          >
+            Next <i class="pi pi-angle-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Modal -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Add Department</h3>
+      <button
+        type="button"
+        (click)="handleAddDialog()"
+        class="text-gray-400 hover:text-gray-600 cursor-pointer"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Enter department information<span *ngIf="currentCampusName">
+            for {{ currentCampusName }}</span
+          >.
+        </p>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Department Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="department_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Abbreviation</label
+            >
+            <input
+              type="text"
+              formControlName="abbrev"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+              placeholder="e.g. CS, IT"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Assign Dean</label
+            >
+            <div class="flex gap-4 mb-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deanMode"
+                  value="existing"
+                  [(ngModel)]="deanSelectionMode"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="cursor-pointer"
+                />
+                <span class="text-sm">Select Existing Dean</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deanMode"
+                  value="new"
+                  [(ngModel)]="deanSelectionMode"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="cursor-pointer"
+                />
+                <span class="text-sm">Add New Dean</span>
+              </label>
+            </div>
+
+            <div
+              *ngIf="
+                deanSelectionMode === 'existing' && availableDeans.length > 0
+              "
+            >
+              <p-select
+                [options]="availableDeans"
+                optionLabel="dean_name"
+                optionValue="dean_email"
+                placeholder="Select a dean"
+                class="w-full"
+                (onChange)="onDeanSelect($event)"
+                showClear="true"
+              >
+                <ng-template let-dean pTemplate="item">
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ dean.dean_name }}</span>
+                    <span class="text-xs text-gray-500">{{
+                      dean.dean_email
+                    }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </div>
+
+            <div
+              *ngIf="
+                deanSelectionMode === 'existing' && availableDeans.length === 0
+              "
+            >
+              <p class="text-sm text-gray-500 italic">
+                No existing deans found. Please add a new dean.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="deanSelectionMode === 'new' || availableDeans.length === 0"
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Name</label
+            >
+            <input
+              type="text"
+              formControlName="dean_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="deanSelectionMode === 'new' || availableDeans.length === 0"
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Email</label
+            >
+            <input
+              type="email"
+              formControlName="dean_email"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="deanSelectionMode === 'new' || availableDeans.length === 0"
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Contact</label
+            >
+            <input
+              type="text"
+              formControlName="dean_contact"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="handleAddDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 poppins-medium text-sm cursor-pointer"
+        >
+          Save Department
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update Modal -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold poppins-semibold">Update Department</h3>
+      <button
+        type="button"
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600 cursor-pointer"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="updateDepartmentForm" (ngSubmit)="submitUpdatedSubmit()">
+      <div class="p-6">
+        <p class="text-gray-600 mb-6 poppins-regular text-sm">
+          Update department information and dean details.
+        </p>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Department Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="department_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Abbreviation</label
+            >
+            <input
+              type="text"
+              formControlName="abbrev"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm"
+              >Assign/Reassign Dean</label
+            >
+            <div class="flex gap-4 mb-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="updateDeanMode"
+                  value="existing"
+                  [(ngModel)]="updateDeanSelectionMode"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="cursor-pointer"
+                />
+                <span class="text-sm">Select Existing Dean</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="updateDeanMode"
+                  value="new"
+                  [(ngModel)]="updateDeanSelectionMode"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="cursor-pointer"
+                />
+                <span class="text-sm">Enter Dean Info</span>
+              </label>
+            </div>
+
+            <div
+              *ngIf="
+                updateDeanSelectionMode === 'existing' &&
+                availableDeans.length > 0
+              "
+            >
+              <p-select
+                [options]="availableDeans"
+                optionLabel="dean_name"
+                optionValue="dean_email"
+                placeholder="Select a dean"
+                class="w-full"
+                (onChange)="onUpdateDeanSelect($event)"
+                showClear="true"
+              >
+                <ng-template let-dean pTemplate="item">
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ dean.dean_name }}</span>
+                    <span class="text-xs text-gray-500">{{
+                      dean.dean_email
+                    }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </div>
+
+            <div
+              *ngIf="
+                updateDeanSelectionMode === 'existing' &&
+                availableDeans.length === 0
+              "
+            >
+              <p class="text-sm text-gray-500 italic">
+                No existing deans found. Please enter dean information.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="
+              updateDeanSelectionMode === 'new' || availableDeans.length === 0
+            "
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Name</label
+            >
+            <input
+              type="text"
+              formControlName="dean_name"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="
+              updateDeanSelectionMode === 'new' || availableDeans.length === 0
+            "
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Email</label
+            >
+            <input
+              type="email"
+              formControlName="dean_email"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-2"
+            *ngIf="
+              updateDeanSelectionMode === 'new' || availableDeans.length === 0
+            "
+          >
+            <label class="font-semibold poppins-medium text-sm"
+              >Dean Contact</label
+            >
+            <input
+              type="text"
+              formControlName="dean_contact"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="font-semibold poppins-medium text-sm">Status</label>
+            <select
+              formControlName="status"
+              class="w-full border border-gray-300 rounded px-3 py-2 poppins-regular text-sm"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 poppins-medium text-sm cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 poppins-medium text-sm cursor-pointer"
+        >
+          Update Department
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

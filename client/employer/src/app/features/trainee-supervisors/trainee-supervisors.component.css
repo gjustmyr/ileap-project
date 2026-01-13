@@ -1,0 +1,84 @@
+/* Custom table styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Modal backdrop */
+.fixed.inset-0.bg-black {
+  backdrop-filter: blur(2px);
+}
+
+/* Modal dialog */
+.fixed.inset-0.flex {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Form input focus */
+input:focus,
+select:focus {
+  border-color: #22c55e !important;
+  ring: 2px;
+  ring-color: rgba(34, 197, 94, 0.2);
+}
+
+/* Button hover effects */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Table row hover animation */
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Status badge styles */
+.bg-green-100 {
+  background-color: #dcfce7;
+}
+
+.text-green-700 {
+  color: #15803d;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+
+.text-red-700 {
+  color: #b91c1c;
+}
+
+/* Custom scrollbar for modal if needed */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

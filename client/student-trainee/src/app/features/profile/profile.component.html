@@ -1,0 +1,456 @@
+<div class="p-4 max-w-6xl mx-auto">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">My Profile</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">Complete your Personal History Statement</p>
+  </div>
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <app-custom-stepper 
+      [steps]="steps" 
+      [activeStep]="currentStep"
+      (activeStepChange)="onStepChange($event)"
+      [linear]="true"
+    >
+      <!-- Step 0: Data Privacy Agreement -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-section">
+          <h3 class="text-2xl font-semibold mb-4 text-gray-800">Data Privacy Agreement</h3>
+          <div class="text-sm text-gray-700 mb-6 max-h-96 overflow-y-auto border border-gray-200 p-6 bg-white rounded-lg">
+            <p class="mb-4">
+              Pursuant to Republic Act No. 10173, also known as the Data Privacy Act of 2012, 
+              the Batangas State University, the National Engineering University, recognizes its 
+              commitment to protect and respect the privacy of its customers and/or stakeholders 
+              and ensure that all information collected from them are all processed in accordance 
+              with the principles of transparency, legitimate purpose and proportionality mandated 
+              under the Data Privacy Act of 2012.
+            </p>
+            <p class="mb-4">
+              I hereby certify that the foregoing answers are true and correct to the best of my 
+              knowledge, belief and ability. I understand that any false information may result in 
+              disqualification or termination from the OJT program.
+            </p>
+            <p class="font-semibold mb-4">
+              By checking the box below, I consent to the collection, use, and processing of my 
+              personal information for the purposes of the OJT program.
+            </p>
+            <p class="text-xs text-gray-600 mb-4">
+              Your personal information will be used for academic and administrative purposes related 
+              to the On-the-Job Training program. This includes but is not limited to: communication 
+              with training institutions, processing of requirements, monitoring of training progress, 
+              and generation of necessary reports. Your data will be kept confidential and will only 
+              be shared with authorized personnel and partner institutions as required by the program.
+            </p>
+          </div>
+          
+          <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <input 
+              type="checkbox" 
+              id="privacy"
+              [(ngModel)]="privacyAgreed" 
+              [ngModelOptions]="{standalone: true}"
+              class="mt-1 w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+            />
+            <label for="privacy" class="text-sm text-gray-700 cursor-pointer">
+              <strong>I have read and agree to the Data Privacy Agreement.</strong> I consent to the collection, 
+              processing, and storage of my personal information as described above.
+            </label>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-6">
+            <button 
+              type="button"
+              class="btn-primary"
+              (click)="nextStep()"
+              [disabled]="!privacyAgreed"
+            >
+              I Agree - Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Personal Information -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-section">
+          <!-- Profile Picture -->
+          <div class="mb-8 flex items-center gap-6">
+            <div class="relative">
+              <img 
+                [src]="profilePicture || 'assets/default-avatar.png'" 
+                alt="Profile Picture"
+                class="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+              />
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 mb-2">Upload your 1x1 photo</p>
+              <input 
+                type="file" 
+                accept="image/*"
+                (change)="onFileSelect($event)"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="form-field">
+              <label for="first_name">First Name *</label>
+              <input type="text" id="first_name" formControlName="first_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="middle_name">Middle Name</label>
+              <input type="text" id="middle_name" formControlName="middle_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="last_name">Last Name *</label>
+              <input type="text" id="last_name" formControlName="last_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="email">Email *</label>
+              <input type="email" id="email" formControlName="email" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="age">Age</label>
+              <input type="number" id="age" formControlName="age" class="form-input" readonly />
+              <p class="text-xs text-gray-500 mt-1">Auto-calculated from birthdate</p>
+            </div>
+
+            <div class="form-field">
+              <label for="sex">Sex</label>
+              <input type="text" id="sex" formControlName="sex" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="birthdate">Birthdate</label>
+              <input type="date" id="birthdate" formControlName="birthdate" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="birthplace">Birthplace</label>
+              <input type="text" id="birthplace" formControlName="birthplace" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="citizenship">Citizenship</label>
+              <input type="text" id="citizenship" formControlName="citizenship" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="civil_status">Civil Status</label>
+              <select id="civil_status" formControlName="civil_status" class="form-input">
+                <option value="">Select Civil Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Widowed">Widowed</option>
+                <option value="Separated">Separated</option>
+                <option value="Divorced">Divorced</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="height">Height</label>
+              <input type="text" id="height" formControlName="height" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="weight">Weight</label>
+              <input type="text" id="weight" formControlName="weight" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="complexion">Complexion</label>
+              <input type="text" id="complexion" formControlName="complexion" class="form-input" />
+            </div>
+
+            <div class="form-field md:col-span-2">
+              <label for="disability">Disability (if any)</label>
+              <input type="text" id="disability" formControlName="disability" class="form-input" />
+            </div>
+
+            <div class="form-field md:col-span-3">
+              <label for="about">About Me</label>
+              <textarea 
+                id="about" 
+                formControlName="about" 
+                class="form-input min-h-[120px]"
+                placeholder="Tell us about yourself, your interests, career goals, and what makes you a great candidate for internships..."
+              ></textarea>
+              <p class="text-xs text-gray-500 mt-1">
+                This will help match you with suitable internship opportunities
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button 
+              type="button"
+              class="btn-primary"
+              (click)="nextStep()"
+              [disabled]="!canProceedToNextStep(1)"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Contact Information -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="form-field md:col-span-2">
+              <label for="present_address">Present Address</label>
+              <input type="text" id="present_address" formControlName="present_address" class="form-input" />
+            </div>
+
+            <div class="form-field md:col-span-2">
+              <label for="provincial_address">Provincial Address</label>
+              <input type="text" id="provincial_address" formControlName="provincial_address" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="contact_number">Mobile Number</label>
+              <input type="tel" id="contact_number" formControlName="contact_number" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="tel_no_present">Telephone (Present)</label>
+              <input type="tel" id="tel_no_present" formControlName="tel_no_present" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="tel_no_provincial">Telephone (Provincial)</label>
+              <input type="tel" id="tel_no_provincial" formControlName="tel_no_provincial" class="form-input" />
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button type="button" class="btn-primary" (click)="nextStep()">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Family Background -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <div class="step-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="form-field">
+              <label for="father_name">Father's Name</label>
+              <input type="text" id="father_name" formControlName="father_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="father_occupation">Father's Occupation</label>
+              <input type="text" id="father_occupation" formControlName="father_occupation" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="mother_name">Mother's Name</label>
+              <input type="text" id="mother_name" formControlName="mother_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="mother_occupation">Mother's Occupation</label>
+              <input type="text" id="mother_occupation" formControlName="mother_occupation" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="guardian_name">Guardian's Name</label>
+              <input type="text" id="guardian_name" formControlName="guardian_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="guardian_tel_no">Guardian's Telephone</label>
+              <input type="tel" id="guardian_tel_no" formControlName="guardian_tel_no" class="form-input" />
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button type="button" class="btn-primary" (click)="nextStep()">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: School Information -->
+      <div class="step-content" *ngIf="currentStep === 4">
+        <div class="step-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="form-field">
+              <label for="program">Program</label>
+              <input type="text" id="program" formControlName="program" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="department">Department</label>
+              <input type="text" id="department" formControlName="department" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="year_level">Year Level</label>
+              <input type="text" id="year_level" formControlName="year_level" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="major">Major</label>
+              <input type="text" id="major" formControlName="major" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="ojt_coordinator">OJT Coordinator Name</label>
+              <input type="text" id="ojt_coordinator" formControlName="ojt_coordinator" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="ojt_coordinator_tel">OJT Coordinator Tel</label>
+              <input type="tel" id="ojt_coordinator_tel" formControlName="ojt_coordinator_tel" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="dean">Dean Name</label>
+              <input type="text" id="dean" formControlName="dean" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="dean_tel">Dean Contact</label>
+              <input type="tel" id="dean_tel" formControlName="dean_tel" class="form-input" />
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button type="button" class="btn-primary" (click)="nextStep()">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Skills -->
+      <div class="step-content" *ngIf="currentStep === 5">
+        <div class="step-section">
+          <h3 class="text-xl font-semibold mb-4">My Skills</h3>
+          
+          <!-- Add new skill -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Add a new skill</label>
+            <div class="flex gap-3">
+              <input 
+                type="text" 
+                [(ngModel)]="newSkillName"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Enter skill name (e.g., JavaScript, Python)"
+                class="form-input flex-1"
+                (keyup.enter)="addSkill()"
+              />
+              <button 
+                type="button"
+                class="btn-primary"
+                (click)="addSkill()"
+                [disabled]="!newSkillName.trim() || isAddingSkill"
+              >
+                <span *ngIf="!isAddingSkill">+ Add Skill</span>
+                <span *ngIf="isAddingSkill">Adding...</span>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              Add skills that are relevant to your field. If the skill doesn't exist, it will be created.
+            </p>
+          </div>
+
+          <!-- Current skills -->
+          <div class="mb-6">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Current Skills ({{ skills.length }})</h4>
+            <div *ngIf="skills.length === 0" class="text-gray-500 text-center py-8 bg-gray-50 rounded-lg">
+              <p>No skills added yet. Add your first skill above!</p>
+            </div>
+            <div *ngIf="skills.length > 0" class="flex flex-wrap gap-2">
+              <div 
+                *ngFor="let skill of skills" 
+                class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-full text-sm font-medium"
+              >
+                <span>{{ skill.skill_name }}</span>
+                <button 
+                  type="button"
+                  (click)="removeSkill(skill.skill_id)"
+                  class="text-red-600 hover:text-red-800 font-bold"
+                  title="Remove skill"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button type="button" class="btn-primary" (click)="nextStep()">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: Emergency Contact -->
+      <div class="step-content" *ngIf="currentStep === 6">
+        <div class="step-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="form-field">
+              <label for="emergency_contact_name">Contact Name</label>
+              <input type="text" id="emergency_contact_name" formControlName="emergency_contact_name" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="emergency_contact_relationship">Relationship</label>
+              <input type="text" id="emergency_contact_relationship" formControlName="emergency_contact_relationship" class="form-input" />
+            </div>
+
+            <div class="form-field md:col-span-2">
+              <label for="emergency_contact_address">Address</label>
+              <input type="text" id="emergency_contact_address" formControlName="emergency_contact_address" class="form-input" />
+            </div>
+
+            <div class="form-field">
+              <label for="emergency_contact_tel">Telephone</label>
+              <input type="tel" id="emergency_contact_tel" formControlName="emergency_contact_tel" class="form-input" />
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6">
+            <button type="button" class="btn-secondary" (click)="previousStep()">
+              ← Back
+            </button>
+            <button 
+              type="submit"
+              class="btn-primary"
+              [disabled]="profileForm.invalid || isSaving"
+            >
+              <span *ngIf="!isSaving">Save Profile ✓</span>
+              <span *ngIf="isSaving">Saving...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </app-custom-stepper>
+  </form>
+</div>

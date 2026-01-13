@@ -1,0 +1,308 @@
+<div class="p-4">
+  <!-- Header -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      Student Applications
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Review and manage internship applications from students
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Search</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search by student name, email, or position..."
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:border-green-500"
+      />
+    </div>
+    <div>
+      <label class="block text-sm text-gray-600 mb-1 poppins-medium"
+        >Status</label
+      >
+      <select
+        [(ngModel)]="statusFilter"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:border-green-500"
+      >
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Filter Action Buttons -->
+  <div class="flex gap-3 mb-6">
+    <button
+      (click)="applyFilters()"
+      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Apply Filters
+    </button>
+    <button
+      (click)="resetFilters()"
+      class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+    >
+      Reset Filters
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <p class="text-gray-600">Loading applications...</p>
+  </div>
+
+  <!-- Applications Table -->
+  <div *ngIf="!isLoading" class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50 border-b">
+        <tr>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Student
+          </th>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Position
+          </th>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Program
+          </th>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Applied Date
+          </th>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Status
+          </th>
+          <th
+            class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase poppins-medium"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr
+          *ngFor="let app of filteredApplications; let odd = odd"
+          [class.bg-gray-50]="odd"
+        >
+          <td class="px-4 py-3">
+            <div class="poppins-medium text-sm">{{ app.student_name }}</div>
+            <div class="text-xs text-gray-500">{{ app.student_email }}</div>
+          </td>
+          <td class="px-4 py-3 text-sm poppins-regular">
+            {{ app.internship_title }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+            {{ app.student_program }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+            {{ app.applied_at | date : "MMM dd, yyyy" }}
+          </td>
+          <td class="px-4 py-3">
+            <span
+              [class]="getStatusClass(app.status)"
+              class="px-2 py-1 rounded text-xs font-medium poppins-medium"
+            >
+              {{ app.status }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <button
+              (click)="viewApplication(app)"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+            >
+              View Details
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredApplications.length === 0">
+          <td
+            colspan="6"
+            class="px-4 py-8 text-center text-gray-500 poppins-regular"
+          >
+            No applications found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Application Dialog -->
+<div
+  *ngIf="showViewDialog && selectedApplication"
+  class="fixed inset-0 z-50 overflow-y-auto"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Header -->
+      <div
+        class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+      >
+        <h2 class="text-xl font-semibold text-gray-800">Application Details</h2>
+        <button
+          (click)="showViewDialog = false"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+
+      <div class="p-6 bg-white text-sm">
+        <!-- Student Info -->
+        <div class="mb-6 pb-4 border-b">
+          <h3 class="font-semibold text-lg poppins-semibold mb-3">
+            Student Information
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-600 poppins-medium">Name</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_name }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 poppins-medium">Email</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_email }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 poppins-medium">Program</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_program }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 poppins-medium">Applied Date</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.applied_at | date : "MMMM dd, yyyy" }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div
+            class="mt-4"
+            *ngIf="selectedApplication.student_skills?.length > 0"
+          >
+            <p class="text-sm text-gray-600 poppins-medium mb-2">Skills</p>
+            <div class="flex flex-wrap gap-2">
+              <span
+                *ngFor="let skill of selectedApplication.student_skills"
+                class="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full poppins-regular"
+              >
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Position Applied -->
+        <div class="mb-6 pb-4 border-b">
+          <h3 class="font-semibold text-lg poppins-semibold mb-2">
+            Position Applied
+          </h3>
+          <p class="poppins-regular">
+            {{ selectedApplication.internship_title }}
+          </p>
+        </div>
+
+        <!-- Cover Letter -->
+        <div class="mb-6 pb-4 border-b">
+          <h3 class="font-semibold text-lg poppins-semibold mb-3">
+            Cover Letter
+          </h3>
+          <div
+            class="bg-gray-50 p-4 rounded whitespace-pre-line poppins-regular text-sm"
+          >
+            {{ selectedApplication.application_letter }}
+          </div>
+        </div>
+
+        <!-- Resume -->
+        <div class="mb-6 pb-4 border-b" *ngIf="selectedApplication.resume_path">
+          <h3 class="font-semibold text-lg poppins-semibold mb-3">Resume</h3>
+          <button
+            (click)="downloadResume(selectedApplication.resume_path)"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+          >
+            Download Resume
+          </button>
+        </div>
+
+        <!-- Status & Remarks -->
+        <div class="mb-6" *ngIf="selectedApplication.status !== 'pending'">
+          <h3 class="font-semibold text-lg poppins-semibold mb-3">Status</h3>
+          <span
+            [class]="getStatusClass(selectedApplication.status)"
+            class="px-3 py-1 rounded font-medium poppins-medium"
+          >
+            {{ selectedApplication.status }}
+          </span>
+          <div *ngIf="selectedApplication.remarks" class="mt-3">
+            <p class="text-sm text-gray-600 poppins-medium mb-1">Remarks</p>
+            <p class="poppins-regular text-sm">
+              {{ selectedApplication.remarks }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div
+          class="flex gap-3 justify-end"
+          *ngIf="selectedApplication.status === 'pending'"
+        >
+          <button
+            (click)="openAcceptDialog(selectedApplication)"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+          >
+            Accept Application
+          </button>
+          <button
+            (click)="openRejectDialog(selectedApplication)"
+            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+          >
+            Reject Application
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

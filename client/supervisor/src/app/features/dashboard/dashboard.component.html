@@ -1,0 +1,81 @@
+<div>
+  <div class="mb-6">
+    <h1 class="text-3xl poppins-bold text-gray-800">Dashboard</h1>
+    <p class="text-gray-600 mt-1 poppins-regular">
+      Overview of supervisor operations and student monitoring
+    </p>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white border border-gray-200 rounded-lg px-4 py-5 flex items-start space-x-3">
+        <i class="pi pi-users text-blue-500 text-2xl mt-1"></i>
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Total Students</p>
+          <p class="text-2xl poppins-bold text-gray-800">{{ stats.total_students || 0 }}</p>
+        </div>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg px-4 py-5 flex items-start space-x-3">
+        <i class="pi pi-clock text-yellow-500 text-2xl mt-1"></i>
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Pending Validations</p>
+          <p class="text-2xl poppins-bold text-gray-800">{{ stats.pending_validations || 0 }}</p>
+        </div>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg px-4 py-5 flex items-start space-x-3">
+        <i class="pi pi-exclamation-triangle text-red-500 text-2xl mt-1"></i>
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Records with Warnings</p>
+          <p class="text-2xl poppins-bold text-gray-800">{{ stats.records_with_warnings || 0 }}</p>
+        </div>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg px-4 py-5 flex items-start space-x-3">
+        <i class="pi pi-calendar text-green-500 text-2xl mt-1"></i>
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Recent Records</p>
+          <p class="text-2xl poppins-bold text-gray-800">{{ stats.recent_records || 0 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl poppins-semibold text-gray-800 mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button
+          (click)="navigateToTab(1)"
+          class="flex items-center justify-center px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition poppins-medium"
+        >
+          <i class="pi pi-users mr-2"></i>
+          View My Students
+        </button>
+        <button
+          (click)="navigateToTab(2)"
+          class="flex items-center justify-center px-4 py-3 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg transition poppins-medium"
+        >
+          <i class="pi pi-calendar-check mr-2"></i>
+          Check Attendance
+        </button>
+        <button
+          (click)="navigateToTab(3)"
+          class="flex items-center justify-center px-4 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition poppins-medium"
+        >
+          <i class="pi pi-file-pdf mr-2"></i>
+          Submit Appraisal
+        </button>
+        <button
+          (click)="navigateToTab(4)"
+          class="flex items-center justify-center px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition poppins-medium"
+        >
+          <i class="pi pi-user mr-2"></i>
+          Manage Profile
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

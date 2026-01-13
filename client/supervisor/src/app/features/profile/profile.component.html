@@ -1,0 +1,88 @@
+<div>
+  <div class="mb-6">
+    <h1 class="text-3xl poppins-bold text-gray-800">Profile</h1>
+    <p class="text-gray-600 mt-1 poppins-regular">Manage your supervisor account information</p>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+  </div>
+
+  <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-sm p-6">
+    <form (ngSubmit)="updateProfile()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm poppins-medium text-gray-700 mb-2">First Name</label>
+          <input
+            type="text"
+            [(ngModel)]="profile.first_name"
+            name="first_name"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+          />
+        </div>
+        <div>
+          <label class="block text-sm poppins-medium text-gray-700 mb-2">Last Name</label>
+          <input
+            type="text"
+            [(ngModel)]="profile.last_name"
+            name="last_name"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Email</label>
+        <input
+          type="email"
+          [(ngModel)]="profile.email"
+          name="email"
+          disabled
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed poppins-regular"
+        />
+        <p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Phone Number</label>
+        <input
+          type="text"
+          [(ngModel)]="profile.phone_number"
+          name="phone_number"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Position</label>
+        <input
+          type="text"
+          [(ngModel)]="profile.position"
+          name="position"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Department</label>
+        <input
+          type="text"
+          [(ngModel)]="profile.department"
+          name="department"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+        />
+      </div>
+
+      <div class="pt-4">
+        <button
+          type="submit"
+          class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg poppins-medium transition"
+        >
+          <i class="pi pi-save mr-2"></i>Update Profile
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

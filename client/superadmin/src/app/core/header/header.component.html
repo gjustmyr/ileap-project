@@ -1,0 +1,23 @@
+<header class="h-full flex items-center bg-red-600 text-white">
+  <div class="h-full w-full flex items-center justify-between px-4">
+    <div class="flex items-center gap-x-4">
+      <button
+        class="hover:bg-white hover:text-red-500 py-3 px-3 rounded transition duration-300 delay-150"
+        (click)="onToggleSidebar()"
+      >
+        <i class="pi pi-bars"></i>
+      </button>
+      <h1 class="text-2xl uppercase poppins-semibold">
+        {{ pageTitle }}
+      </h1>
+    </div>
+    <button
+      class="hover:bg-white hover:text-red-500 py-2 px-4 rounded transition duration-300 delay-150 flex items-center gap-2"
+      (click)="logout()"
+      title="Logout"
+    >
+      <i class="pi pi-sign-out"></i>
+      <span class="text-sm poppins-medium">Logout</span>
+    </button>
+  </div>
+</header>

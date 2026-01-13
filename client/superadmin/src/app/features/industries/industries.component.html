@@ -1,0 +1,337 @@
+<main class="p-6 bg-white">
+  <div class="container">
+    <!-- Title -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Industries
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Manage industry categories for employers
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls mb-4 flex justify-between items-center gap-3">
+      <div class="flex gap-3 flex-1">
+        <div class="w-[300px]">
+          <div
+            class="flex border border-gray-300 rounded overflow-hidden bg-white"
+          >
+            <input
+              type="text"
+              placeholder="Search industries..."
+              [(ngModel)]="keyword"
+              (keyup.enter)="handleSearch()"
+              class="flex-1 px-3 py-2 text-sm poppins-regular outline-none"
+            />
+            <button
+              (click)="handleSearch()"
+              class="px-3 py-2 bg-gray-100 hover:bg-gray-200 border-l border-gray-300"
+            >
+              <i class="pi pi-search text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2"
+        (click)="handleAddDialog()"
+      >
+        <i class="pi pi-plus"></i>
+        Add Industry
+      </button>
+    </div>
+
+    <div class="card poppins-regular text-sm">
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
+                ID
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[70%] text-sm"
+              >
+                Industry Name
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
+                Status
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let row of industries; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ row.industry_id }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ row.industry_name }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <span
+                  class="px-2 py-1 rounded text-sm poppins-medium"
+                  [ngClass]="
+                    row.status === 'active'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  "
+                >
+                  {{ row.status === "active" ? "Active" : "Disabled" }}
+                </span>
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 poppins-regular"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex gap-1">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleUpdateDialog(row.industry_id)"
+                    title="Edit Industry"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    class="bg-yellow-500 hover:bg-yellow-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleStatusDialog(row)"
+                    title="Change Status"
+                  >
+                    <i class="pi pi-ban"></i>
+                  </button>
+                  <button
+                    class="bg-red-500 hover:bg-red-600 p-2 text-white text-sm rounded cursor-pointer"
+                    (click)="handleDelete(row.industry_id, row.industry_name)"
+                    title="Delete Industry"
+                  >
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="industries.length === 0">
+              <td
+                colspan="4"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No industries found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between px-4 py-3 border-t border-gray-300 bg-gray-50"
+      >
+        <div class="text-sm text-gray-600 poppins-regular">
+          Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of
+          {{ totalRecords }} entries
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="previousPage()"
+            [disabled]="pageNo === 1"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600 poppins-regular"
+            >Page {{ pageNo }} of {{ getTotalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            [disabled]="pageNo >= getTotalPages()"
+            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-regular text-sm"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Industry Modal -->
+<div
+  *ngIf="isAddDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold">Add Industry</h3>
+      <button
+        type="button"
+        (click)="handleAddDialog()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="industryForm" (ngSubmit)="submitIndustryForm()">
+      <div class="p-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            Industry Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="industry_name"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            placeholder="e.g., Information Technology"
+          />
+          <div
+            *ngIf="
+              industryForm.get('industry_name')?.invalid &&
+              industryForm.get('industry_name')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Industry name is required (max 100 characters)
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="handleAddDialog()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm poppins-medium"
+        >
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update Industry Modal -->
+<div
+  *ngIf="isUpdateDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold">Update Industry</h3>
+      <button
+        type="button"
+        (click)="isUpdateDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="industryUpdateForm" (ngSubmit)="submitUpdateForm()">
+      <div class="p-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            Industry Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="industry_name"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+            placeholder="e.g., Information Technology"
+          />
+          <div
+            *ngIf="
+              industryUpdateForm.get('industry_name')?.invalid &&
+              industryUpdateForm.get('industry_name')?.touched
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Industry name is required (max 100 characters)
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button
+          type="button"
+          (click)="isUpdateDialogVisible = false"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm poppins-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm poppins-medium"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div
+  *ngIf="isStatusDialogVisible"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h3 class="text-lg font-semibold">Change Industry Status</h3>
+      <button
+        type="button"
+        (click)="isStatusDialogVisible = false"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="p-6">
+      <p class="mb-4 text-sm text-gray-700">
+        Current status:
+        <span class="font-semibold">{{ selectedIndustry?.status }}</span>
+      </p>
+      <div class="flex gap-2 justify-end">
+        <button
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm poppins-medium"
+          (click)="updateIndustryStatus('active')"
+        >
+          Enable
+        </button>
+        <button
+          class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm poppins-medium"
+          (click)="updateIndustryStatus('disabled')"
+        >
+          Disable
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

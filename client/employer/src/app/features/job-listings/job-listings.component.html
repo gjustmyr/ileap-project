@@ -1,0 +1,635 @@
+<div class="p-4">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      Job Listings
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Manage your internship and job placement postings
+    </p>
+  </div>
+
+  <main class="job-placement">
+    <div class="container">
+      <!-- Tabs -->
+      <div class="mb-6 border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            type="button"
+            (click)="switchTab('internship')"
+            [disabled]="!canAccessTab('internship')"
+            [class]="
+              activeTab === 'internship'
+                ? 'border-green-500 text-green-600 border-b-2 py-4 px-1 text-sm font-medium poppins-medium'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium poppins-regular'
+            "
+            [class.opacity-50]="!canAccessTab('internship')"
+            [class.cursor-not-allowed]="!canAccessTab('internship')"
+          >
+            Internship
+            <span *ngIf="!canAccessTab('internship')" class="ml-2 text-xs"
+              >(Not Eligible)</span
+            >
+          </button>
+          <button
+            type="button"
+            (click)="switchTab('job_placement')"
+            [disabled]="!canAccessTab('job_placement')"
+            [class]="
+              activeTab === 'job_placement'
+                ? 'border-green-500 text-green-600 border-b-2 py-4 px-1 text-sm font-medium poppins-medium'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium poppins-regular'
+            "
+            [class.opacity-50]="!canAccessTab('job_placement')"
+            [class.cursor-not-allowed]="!canAccessTab('job_placement')"
+          >
+            Job Placement
+            <span *ngIf="!canAccessTab('job_placement')" class="ml-2 text-xs"
+              >(Not Eligible)</span
+            >
+          </button>
+        </nav>
+      </div>
+
+      <div class="control">
+        <div class="mb-4 flex items-center justify-between">
+          <div class="flex gap-2">
+            <input
+              type="text"
+              class="border border-gray-300 py-2 poppins-regular text-sm px-3 outline-none focus:outline-none rounded w-[200px]"
+              placeholder="Search internships..."
+              [(ngModel)]="keyword"
+              (input)="onSearchChange()"
+            />
+          </div>
+          <button
+            type="button"
+            class="bg-green-500 text-sm text-white px-4 py-2 rounded poppins-medium"
+            (click)="openAddDialog()"
+            [disabled]="!canAccessTab(activeTab)"
+          >
+            + Add
+            {{ activeTab === "internship" ? "Internship" : "Job Posting" }}
+          </button>
+        </div>
+      </div>
+      <div class="card poppins-regular text-xs">
+        <p-table
+          [value]="internships"
+          showGridlines
+          [tableStyle]="{ 'min-width': '60rem' }"
+          [paginator]="true"
+          [rows]="pageSize"
+          [totalRecords]="totalRecords"
+          [lazy]="true"
+          [rowsPerPageOptions]="[5, 10, 20, 30]"
+          (onLazyLoad)="onPageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="w-[20%]" pSortableColumn="title">
+                Title <p-sortIcon field="title" />
+              </th>
+              <th class="w-[30%]">Description</th>
+              <th class="w-[18%]">Skills</th>
+              <th class="w-[10%]" pSortableColumn="status">
+                Status <p-sortIcon field="status" />
+              </th>
+              <th class="w-[10%]">Posted</th>
+              <th class="w-[12%]">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-internship let-rowIndex="rowIndex">
+            <tr class="transition-colors duration-200 hover:bg-gray-200">
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                {{ internship.title }}
+              </td>
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                <div
+                  class="line-clamp-2 text-sm"
+                  [innerHTML]="internship.full_description || '-'"
+                ></div>
+              </td>
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    *ngFor="let skill of internship.skills?.slice(0, 3)"
+                    class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs poppins-regular"
+                  >
+                    {{ skill.skill_name }}
+                  </span>
+                  <span
+                    *ngIf="internship.skills && internship.skills.length > 3"
+                    class="px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs poppins-regular"
+                  >
+                    +{{ internship.skills.length - 3 }} more
+                  </span>
+                  <span
+                    *ngIf="!internship.skills || internship.skills.length === 0"
+                    class="text-gray-400 text-xs"
+                  >
+                    No skills
+                  </span>
+                </div>
+              </td>
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                <span
+                  [class]="getStatusClass(internship.status)"
+                  class="px-2 py-1 rounded text-xs font-medium poppins-medium"
+                >
+                  {{ internship.status || "Draft" }}
+                </span>
+              </td>
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                {{ internship.created_at | date : "mediumDate" }}
+              </td>
+              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+                <div class="flex gap-2">
+                  <button
+                    (click)="viewInternship(internship)"
+                    class="text-green-600 hover:text-green-800 text-xs poppins-medium"
+                  >
+                    View
+                  </button>
+                  <button
+                    *ngIf="
+                      internship.status === 'draft' ||
+                      internship.status === 'rejected'
+                    "
+                    (click)="editInternship(internship)"
+                    class="text-blue-600 hover:text-blue-800 text-xs poppins-medium"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Internship Modal -->
+  <div
+    *ngIf="showAddDialog"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div
+        class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Header -->
+        <div
+          class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+        >
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ isEditMode ? "Edit" : "Add" }}
+            {{ activeTab === "internship" ? "Internship" : "Job Posting" }}
+          </h2>
+          <button
+            type="button"
+            (click)="showAddDialog = false"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 bg-white text-sm">
+          <form
+            [formGroup]="internshipForm"
+            (ngSubmit)="submitInternship()"
+            class="space-y-6"
+          >
+            <!-- Title -->
+            <div class="flex flex-col">
+              <label
+                for="title"
+                class="text-sm font-medium mb-1 poppins-medium"
+              >
+                Title <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 outline-none focus:border-green-500"
+                placeholder="Enter title"
+              />
+              <small
+                *ngIf="
+                  internshipForm.get('title')?.invalid &&
+                  internshipForm.get('title')?.touched
+                "
+                class="text-red-500"
+              >
+                Title is required.
+              </small>
+            </div>
+
+            <!-- Full Description -->
+            <div class="flex flex-col">
+              <label
+                for="full_description"
+                class="text-sm font-medium mb-1 poppins-medium"
+              >
+                Full Description <span class="text-red-500">*</span>
+              </label>
+              <p-editor
+                formControlName="full_description"
+                [style]="{ height: '320px' }"
+              >
+                <ng-template pTemplate="header">
+                  <span class="ql-formats">
+                    <button
+                      type="button"
+                      class="ql-bold"
+                      aria-label="Bold"
+                    ></button>
+                    <button
+                      type="button"
+                      class="ql-italic"
+                      aria-label="Italic"
+                    ></button>
+                    <button
+                      type="button"
+                      class="ql-underline"
+                      aria-label="Underline"
+                    ></button>
+                  </span>
+                  <span class="ql-formats">
+                    <button
+                      type="button"
+                      class="ql-list"
+                      value="ordered"
+                      aria-label="Ordered List"
+                    ></button>
+                    <button
+                      type="button"
+                      class="ql-list"
+                      value="bullet"
+                      aria-label="Bullet List"
+                    ></button>
+                  </span>
+                  <span class="ql-formats">
+                    <button
+                      type="button"
+                      class="ql-link"
+                      aria-label="Link"
+                    ></button>
+                  </span>
+                </ng-template>
+              </p-editor>
+              <small
+                *ngIf="
+                  internshipForm.get('full_description')?.invalid &&
+                  internshipForm.get('full_description')?.touched
+                "
+                class="text-red-500 mt-1"
+              >
+                Full description is required.
+              </small>
+            </div>
+
+            <!-- Skills -->
+            <div class="flex flex-col">
+              <label
+                for="skills"
+                class="text-sm font-medium mb-1 poppins-medium"
+              >
+                Required Skills
+              </label>
+              <p-chips
+                formControlName="skills"
+                placeholder="Type and press Enter to add skills"
+                styleClass="w-full"
+                [allowDuplicate]="false"
+                separator=","
+              >
+                <ng-template let-item pTemplate="item">
+                  <div
+                    class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
+                  >
+                    {{ item }}
+                  </div>
+                </ng-template>
+              </p-chips>
+              <div class="mt-2" *ngIf="skills.length > 0">
+                <small class="text-gray-500 text-xs block mb-1"
+                  >Or select from existing:</small
+                >
+                <div class="flex flex-wrap gap-1">
+                  <button
+                    *ngFor="let skill of skills"
+                    type="button"
+                    (click)="addSkillFromList(skill.skill_name)"
+                    class="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 rounded border border-gray-300 hover:border-blue-400 transition-colors"
+                  >
+                    + {{ skill.skill_name }}
+                  </button>
+                </div>
+              </div>
+              <small class="text-gray-500 text-xs mt-1">
+                Type skill names and press Enter, or click existing skills below
+                to add them.
+              </small>
+            </div>
+
+            <!-- Draft Status -->
+            <div class="flex items-center gap-2">
+              <input
+                id="is_draft"
+                type="checkbox"
+                formControlName="is_draft"
+                class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <label for="is_draft" class="text-sm font-medium poppins-regular">
+                Save as Draft
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end pt-2">
+              <button
+                type="submit"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium"
+                [disabled]="internshipForm.invalid"
+              >
+                {{ isEditMode ? "Update" : "Submit" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Internship Modal -->
+  <div
+    *ngIf="showViewDialog && selectedInternship"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div
+        class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Header -->
+        <div
+          class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+        >
+          <h2 class="text-xl font-semibold text-gray-800">
+            View
+            {{
+              selectedInternship.posting_type === "internship"
+                ? "Internship"
+                : "Job Posting"
+            }}
+          </h2>
+          <button
+            type="button"
+            (click)="showViewDialog = false"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 bg-white text-sm space-y-4">
+          <!-- Title -->
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Title
+            </label>
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+            >
+              {{ selectedInternship.title }}
+            </p>
+          </div>
+
+          <!-- Full Description -->
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Full Description
+            </label>
+            <div
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50 min-h-[200px]"
+              [innerHTML]="selectedInternship.full_description"
+            ></div>
+          </div>
+
+          <!-- Skills -->
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Required Skills
+            </label>
+            <div
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm bg-gray-50 min-h-[50px]"
+            >
+              <div
+                class="flex flex-wrap gap-2"
+                *ngIf="
+                  selectedInternship.skills &&
+                  selectedInternship.skills.length > 0
+                "
+              >
+                <span
+                  *ngFor="let skill of selectedInternship.skills"
+                  class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
+                >
+                  {{ skill.skill_name }}
+                </span>
+              </div>
+              <span
+                *ngIf="
+                  !selectedInternship.skills ||
+                  selectedInternship.skills.length === 0
+                "
+                class="text-gray-400"
+              >
+                No skills specified
+              </span>
+            </div>
+          </div>
+
+          <!-- Status with Dropdown -->
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Status
+            </label>
+            <select
+              [(ngModel)]="selectedInternship.status"
+              (change)="changeStatus(selectedInternship.status)"
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 outline-none focus:border-green-500"
+              [disabled]="selectedInternship.status === 'pending'"
+            >
+              <!-- Draft: can submit for approval -->
+              <option
+                value="draft"
+                *ngIf="selectedInternship.status === 'draft'"
+              >
+                Draft
+              </option>
+              <option
+                value="pending"
+                *ngIf="selectedInternship.status === 'draft'"
+              >
+                Submit for Approval
+              </option>
+
+              <!-- Pending: waiting for OJT Head approval (read-only) -->
+              <option
+                value="pending"
+                *ngIf="selectedInternship.status === 'pending'"
+              >
+                Pending Approval
+              </option>
+
+              <!-- Approved/Open: can close -->
+              <option
+                value="open"
+                *ngIf="
+                  selectedInternship.status === 'approved' ||
+                  selectedInternship.status === 'open'
+                "
+              >
+                Open
+              </option>
+              <option
+                value="closed"
+                *ngIf="
+                  selectedInternship.status === 'approved' ||
+                  selectedInternship.status === 'open'
+                "
+              >
+                Close
+              </option>
+
+              <!-- Closed: can reopen -->
+              <option
+                value="closed"
+                *ngIf="selectedInternship.status === 'closed'"
+              >
+                Closed
+              </option>
+              <option
+                value="open"
+                *ngIf="selectedInternship.status === 'closed'"
+              >
+                Reopen
+              </option>
+
+              <!-- Rejected: can edit and resubmit -->
+              <option
+                value="rejected"
+                *ngIf="selectedInternship.status === 'rejected'"
+              >
+                Rejected
+              </option>
+              <option
+                value="pending"
+                *ngIf="selectedInternship.status === 'rejected'"
+              >
+                Resubmit for Approval
+              </option>
+            </select>
+            <span
+              *ngIf="selectedInternship.status === 'pending'"
+              class="text-xs text-gray-500 italic mt-1"
+            >
+              Waiting for OJT Head approval
+            </span>
+          </div>
+
+          <!-- Dates -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium mb-1 poppins-medium">
+                Posted On
+              </label>
+              <p
+                class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+              >
+                {{ selectedInternship.created_at | date : "mediumDate" }}
+              </p>
+            </div>
+            <div
+              class="flex flex-col"
+              *ngIf="
+                selectedInternship.updated_at !== selectedInternship.created_at
+              "
+            >
+              <label class="text-sm font-medium mb-1 poppins-medium">
+                Last Updated
+              </label>
+              <p
+                class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+              >
+                {{ selectedInternship.updated_at | date : "mediumDate" }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              (click)="showViewDialog = false"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 poppins-medium"
+            >
+              Close
+            </button>
+            <button
+              *ngIf="
+                selectedInternship.status === 'draft' ||
+                selectedInternship.status === 'rejected'
+              "
+              type="button"
+              (click)="
+                showViewDialog = false; editInternship(selectedInternship)
+              "
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

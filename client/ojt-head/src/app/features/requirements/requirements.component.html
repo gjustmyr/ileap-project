@@ -1,0 +1,301 @@
+<div class="p-6 poppins-regular">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 poppins-semibold">
+      OJT Requirements Management
+    </h1>
+    <p class="text-sm text-gray-600 mt-1">
+      Manage pre and post-OJT requirement templates
+    </p>
+  </div>
+
+  <!-- Filters and Actions -->
+  <div class="mb-6 flex flex-wrap gap-4 items-center">
+    <div class="flex-1 min-w-[250px]">
+      <input
+        type="text"
+        [(ngModel)]="searchKeyword"
+        (ngModelChange)="applyFilters()"
+        placeholder="Search requirements..."
+        class="w-full px-4 py-2 border border-gray-300 rounded-md"
+      />
+    </div>
+    <select
+      [(ngModel)]="filterType"
+      (ngModelChange)="applyFilters()"
+      class="px-4 py-2 border border-gray-300 rounded-md"
+    >
+      <option value="all">All Types</option>
+      <option value="pre">Pre-OJT</option>
+      <option value="post">Post-OJT</option>
+    </select>
+    <button
+      (click)="openAddModal()"
+      class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md poppins-medium"
+    >
+      <i class="pi pi-plus mr-2"></i>Add Requirement
+    </button>
+  </div>
+
+  <!-- Requirements Table -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50 border-b">
+        <tr>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            ID
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Title
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Type
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Template
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Required
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase"
+          >
+            Access
+          </th>
+          <th
+            class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let req of filteredRequirements" class="hover:bg-gray-50">
+          <td class="px-4 py-3 text-sm">{{ req.requirement_id }}</td>
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">{{ req.title }}</div>
+            <div class="text-xs text-gray-500">{{ req.description }}</div>
+          </td>
+          <td class="px-4 py-3">
+            <span
+              class="px-2 py-1 text-xs rounded-full"
+              [class.bg-blue-100]="req.type === 'pre'"
+              [class.text-blue-800]="req.type === 'pre'"
+              [class.bg-purple-100]="req.type === 'post'"
+              [class.text-purple-800]="req.type === 'post'"
+            >
+              {{ req.type === "pre" ? "Pre-OJT" : "Post-OJT" }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-sm">
+            <a
+              *ngIf="req.template_url"
+              [href]="environment.apiUrl + req.template_url"
+              target="_blank"
+              class="text-blue-600 hover:underline"
+            >
+              <i class="pi pi-download mr-1"></i>Download
+            </a>
+            <span *ngIf="!req.template_url" class="text-gray-400"
+              >No template</span
+            >
+          </td>
+          <td class="px-4 py-3">
+            <span
+              class="px-2 py-1 text-xs rounded-full"
+              [class.bg-green-100]="req.is_required"
+              [class.text-green-800]="req.is_required"
+              [class.bg-gray-100]="!req.is_required"
+              [class.text-gray-800]="!req.is_required"
+            >
+              {{ req.is_required ? "Required" : "Optional" }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-xs text-gray-600">
+            {{ req.accessible_to }}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button
+              (click)="openEditModal(req)"
+              class="text-blue-600 hover:text-blue-800 mr-3"
+              title="Edit"
+            >
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              (click)="deleteRequirement(req.template_id)"
+              class="text-red-600 hover:text-red-800"
+              title="Delete"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredRequirements.length === 0">
+          <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+            <i class="pi pi-inbox text-4xl mb-2 block"></i>
+            No requirements found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Modal (Transparent Background) -->
+<div
+  *ngIf="showAddModal || showEditModal"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  style="background-color: rgba(0, 0, 0, 0.5)"
+  (click)="closeModals()"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header -->
+    <div
+      class="px-6 py-4 border-b border-gray-200 flex items-center justify-between"
+    >
+      <h2 class="text-xl font-semibold text-gray-800">
+        {{ showEditModal ? "Edit Requirement" : "Add Requirement" }}
+      </h2>
+      <button (click)="closeModals()" class="text-gray-400 hover:text-gray-600">
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="px-6 py-4 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Order Index</label
+        >
+        <input
+          type="number"
+          [(ngModel)]="formData.order_index"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="Display order (1, 2, 3...)"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Title *</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="formData.title"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="e.g., Medical Certificate"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Description</label
+        >
+        <textarea
+          [(ngModel)]="formData.description"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="Describe this requirement..."
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Type *</label
+          >
+          <select
+            [(ngModel)]="formData.type"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <option value="pre">Pre-OJT</option>
+            <option value="post">Post-OJT</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Required</label
+          >
+          <select
+            [(ngModel)]="formData.is_required"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <option [ngValue]="true">Yes</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Accessible To *</label
+        >
+        <div class="space-y-2">
+          <div *ngFor="let role of availableRoles" class="flex items-center">
+            <input
+              type="checkbox"
+              [id]="role.value"
+              [checked]="isRoleSelected(role.value)"
+              (change)="toggleRole(role.value)"
+              class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label
+              [for]="role.value"
+              class="ml-2 text-sm text-gray-700 cursor-pointer"
+            >
+              {{ role.label }}
+            </label>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+          Select who can view this requirement
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Template File (Optional)</label
+        >
+        <input
+          type="file"
+          (change)="onFileSelected($event)"
+          accept=".pdf,.doc,.docx,.xls,.xlsx"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md"
+        />
+        <p class="text-xs text-gray-500 mt-1">
+          Upload a template file for students to download
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+      <button
+        (click)="closeModals()"
+        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="saveRequirement()"
+        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+      >
+        {{ showEditModal ? "Update" : "Create" }}
+      </button>
+    </div>
+  </div>
+</div>

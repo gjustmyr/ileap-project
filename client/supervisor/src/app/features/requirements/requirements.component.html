@@ -1,0 +1,107 @@
+<div class="p-4">
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Performance Appraisal</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Download appraisal form template and submit completed evaluations
+    </p>
+  </div>
+
+  <!-- Download Template Section -->
+  <div
+    class="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-6 mb-6"
+  >
+    <div class="flex items-start gap-4">
+      <div class="bg-blue-500 text-white p-3 rounded-lg">
+        <i class="pi pi-download text-2xl"></i>
+      </div>
+      <div class="flex-1">
+        <h2 class="text-lg poppins-semibold text-blue-900 mb-2">
+          Performance Appraisal Form Template
+        </h2>
+        <p class="text-sm text-blue-800 poppins-regular mb-4">
+          Download the official performance appraisal form template. Fill it out for your assigned
+          students and upload the completed form below.
+        </p>
+        <button
+          (click)="downloadTemplate()"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        >
+          <i class="pi pi-download mr-2"></i>
+          Download Appraisal Form Template
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <h2 class="text-lg poppins-semibold text-gray-800 mb-4">Submit Performance Appraisal</h2>
+    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+      <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+    </div>
+
+    <div *ngIf="!isLoading" class="space-y-6">
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2">Select Student</label>
+        <select
+          [(ngModel)]="selectedStudentId"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent poppins-regular"
+        >
+          <option [value]="null">-- Choose a student --</option>
+          <option *ngFor="let student of students" [value]="student.id">
+            {{ student.first_name }} {{ student.last_name }} ({{ student.student_number }})
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm poppins-medium text-gray-700 mb-2"
+          >Upload Performance Appraisal (PDF)</label
+        >
+        <div class="flex items-center">
+          <input
+            type="file"
+            id="fileInput"
+            accept=".pdf"
+            (change)="onFileSelect($event)"
+            class="block w-full text-sm text-gray-500 poppins-regular file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:poppins-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
+          />
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Only PDF files are accepted</p>
+        <div
+          *ngIf="selectedFile"
+          class="mt-2 flex items-center text-sm text-green-600 poppins-regular"
+        >
+          <i class="pi pi-check-circle mr-2"></i>
+          {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <button
+          type="button"
+          (click)="submitRequirement()"
+          [disabled]="!selectedStudentId || !selectedFile || isSubmitting"
+          class="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg poppins-medium transition"
+        >
+          <i class="pi mr-2" [ngClass]="isSubmitting ? 'pi-spinner pi-spin' : 'pi-upload'"></i>
+          {{ isSubmitting ? 'Submitting...' : 'Submit Performance Appraisal' }}
+        </button>
+      </div>
+
+      <div class="mt-8 bg-blue-50 border-l-4 border-blue-500 p-4">
+        <div class="flex items-start">
+          <i class="pi pi-info-circle text-blue-500 text-xl mr-3 mt-1"></i>
+          <div class="poppins-regular text-sm text-blue-700">
+            <p class="poppins-medium mb-1">Performance Appraisal Guidelines:</p>
+            <ul class="list-disc list-inside space-y-1 ml-2">
+              <li>Evaluate the student's performance during their OJT period</li>
+              <li>Include assessments of skills, competencies, and work ethic</li>
+              <li>Provide constructive feedback and recommendations</li>
+              <li>Upload the completed appraisal form as a PDF document</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
