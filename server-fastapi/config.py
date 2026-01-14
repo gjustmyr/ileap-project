@@ -54,6 +54,14 @@ CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGI
     "http://127.0.0.1:4500",
     "http://127.0.0.1:4600",
     "http://127.0.0.1:4700",
+    # Production EC2 URLs
+    "http://54.160.137.135",
+    "http://54.160.137.135:7000",  # Student
+    "http://54.160.137.135:7001",  # Employer
+    "http://54.160.137.135:7002",  # Coordinator
+    "http://54.160.137.135:7003",  # OJT Head
+    "http://54.160.137.135:7004",  # Superadmin
+    "http://54.160.137.135:7100",  # Supervisor
 ]
 
 # File upload configuration
