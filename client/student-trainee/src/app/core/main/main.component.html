@@ -87,7 +87,7 @@
           <!-- Left Column: Profile Image + Edit Button -->
           <div class="flex flex-col items-center gap-4">
             <img
-              src="/assets/img/profile.jpg"
+              [src]="profileData?.profile_picture || 'assets/img/default-avatar.jpg'"
               alt="Profile Image"
               class="w-36 h-36 rounded-full object-cover ring-2 ring-green-400 ring-offset-2 transition hover:grayscale"
             />
@@ -215,73 +215,45 @@
                 </p>
                 <p class="text-sm text-gray-700">{{ profileData.email }}</p>
               </div>
-            </div>
 
-            <!-- Requirements Tracker -->
-            <div>
-              <h3
-                class="text-lg font-semibold text-gray-800 poppins-medium mb-4 border-b pb-2 border-gray-300"
-              >
-                Requirements Tracker
-              </h3>
+              <hr class="my-3" *ngIf="profileData.contact_number || profileData.tel_no_present" />
 
-              <!-- OJT Requirements -->
-              <div class="mb-6">
-                <h4 class="text-sm text-gray-700 mb-2 uppercase tracking-wide">
-                  OJT Requirements
-                </h4>
-                <div class="flex flex-wrap gap-3">
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-white bg-green-500"
-                  >
-                    MOA
-                  </div>
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-white bg-green-500"
-                  >
-                    Resume
-                  </div>
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-gray-600 bg-gray-200"
-                  >
-                    Recommendation Letter
-                  </div>
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-gray-600 bg-gray-200"
-                  >
-                    Medical Certificate
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">
-                  2 of 4 requirements completed
+              <div class="mb-4" *ngIf="profileData.contact_number">
+                <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                  Mobile Number
                 </p>
+                <p class="text-sm text-gray-700">{{ profileData.contact_number }}</p>
               </div>
 
-              <!-- POST-OJT Requirements -->
-              <div>
-                <h4 class="text-sm text-gray-700 mb-2 uppercase tracking-wide">
-                  Post-OJT Requirements
-                </h4>
-                <div class="flex flex-wrap gap-3">
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-white bg-green-500"
-                  >
-                    Daily Time Record
-                  </div>
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-gray-600 bg-gray-200"
-                  >
-                    Narrative Report
-                  </div>
-                  <div
-                    class="px-4 py-2 rounded-md text-sm text-gray-600 bg-gray-200"
-                  >
-                    Evaluation Form
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">
-                  1 of 3 requirements completed
+              <div class="mb-4" *ngIf="profileData.tel_no_present">
+                <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                  Telephone (Present)
                 </p>
+                <p class="text-sm text-gray-700">{{ profileData.tel_no_present }}</p>
+              </div>
+
+              <div class="mb-4" *ngIf="profileData.present_address">
+                <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                  Address
+                </p>
+                <p class="text-sm text-gray-700">{{ profileData.present_address }}</p>
+              </div>
+
+              <hr class="my-3" *ngIf="profileData.birthdate || profileData.age || profileData.sex" />
+
+              <div class="grid grid-cols-3 gap-4 mb-4" *ngIf="profileData.birthdate || profileData.age || profileData.sex">
+                <div *ngIf="profileData.birthdate">
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Birthdate</p>
+                  <p class="text-sm text-gray-700">{{ profileData.birthdate }}</p>
+                </div>
+                <div *ngIf="profileData.age">
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Age</p>
+                  <p class="text-sm text-gray-700">{{ profileData.age }}</p>
+                </div>
+                <div *ngIf="profileData.sex">
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Gender</p>
+                  <p class="text-sm text-gray-700">{{ profileData.sex }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -525,7 +497,7 @@
     <!-- Edit Profile Modal -->
     <div
       *ngIf="showEditDialog"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      class="fixed inset-0 z-50 flex items-center justify-center"
       (click)="closeEditProfile()"
     >
       <div
@@ -546,7 +518,7 @@
           </button>
         </div>
         <div class="p-4">
-          <app-profile></app-profile>
+          <app-profile (profileSaved)="onProfileSaved()"></app-profile>
         </div>
       </div>
     </div>

@@ -23,8 +23,26 @@ export class StudentService {
     return this.http.get(`${this.apiUrl}/profile`, { headers: this.getHeaders() });
   }
 
-  updateProfile(data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/profile`, data, { headers: this.getHeaders() });
+  updateProfile(data: any, profilePicture?: File): Observable<any> {
+    const formData = new FormData();
+    
+    // Add profile data as JSON string
+    if (data) {
+      formData.append('profile_data', JSON.stringify(data));
+    }
+    
+    // Add profile picture if provided
+    if (profilePicture) {
+      formData.append('profile_picture', profilePicture);
+    }
+    
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+      // Don't set Content-Type, let browser set it with boundary for multipart/form-data
+    });
+    
+    return this.http.put(`${this.apiUrl}/profile`, formData, { headers });
   }
 
   uploadProfilePicture(file: File): Observable<any> {

@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from database import get_db
 from middleware.auth import verify_token
 from controllers import student_controller
 from schemas.student import StudentProfileUpdate, StudentProfileResponse
 from pydantic import BaseModel
+from typing import Optional
+import json
 
 router = APIRouter(prefix="/api/students", tags=["Students"])
 
@@ -24,12 +26,26 @@ async def get_student_profile(
 
 @router.put("/profile")
 async def update_student_profile(
-    profile_data: StudentProfileUpdate,
+    profile_data: Optional[str] = Form(None),
+    profile_picture: Optional[UploadFile] = File(None),
     token_data: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
-    """Update current student's profile"""
-    return student_controller.update_student_profile(token_data["user_id"], profile_data, db)
+    """Update current student's profile with optional profile picture"""
+    # Parse profile_data if provided
+    parsed_data = None
+    if profile_data:
+        try:
+            parsed_data = json.loads(profile_data)
+        except:
+            parsed_data = None
+    
+    return student_controller.update_student_profile_with_picture(
+        token_data["user_id"], 
+        parsed_data, 
+        profile_picture, 
+        db
+    )
 
 
 @router.post("/profile/picture")

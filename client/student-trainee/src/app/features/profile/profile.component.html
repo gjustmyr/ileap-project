@@ -76,7 +76,7 @@
           <div class="mb-8 flex items-center gap-6">
             <div class="relative">
               <img 
-                [src]="profilePicture || 'assets/default-avatar.png'" 
+                [src]="profilePicture || 'assets/img/default-avatar.jpg'" 
                 alt="Profile Picture"
                 class="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
               />
@@ -120,8 +120,12 @@
             </div>
 
             <div class="form-field">
-              <label for="sex">Sex</label>
-              <input type="text" id="sex" formControlName="sex" class="form-input" />
+              <label for="sex">Gender *</label>
+              <select id="sex" formControlName="sex" class="form-input">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
             </div>
 
             <div class="form-field">
@@ -152,13 +156,13 @@
             </div>
 
             <div class="form-field">
-              <label for="height">Height</label>
-              <input type="text" id="height" formControlName="height" class="form-input" />
+              <label for="height">Height (meters)</label>
+              <input type="number" id="height" formControlName="height" class="form-input" placeholder="1.75" step="0.01" min="0" />
             </div>
 
             <div class="form-field">
-              <label for="weight">Weight</label>
-              <input type="text" id="weight" formControlName="weight" class="form-input" />
+              <label for="weight">Weight (kg)</label>
+              <input type="number" id="weight" formControlName="weight" class="form-input" placeholder="65" step="0.1" min="0" />
             </div>
 
             <div class="form-field">
@@ -216,18 +220,18 @@
             </div>
 
             <div class="form-field">
-              <label for="contact_number">Mobile Number</label>
-              <input type="tel" id="contact_number" formControlName="contact_number" class="form-input" />
+              <label for="contact_number">Mobile Number *</label>
+              <input type="tel" id="contact_number" formControlName="contact_number" class="form-input" placeholder="09XX XXX XXXX" />
             </div>
 
             <div class="form-field">
               <label for="tel_no_present">Telephone (Present)</label>
-              <input type="tel" id="tel_no_present" formControlName="tel_no_present" class="form-input" />
+              <input type="tel" id="tel_no_present" formControlName="tel_no_present" class="form-input" placeholder="(043) XXX XXXX" />
             </div>
 
             <div class="form-field">
               <label for="tel_no_provincial">Telephone (Provincial)</label>
-              <input type="tel" id="tel_no_provincial" formControlName="tel_no_provincial" class="form-input" />
+              <input type="tel" id="tel_no_provincial" formControlName="tel_no_provincial" class="form-input" placeholder="(043) XXX XXXX" />
             </div>
           </div>
 
@@ -442,9 +446,13 @@
             </button>
             <button 
               type="submit"
-              class="btn-primary"
+              class="btn-primary flex items-center justify-center gap-2"
               [disabled]="profileForm.invalid || isSaving"
             >
+              <svg *ngIf="isSaving" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               <span *ngIf="!isSaving">Save Profile ✓</span>
               <span *ngIf="isSaving">Saving...</span>
             </button>

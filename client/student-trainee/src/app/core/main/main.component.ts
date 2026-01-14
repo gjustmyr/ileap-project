@@ -13,6 +13,7 @@ import { OjtTrackerComponent } from '../../features/ojt-tracker/ojt-tracker.comp
 import { OeamsComponent } from '../../features/oeams/oeams.component';
 import { StudentService } from '../../shared/services/student.service';
 import { InternshipsService } from '../../features/internships/internships.service';
+import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -56,11 +57,21 @@ export class MainComponent implements OnInit {
     this.showEditDialog = false;
   }
 
+  onProfileSaved() {
+    // Close the modal and reload the profile data
+    this.showEditDialog = false;
+    this.loadProfile();
+  }
+
   loadProfile() {
     this.isLoadingProfile = true;
     this.studentService.getProfile().subscribe({
       next: (response) => {
         this.profileData = response.data;
+        // Fix profile picture URL if it's a relative path
+        if (this.profileData.profile_picture && this.profileData.profile_picture.startsWith('/uploads/')) {
+          this.profileData.profile_picture = environment.apiUrl.replace('/api', '') + this.profileData.profile_picture;
+        }
         this.isLoadingProfile = false;
       },
       error: (error) => {

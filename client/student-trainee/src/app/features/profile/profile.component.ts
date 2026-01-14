@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -12,6 +12,7 @@ import {
   CustomStepperComponent,
   Step,
 } from '../../shared/components/custom-stepper/custom-stepper.component';
+import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -27,10 +28,13 @@ import Swal from 'sweetalert2';
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
+  @Output() profileSaved = new EventEmitter<void>();
+  
   profileForm!: FormGroup;
   isLoading = false;
   isSaving = false;
   profilePicture: string | null = null;
+  profilePictureFile: File | null = null; // Store the file for submission
   privacyAgreed: boolean = false;
   currentStep: number = 0;
 
@@ -155,7 +159,14 @@ export class ProfileComponent implements OnInit {
       next: (response) => {
         const data = response.data;
         this.profileForm.patchValue(data);
-        this.profilePicture = data.profile_picture;
+        
+        // Fix profile picture URL if it's a relative path
+        if (data.profile_picture && data.profile_picture.startsWith('/uploads/')) {
+          this.profilePicture = environment.apiUrl.replace('/api', '') + data.profile_picture;
+        } else {
+          this.profilePicture = data.profile_picture;
+        }
+        
         this.skills = data.skills || [];
 
         // Recalculate age from birthdate
@@ -231,17 +242,24 @@ export class ProfileComponent implements OnInit {
   onSubmit(): void {
     if (this.profileForm.valid && this.privacyAgreed) {
       this.isSaving = true;
-      this.studentService.updateProfile(this.profileForm.value).subscribe({
-        next: () => {
+      
+      // Send profile data and picture in one request
+      this.studentService.updateProfile(this.profileForm.value, this.profilePictureFile || undefined).subscribe({
+        next: (response) => {
+          this.isSaving = false;
+          this.profilePictureFile = null; // Clear the stored file
+          
           Swal.fire({
             icon: 'success',
             title: 'Success',
             text: 'Profile updated successfully',
             confirmButtonColor: '#10b981',
+            timer: 2000,
+            showConfirmButton: false
           });
-          this.isSaving = false;
-          // Reload profile to reflect changes
-          this.loadProfile();
+          
+          // Emit event to close modal and reload profile in parent
+          this.profileSaved.emit();
         },
         error: (error) => {
           console.error('Error updating profile:', error);
@@ -424,34 +442,15 @@ export class ProfileComponent implements OnInit {
         return;
       }
 
-      // Preview image
+      // Store the file for later submission with the form
+      this.profilePictureFile = file;
+
+      // Preview image locally
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.profilePicture = e.target.result;
       };
       reader.readAsDataURL(file);
-
-      // Upload to server
-      this.studentService.uploadProfilePicture(file).subscribe({
-        next: (response) => {
-          this.profilePicture = response.file_url;
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Profile picture uploaded successfully',
-            confirmButtonColor: '#10b981',
-          });
-        },
-        error: (error) => {
-          console.error('Error uploading picture:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to upload profile picture',
-            confirmButtonColor: '#10b981',
-          });
-        },
-      });
     }
   }
 }

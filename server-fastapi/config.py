@@ -43,16 +43,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 # CORS configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else [
     "http://localhost:4200",  # Superadmin
-    "http://localhost:4300",  # Employer
-    "http://localhost:4400",  # OJT Coordinator
-    "http://localhost:4500",  # OJT Head
-    "http://localhost:4600",  # Student Trainee
+    "http://localhost:4201",  # Employer
+    "http://localhost:4202",  # OJT Coordinator
+    "http://localhost:4203",  # OJT Head
+    "http://localhost:4204",  # Student Trainee
     "http://localhost:4700",  # Supervisor
     "http://127.0.0.1:4200",
-    "http://127.0.0.1:4300",
-    "http://127.0.0.1:4400",
-    "http://127.0.0.1:4500",
-    "http://127.0.0.1:4600",
+    "http://127.0.0.1:4201",
+    "http://127.0.0.1:4202",
+    "http://127.0.0.1:4203",
+    "http://127.0.0.1:4204",
     "http://127.0.0.1:4700",
     # Production EC2 URLs
     "http://54.160.137.135",
@@ -97,6 +97,8 @@ def get_upload_url(category: str, filename: str) -> str:
         filename: Name of the file
     
     Returns:
-        URL path string (e.g., '/uploads/requirements/file.pdf')
+        Full URL string (e.g., 'http://54.160.137.135:3000/uploads/requirements/file.pdf')
     """
-    return f"/uploads/{category}/{filename}"
+    # Get base URL from environment or use default
+    base_url = os.getenv("API_BASE_URL", f"http://localhost:{API_PORT}")
+    return f"{base_url}/uploads/{category}/{filename}"

@@ -152,7 +152,7 @@ def upload_profile_picture(user_id: int, file: UploadFile, db: Session):
         raise HTTPException(status_code=400, detail="Only JPEG and PNG images are allowed")
     
     # Get upload directory from config
-    from config import get_upload_path
+    from config import get_upload_path, get_upload_url
     upload_dir = get_upload_path("profile_pictures")
     
     # Generate unique filename
@@ -165,8 +165,11 @@ def upload_profile_picture(user_id: int, file: UploadFile, db: Session):
         content = file.file.read()
         buffer.write(content)
     
+    # Generate URL path
+    file_url = get_upload_url("profile_pictures", unique_filename)
+    
     # Update student record
-    student.profile_picture = str(file_path)
+    student.profile_picture = file_url
     db.commit()
     db.refresh(student)
     
@@ -174,7 +177,89 @@ def upload_profile_picture(user_id: int, file: UploadFile, db: Session):
         "status": "success",
         "message": "Profile picture uploaded successfully",
         "data": {
-            "profile_picture": str(file_path)
+            "profile_picture": file_url,
+            "file_url": file_url
+        }
+    }
+
+
+def update_student_profile_with_picture(user_id: int, profile_data: dict, file: UploadFile, db: Session):
+    """Update student profile with optional profile picture upload"""
+    student = db.query(Student).filter(Student.user_id == user_id).first()
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    
+    updated_fields = []
+    
+    # Handle profile picture upload if provided
+    if file and file.filename:
+        # Validate file type
+        allowed_types = ["image/jpeg", "image/jpg", "image/png"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Only JPEG and PNG images are allowed")
+        
+        # Get upload directory from config
+        from config import get_upload_path, get_upload_url
+        upload_dir = get_upload_path("profile_pictures")
+        
+        # Generate unique filename
+        file_extension = file.filename.split(".")[-1]
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = upload_dir / unique_filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = file.file.read()
+            buffer.write(content)
+        
+        # Generate URL path
+        file_url = get_upload_url("profile_pictures", unique_filename)
+        
+        # Update student record
+        student.profile_picture = file_url
+        updated_fields.append("profile_picture")
+    
+    # Update other profile fields if provided
+    if profile_data:
+        print(f"\n=== PROFILE UPDATE ===")
+        print(f"User ID: {user_id}")
+        print(f"Fields to update: {list(profile_data.keys())}")
+        print(f"Data received: {profile_data}")
+        
+        for field, value in profile_data.items():
+            if hasattr(student, field):
+                setattr(student, field, value)
+                updated_fields.append(field)
+                print(f"✓ Updated {field}: {value}")
+            else:
+                print(f"✗ Field {field} not found on Student model")
+        
+        # Update email in User table if provided and different
+        if 'email' in profile_data:
+            user = db.query(User).filter(User.user_id == user_id).first()
+            if user and user.email_address != profile_data['email']:
+                # Check if email already exists for another user
+                existing_user = db.query(User).filter(
+                    User.email_address == profile_data['email'],
+                    User.user_id != user_id
+                ).first()
+                if existing_user:
+                    raise HTTPException(status_code=400, detail="Email already exists")
+                user.email_address = profile_data['email']
+                print(f"✓ Updated email in User table")
+    
+    db.commit()
+    db.refresh(student)
+    print(f"✓ Profile saved to database\n")
+    
+    return {
+        "status": "success",
+        "message": "Profile updated successfully",
+        "data": {
+            "student_id": student.student_id,
+            "profile_picture": student.profile_picture,
+            "updated_fields": updated_fields
         }
     }
 
