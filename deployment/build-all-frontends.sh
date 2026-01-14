@@ -11,7 +11,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Production IP
-EC2_IP="3.93.67.182"
+EC2_IP="54.160.137.135"
 
 echo -e "${BLUE}🚀 Building All ILEAP Frontend Applications${NC}"
 echo -e "${BLUE}Production IP: ${EC2_IP}${NC}"
