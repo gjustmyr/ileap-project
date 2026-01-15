@@ -97,7 +97,7 @@ def get_upload_url(category: str, filename: str) -> str:
         filename: Name of the file
     
     Returns:
-        Full URL string (e.g., 'http://54.160.137.135:3000/uploads/requirements/file.pdf')
+        Full URL string (e.g., 'http://54.160.137.135:8000/uploads/requirements/file.pdf')
     """
     # Get base URL from environment or use default
     base_url = os.getenv("API_BASE_URL", f"http://localhost:{API_PORT}")
