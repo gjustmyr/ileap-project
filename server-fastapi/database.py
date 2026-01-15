@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Database URL
-DATABASE_URL = f"postgresql://{os.getenv('USER')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DB')}"
+# Database URL - use DATABASE_URL from .env directly (includes SSL params)
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 # Create engine
 engine = create_engine(DATABASE_URL)
