@@ -37,6 +37,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(superadmin.router)
 app.include_router(campus.router)
 app.include_router(department.router)
 app.include_router(program.router)
