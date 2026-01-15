@@ -155,10 +155,11 @@ def register_ojt_head(ojt_head: OJTHeadCreate, db: Session):
             )
             db.add(new_ojt_head)
             
-            # If assigned to main campus, also assign to extension campuses
+            # If assigned to main campus, also assign to its extension campuses
             if not campus.is_extension:
                 extension_campuses = db.query(Campus).filter(
                     Campus.is_extension == True,
+                    Campus.parent_campus_id == ojt_head.campus_id,
                     Campus.status == "active"
                 ).all()
                 
@@ -275,8 +276,9 @@ def update_ojt_head(user_id: int, ojt_head_update: OJTHeadUpdate, db: Session):
                 detail="OJT Head not found."
             )
         
-        ojt_head = db.query(OJTHead).filter(OJTHead.user_id == user_id).first()
-        if not ojt_head:
+        # Get all OJT Head records for this user (main + extensions)
+        ojt_head_records = db.query(OJTHead).filter(OJTHead.user_id == user_id).all()
+        if not ojt_head_records:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="OJT Head profile not found."
@@ -287,19 +289,65 @@ def update_ojt_head(user_id: int, ojt_head_update: OJTHeadUpdate, db: Session):
             if ojt_head_update.email_address:
                 user.email_address = ojt_head_update.email_address
             
-            # Update OJT Head profile
-            if ojt_head_update.first_name:
-                ojt_head.first_name = ojt_head_update.first_name
-            if ojt_head_update.last_name:
-                ojt_head.last_name = ojt_head_update.last_name
-            if ojt_head_update.contact_number:
-                ojt_head.contact_number = ojt_head_update.contact_number
-            if ojt_head_update.position_title:
-                ojt_head.position_title = ojt_head_update.position_title
+            # Update basic info for all OJT Head records
+            for ojt_head in ojt_head_records:
+                if ojt_head_update.first_name:
+                    ojt_head.first_name = ojt_head_update.first_name
+                if ojt_head_update.last_name:
+                    ojt_head.last_name = ojt_head_update.last_name
+                if ojt_head_update.contact_number:
+                    ojt_head.contact_number = ojt_head_update.contact_number
+                if ojt_head_update.position_title:
+                    ojt_head.position_title = ojt_head_update.position_title
+                if ojt_head_update.status:
+                    ojt_head.status = ojt_head_update.status
+            
+            # Handle campus reassignment if campus_id is provided
             if ojt_head_update.campus_id:
-                ojt_head.campus_id = ojt_head_update.campus_id
-            if ojt_head_update.status:
-                ojt_head.status = ojt_head_update.status
+                # Get the new campus
+                new_campus = db.query(Campus).filter(Campus.campus_id == ojt_head_update.campus_id).first()
+                if not new_campus:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Campus not found."
+                    )
+                
+                # Delete all existing campus assignments
+                for record in ojt_head_records:
+                    db.delete(record)
+                db.flush()
+                
+                # Create new main campus assignment
+                new_ojt_head = OJTHead(
+                    user_id=user_id,
+                    first_name=ojt_head_update.first_name or ojt_head_records[0].first_name,
+                    last_name=ojt_head_update.last_name or ojt_head_records[0].last_name,
+                    contact_number=ojt_head_update.contact_number or ojt_head_records[0].contact_number,
+                    position_title=ojt_head_update.position_title or ojt_head_records[0].position_title,
+                    campus_id=ojt_head_update.campus_id,
+                    status=ojt_head_update.status or ojt_head_records[0].status
+                )
+                db.add(new_ojt_head)
+                
+                # If assigned to main campus, also assign to its extension campuses
+                if not new_campus.is_extension:
+                    extension_campuses = db.query(Campus).filter(
+                        Campus.is_extension == True,
+                        Campus.parent_campus_id == ojt_head_update.campus_id,
+                        Campus.status == "active"
+                    ).all()
+                    
+                    for ext_campus in extension_campuses:
+                        ext_ojt_head = OJTHead(
+                            user_id=user_id,
+                            first_name=ojt_head_update.first_name or ojt_head_records[0].first_name,
+                            last_name=ojt_head_update.last_name or ojt_head_records[0].last_name,
+                            contact_number=ojt_head_update.contact_number or ojt_head_records[0].contact_number,
+                            position_title=ojt_head_update.position_title or ojt_head_records[0].position_title,
+                            campus_id=ext_campus.campus_id,
+                            status=ojt_head_update.status or ojt_head_records[0].status
+                        )
+                        db.add(ext_ojt_head)
             
             db.commit()
             
@@ -317,6 +365,11 @@ def update_ojt_head(user_id: int, ojt_head_update: OJTHeadUpdate, db: Session):
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

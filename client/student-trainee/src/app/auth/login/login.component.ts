@@ -31,6 +31,22 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Check if user is already logged in
+    const token = sessionStorage.getItem('auth_token');
+    if (token) {
+      this.authService.validateToken().subscribe({
+        next: () => {
+          console.log('User already logged in, redirecting to dashboard...');
+          this.router.navigate(['/main/dashboard']);
+        },
+        error: () => {
+          sessionStorage.clear();
+        }
+      });
+    }
+  }
+
   get email_address() {
     return this.loginForm.get('email_address')!;
   }

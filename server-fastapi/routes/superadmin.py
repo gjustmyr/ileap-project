@@ -317,6 +317,34 @@ async def delete_major(
 
 
 # ============= SECTIONS =============
+@router.get("/sections")
+async def get_all_sections(
+    pageNo: int = 1,
+    pageSize: int = 10,
+    keyword: str = "",
+    program_id: int = None,
+    major_id: int = None,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get all sections with optional filters (superadmin)"""
+    from controllers import section_controller
+    return section_controller.get_all_sections(pageNo, pageSize, keyword, program_id, major_id, db)
+
+
+@router.post("/sections", status_code=status.HTTP_201_CREATED)
+async def create_section(
+    section: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Create a new section (superadmin only)"""
+    from controllers import section_controller
+    from schemas.section import SectionCreate
+    section_data = SectionCreate(**section)
+    return section_controller.add_section(section_data, db)
+
+
 @router.get("/majors/{major_id}/sections")
 async def get_sections_by_major(
     major_id: int,
@@ -328,17 +356,17 @@ async def get_sections_by_major(
 ):
     """Get all sections for a major (superadmin)"""
     from controllers import section_controller
-    return section_controller.get_all_sections(major_id, pageNo, pageSize, keyword, db)
+    return section_controller.get_all_sections(pageNo, pageSize, keyword, None, major_id, db)
 
 
 @router.post("/majors/{major_id}/sections", status_code=status.HTTP_201_CREATED)
-async def create_section(
+async def create_section_for_major(
     major_id: int,
     section: dict,
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_superadmin)
 ):
-    """Create a new section (superadmin only)"""
+    """Create a new section for a major (superadmin only)"""
     from controllers import section_controller
     from schemas.section import SectionCreate
     section_data = SectionCreate(**section, major_id=major_id)

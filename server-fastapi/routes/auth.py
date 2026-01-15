@@ -4,7 +4,7 @@ from database import get_db
 from schemas.auth import SuperAdminCreate, LoginRequest, LoginResponse
 from schemas.common import Response
 from controllers import auth_controller
-from middleware.auth import verify_token
+from middleware.auth import verify_token, optional_verify_token
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -29,7 +29,11 @@ async def create_superadmin(admin: SuperAdminCreate, db: Session = Depends(get_d
 
 @router.get("/validate-token")
 async def validate_token(token_data: dict = Depends(verify_token)):
-    """Validate JWT token"""
+    """
+    Validate JWT token.
+    Returns 401 if token is invalid, expired, or missing.
+    Use this endpoint to check if user is authenticated.
+    """
     return {
         "success": True,
         "message": "Token is valid",
@@ -39,3 +43,30 @@ async def validate_token(token_data: dict = Depends(verify_token)):
             "role": token_data.get("role")
         }
     }
+
+
+@router.get("/check-auth")
+async def check_auth(token_data: dict = Depends(optional_verify_token)):
+    """
+    Check if user is already authenticated (for login page redirect).
+    Returns user info if authenticated, or indicates no authentication.
+    Does NOT return 401 - used to determine if login page should redirect.
+    """
+    if token_data:
+        return {
+            "success": True,
+            "authenticated": True,
+            "message": "User is authenticated",
+            "data": {
+                "user_id": token_data.get("user_id"),
+                "email": token_data.get("email"),
+                "role": token_data.get("role")
+            }
+        }
+    else:
+        return {
+            "success": True,
+            "authenticated": False,
+            "message": "User is not authenticated",
+            "data": None
+        }

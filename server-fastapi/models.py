@@ -244,7 +244,7 @@ class OJTHead(Base):
 	__tablename__ = "ojt_heads"
 
 	ojt_head_id = Column(Integer, primary_key=True, index=True)
-	user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, unique=True)
+	user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 	campus_id = Column(Integer, ForeignKey("campuses.campus_id"), nullable=False)
 	first_name = Column(String(100), nullable=False)
 	last_name = Column(String(100), nullable=False)

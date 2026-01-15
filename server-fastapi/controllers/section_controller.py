@@ -5,7 +5,7 @@ from sqlalchemy import or_
 import math
 
 
-def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: str, db: Session):
+def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: int = None, major_id: int = None, db: Session = None):
     """Get all sections with pagination and filters"""
     try:
         offset = (pageNo - 1) * pageSize
@@ -15,7 +15,11 @@ def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: str, 
         
         # Filter by program_id if provided
         if program_id:
-            query = query.filter(Section.program_id == int(program_id))
+            query = query.filter(Section.program_id == program_id)
+        
+        # Filter by major_id if provided
+        if major_id:
+            query = query.filter(Section.major_id == major_id)
         
         # Filter by keyword if provided
         if keyword:

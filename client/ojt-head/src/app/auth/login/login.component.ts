@@ -34,6 +34,23 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Check if user is already logged in
+    const token = sessionStorage.getItem('auth_token');
+    if (token) {
+      // Validate token before redirecting
+      this.authService.validateToken().subscribe({
+        next: (response: any) => {
+          // Token is valid - redirect to dashboard
+          console.log('User already logged in, redirecting to dashboard...');
+          this.router.navigate(['/main/dashboard']);
+        },
+        error: () => {
+          // Token is invalid - clear it and stay on login page
+          sessionStorage.clear();
+        }
+      });
+    }
+
     // Check if user was redirected due to expired session
     this.route.queryParams.subscribe(params => {
       if (params['expired'] === 'true') {
