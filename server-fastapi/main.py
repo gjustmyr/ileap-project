@@ -28,17 +28,15 @@ app = FastAPI(
 # CORS configuration - now uses config.py
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in production (or specify CORS_ORIGINS)
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
-    max_age=3600,
 )
 
 # Include routers
 app.include_router(auth.router)
-app.include_router(superadmin.router)  # Superadmin routes first
 app.include_router(campus.router)
 app.include_router(department.router)
 app.include_router(program.router)
@@ -86,4 +84,8 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    port = int(os.getenv("API_PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
