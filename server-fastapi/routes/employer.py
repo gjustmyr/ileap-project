@@ -65,7 +65,7 @@ async def register_simple_route(
 	industry_id: int = Form(...),
 	validity_start: datetime = Form(...),
 	validity_end: datetime = Form(...),
-	moa_pdf: UploadFile | None = File(None),
+	moa_pdf: Optional[UploadFile] = File(None),
 	db: Session = Depends(get_db),
 ):
 	# Save PDF if provided
