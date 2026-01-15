@@ -1,10 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from typing import Optional
 from models import Industry
 from schemas.industry import IndustryCreate, IndustryUpdate
 
 
-def get_all_industries(db: Session, page: int = 1, per_page: int = 10, keyword: str | None = None):
+def get_all_industries(db: Session, page: int = 1, per_page: int = 10, keyword: Optional[str] = None):
 	query = db.query(Industry)
 	if keyword:
 		query = query.filter(Industry.industry_name.ilike(f"%{keyword}%"))
