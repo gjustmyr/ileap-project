@@ -99,7 +99,35 @@ DEPARTMENTS = [
 ]
 
 # Sample requirements
-REQUIREMENTS internship_opportunities(db: Session, employer_id: int, count: int = 50):
+REQUIREMENTS = [
+    "Currently enrolled in a Bachelor's degree program",
+    "Strong communication skills",
+    "Team player with collaborative mindset",
+    "Proficient in MS Office applications",
+    "Good analytical and problem-solving skills",
+    "Attention to detail",
+    "Ability to work independently",
+    "Time management skills",
+    "Willingness to learn",
+    "Minimum GPA of 2.5",
+]
+
+# Sample responsibilities
+RESPONSIBILITIES = [
+    "Assist in daily operations and administrative tasks",
+    "Support team members with project deliverables",
+    "Participate in team meetings and brainstorming sessions",
+    "Prepare reports and documentation",
+    "Conduct research and analysis",
+    "Help maintain organized filing systems",
+    "Communicate with stakeholders as needed",
+    "Learn and apply industry best practices",
+    "Complete assigned tasks within deadlines",
+    "Contribute to team objectives and goals",
+]
+
+
+def generate_internship_opportunities(db: Session, employer_id: int, count: int = 50):
     """Generate sample internship opportunities"""
     print(f"💼 Generating {count} internship opportunities for employer_id={employer_id}...")
     
