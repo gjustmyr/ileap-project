@@ -196,13 +196,18 @@ export class AttendanceComponent implements OnInit {
   openEditModal(record: any): void {
     this.editingRecord = { ...record };
     // Extract just the time portion for the time inputs (HH:mm format)
+    // Parse directly from string to avoid timezone conversion
     if (this.editingRecord.time_in) {
-      const timeInDate = new Date(this.editingRecord.time_in);
-      this.editingRecord.time_in = timeInDate.toTimeString().substring(0, 5); // HH:mm
+      // Extract time from format: "2026-01-16T13:13:00" or "2026-01-16 13:13:00"
+      const timeStr = this.editingRecord.time_in.toString();
+      const timePart = timeStr.includes('T') ? timeStr.split('T')[1] : timeStr.split(' ')[1];
+      this.editingRecord.time_in = timePart ? timePart.substring(0, 5) : '';
     }
     if (this.editingRecord.time_out) {
-      const timeOutDate = new Date(this.editingRecord.time_out);
-      this.editingRecord.time_out = timeOutDate.toTimeString().substring(0, 5); // HH:mm
+      // Extract time from format: "2026-01-16T13:13:00" or "2026-01-16 13:13:00"
+      const timeStr = this.editingRecord.time_out.toString();
+      const timePart = timeStr.includes('T') ? timeStr.split('T')[1] : timeStr.split(' ')[1];
+      this.editingRecord.time_out = timePart ? timePart.substring(0, 5) : '';
     }
     this.showEditModal = true;
   }
@@ -343,12 +348,22 @@ export class AttendanceComponent implements OnInit {
   formatTime(timeString: string): string {
     if (!timeString) return 'N/A';
     try {
-      const date = new Date(timeString);
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
+      // Extract time from format: "2026-01-16T13:13:00" or "2026-01-16 13:13:00"
+      // Parse directly without timezone conversion
+      const timeStr = timeString.toString();
+      const timePart = timeStr.includes('T') ? timeStr.split('T')[1] : timeStr.split(' ')[1];
+      
+      if (!timePart) return 'N/A';
+      
+      const [hours, minutes] = timePart.split(':');
+      const hour = parseInt(hours);
+      const min = minutes.padStart(2, '0');
+      
+      // Convert to 12-hour format
+      const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      
+      return `${hour12}:${min} ${ampm}`;
     } catch (error) {
       return timeString;
     }
