@@ -254,6 +254,7 @@ export class AttendanceComponent implements OnInit {
     console.log('Editing record:', this.editingRecord);
 
     // Convert time strings (HH:mm) back to ISO datetime using the record's date
+    // Use local time format (YYYY-MM-DDTHH:mm:ss) instead of UTC to preserve user's input time
     let timeInISO = this.editingRecord.time_in;
     let timeOutISO = this.editingRecord.time_out;
 
@@ -261,7 +262,14 @@ export class AttendanceComponent implements OnInit {
       const [hours, minutes] = this.editingRecord.time_in.split(':');
       const dateObj = new Date(this.editingRecord.date);
       dateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      timeInISO = dateObj.toISOString();
+      // Format as local datetime: YYYY-MM-DDTHH:mm:ss
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const hrs = String(dateObj.getHours()).padStart(2, '0');
+      const mins = String(dateObj.getMinutes()).padStart(2, '0');
+      const secs = String(dateObj.getSeconds()).padStart(2, '0');
+      timeInISO = `${year}-${month}-${day}T${hrs}:${mins}:${secs}`;
       console.log('Converted time_in:', this.editingRecord.time_in, '->', timeInISO);
     }
 
@@ -269,7 +277,14 @@ export class AttendanceComponent implements OnInit {
       const [hours, minutes] = this.editingRecord.time_out.split(':');
       const dateObj = new Date(this.editingRecord.date);
       dateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      timeOutISO = dateObj.toISOString();
+      // Format as local datetime: YYYY-MM-DDTHH:mm:ss
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const hrs = String(dateObj.getHours()).padStart(2, '0');
+      const mins = String(dateObj.getMinutes()).padStart(2, '0');
+      const secs = String(dateObj.getSeconds()).padStart(2, '0');
+      timeOutISO = `${year}-${month}-${day}T${hrs}:${mins}:${secs}`;
       console.log('Converted time_out:', this.editingRecord.time_out, '->', timeOutISO);
     }
 
