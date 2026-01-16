@@ -98,14 +98,32 @@ async def create_employer_multipart(
 	representative_name: str = Form(...),
 	phone_number: str = Form(...),
 	industry_id: int = Form(...),
-	validity_start: datetime = Form(...),
-	validity_end: datetime = Form(...),
+	validity_start: str = Form(...),
+	validity_end: str = Form(...),
 	moa_pdf: Optional[UploadFile] = File(None),
 	db: Session = Depends(get_db),
 ):
 	"""Multipart friendly endpoint used by frontend to create employer with minimal fields.
 	Mirrors /register-simple for compatibility.
 	"""
+	print(f"📝 Received employer creation request:")
+	print(f"  email_address: {email_address}")
+	print(f"  company_name: {company_name}")
+	print(f"  representative_name: {representative_name}")
+	print(f"  phone_number: {phone_number}")
+	print(f"  industry_id: {industry_id}")
+	print(f"  validity_start: {validity_start}")
+	print(f"  validity_end: {validity_end}")
+	print(f"  moa_pdf: {moa_pdf.filename if moa_pdf else 'None'}")
+	
+	# Convert date strings to datetime
+	try:
+		from dateutil import parser
+		validity_start_dt = parser.parse(validity_start)
+		validity_end_dt = parser.parse(validity_end)
+	except Exception as e:
+		raise HTTPException(status_code=422, detail=f"Invalid date format: {str(e)}")
+	
 	saved_path: Optional[str] = None
 	if moa_pdf is not None:
 		if moa_pdf.content_type != "application/pdf":
@@ -124,8 +142,8 @@ async def create_employer_multipart(
 		representative_name=representative_name,
 		phone_number=phone_number,
 		industry_id=industry_id,
-		validity_start=validity_start,
-		validity_end=validity_end,
+		validity_start=validity_start_dt,
+		validity_end=validity_end_dt,
 	)
 
 	return register_employer_simple(payload, db, moa_file_path=saved_path)
@@ -198,8 +216,9 @@ async def update_my_employer_profile(
 	twitter: str = Form(None),
 	work_schedule: str = Form(None),
 	logo: UploadFile = File(None),
+	moa_file: UploadFile = File(None),
 ):
-	"""Update the current logged-in employer's profile with optional logo upload"""
+	"""Update the current logged-in employer's profile with optional logo and MOA upload"""
 	user_id = current_user.get("user_id")
 	
 	employer = db.query(Employer).filter(Employer.user_id == user_id).first()
@@ -251,6 +270,26 @@ async def update_my_employer_profile(
 			f.write(content)
 		
 		employer.logo = f"/uploads/logos/{filename}"
+
+	# Handle MOA file upload
+	if moa_file is not None:
+		# Accept PDF, DOC, DOCX files
+		allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+		if moa_file.content_type not in allowed_types:
+			return {"status": "error", "detail": "Only PDF, DOC, or DOCX files are allowed for MOA"}, 400
+		
+		uploads_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "uploads", "moa"))
+		os.makedirs(uploads_dir, exist_ok=True)
+		
+		file_ext = os.path.splitext(moa_file.filename)[1]
+		filename = f"{uuid4()}{file_ext}"
+		saved_path = os.path.join(uploads_dir, filename)
+		
+		content = await moa_file.read()
+		with open(saved_path, "wb") as f:
+			f.write(content)
+		
+		employer.moa_file = f"/uploads/moa/{filename}"
 
 	employer.updated_at = datetime.utcnow()
 	db.commit()
