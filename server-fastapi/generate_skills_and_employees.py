@@ -233,54 +233,26 @@ We are looking for motivated students to join our team as {position_title}. This
 
 
 def generate_skills(db: Session):
-            internship_end_date=end_date,
-            status=random.choice(["active", "active", "active", "completed"]),  # More active than completed
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
-        )
-        db.add(student)
-        db.flush()
-        
-        # Assign random skills (3-8 skills per student)
-        num_skills = random.randint(3, 8)
-        selected_skill_ids = random.sample(skill_ids, min(num_skills, len(skill_ids)))
-        
-        # Note: Assuming there's a student_skills junction table
-        # If not, you'll need to adjust this part
-        for skill_id in selected_skill_ids:
-            try:
-                db.execute(
-                   internship opportunities for employer_id = 1
-        generate_internship_opportunitiUES (:student_id, :skill_id, :proficiency, :created_at, :updated_at)",
-                    {
-                        "student_id": student.student_id,
-                        "skill_id": skill_id,
-                        "proficiency": random.choice(["Beginner", "Intermediate", "Advanced", "Expert"]),
-                        "created_at": datetime.utcnow(),
-                        "updated_at": datetime.utcnow()
-                    }
-                )
-            except Exception as e:
-                # Skip if table doesn't exist or constraint fails
-                pass
-        
-        created_employees.append({
-            "name": f"{first_name} {last_name}",
-            "email": email,
-            "student_number": student.student_number
-        })
-        
-        if (i + 1) % 10 == 0:
-            print(f"  ✓ Created {i + 1}/{count} employees...")
+    """Insert all skills into database"""
+    print("🎯 Generating skills...")
+    
+    existing_skills = db.query(Skill).all()
+    existing_skill_names = {skill.skill_name for skill in existing_skills}
+    
+    added_count = 0
+    for skill_name in SKILLS:
+        if skill_name not in existing_skill_names:
+            skill = Skill(
+                skill_name=skill_name,
+                skill_description=f"Proficiency in {skill_name}",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(skill)
+            added_count += 1
     
     db.commit()
-    print(f"✅ Successfully created {count} employees!")
-    
-    # Show sample
-    print("\n📋 Sample employees created:")
-    for emp in created_employees[:5]:
-        print(f"  • {emp['name']} ({emp['student_number']}) - {emp['email']}")
-    print(f"  ... and {len(created_employees) - 5} more\n")
+    print(f"✅ Added {added_count} new skills (Total: {len(SKILLS)})")
 
 
 def main():
