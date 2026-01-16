@@ -229,10 +229,10 @@ We are looking for motivated students to join our team as {position_title}. This
     print("\n📋 Sample opportunities created:")
     for opp in created_opportunities[:5]:
         print(f"  • {opp['title']} ({opp['department']}) - {opp['slots']} slots - {opp['status']}")
-    print(f"  ... and {len(created_opportuniti),
-            section=random.choice(["A", "B", "C", "D", "1", "2", "3"]),
-            current_employer_id=employer_id,
-            internship_start_date=start_date,
+    print(f"  ... and {len(created_opportunities) - 5} more\n")
+
+
+def generate_skills(db: Session):
             internship_end_date=end_date,
             status=random.choice(["active", "active", "active", "completed"]),  # More active than completed
             created_at=datetime.utcnow(),
