@@ -118,11 +118,10 @@ async def create_employer_multipart(
 	
 	# Convert date strings to datetime
 	try:
-		from dateutil import parser
-		validity_start_dt = parser.parse(validity_start)
-		validity_end_dt = parser.parse(validity_end)
+		validity_start_dt = datetime.strptime(validity_start, "%Y-%m-%d")
+		validity_end_dt = datetime.strptime(validity_end, "%Y-%m-%d")
 	except Exception as e:
-		raise HTTPException(status_code=422, detail=f"Invalid date format: {str(e)}")
+		raise HTTPException(status_code=422, detail=f"Invalid date format. Expected YYYY-MM-DD: {str(e)}")
 	
 	saved_path: Optional[str] = None
 	if moa_pdf is not None:
