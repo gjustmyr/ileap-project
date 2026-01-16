@@ -842,3 +842,61 @@ def download_appraisal_template(
 		filename="Performance_Appraisal_Form_Template.pdf",
 		media_type="application/pdf"
 	)
+
+@router.get("/students/{student_id}/ojt-details")
+def get_student_ojt_details(
+	student_id: int,
+	current_user: dict = Depends(get_current_user),
+	db: Session = Depends(get_db)
+):
+	"""Get OJT details including start date for assigned student"""
+	if current_user.get("role") != "trainee_supervisor":
+		raise HTTPException(status_code=403, detail="Access denied. Supervisor role required.")
+	
+	supervisor = db.query(TraineeSupervisor).filter(
+		TraineeSupervisor.user_id == current_user["user_id"]
+	).first()
+	
+	if not supervisor:
+		raise HTTPException(status_code=404, detail="Supervisor profile not found")
+	
+	# Verify student is assigned to this supervisor
+	assignment = db.query(StudentSupervisorAssignment).filter(
+		StudentSupervisorAssignment.supervisor_id == supervisor.supervisor_id,
+		StudentSupervisorAssignment.student_id == student_id,
+		StudentSupervisorAssignment.status == "active"
+	).first()
+	
+	if not assignment:
+		raise HTTPException(status_code=403, detail="Student not assigned to you")
+	
+	# Get student and application details
+	student = db.query(Student).filter(Student.student_id == student_id).first()
+	if not student:
+		raise HTTPException(status_code=404, detail="Student not found")
+	
+	application_data = None
+	if assignment.internship_application_id:
+		application = db.query(InternshipApplication).filter(
+			InternshipApplication.application_id == assignment.internship_application_id
+		).first()
+		
+		if application:
+			application_data = {
+				"application_id": application.application_id,
+				"status": application.status,
+				"ojt_start_date": application.ojt_start_date.isoformat() if application.ojt_start_date else None,
+				"semester": application.semester,
+				"school_year": application.school_year
+			}
+	
+	return {
+		"status": "success",
+		"data": {
+			"student_id": student.student_id,
+			"sr_code": student.sr_code,
+			"name": f"{student.first_name} {student.last_name}",
+			"required_hours": student.required_hours or 486,
+			"application": application_data
+		}
+	}

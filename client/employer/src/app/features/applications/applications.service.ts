@@ -42,4 +42,15 @@ export class ApplicationsService {
       })
     });
   }
+
+  setOjtStartDate(applicationId: number, startDate: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('ojt_start_date', startDate);
+
+    return this.http.put(`${this.apiUrl}/applications/${applicationId}/start-date`, formData, {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${sessionStorage.getItem('auth_token')}`
+      })
+    });
+  }
 }

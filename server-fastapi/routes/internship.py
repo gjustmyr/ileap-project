@@ -740,6 +740,82 @@ def update_application_status(
 	}
 
 
+@router.put("/applications/{application_id}/start-date")
+def set_ojt_start_date(
+	application_id: int,
+	ojt_start_date: str = Form(...),
+	db: Session = Depends(get_db),
+	current_user: dict = Depends(get_current_user)
+):
+	"""Set or update OJT start date for accepted application (Employer only)"""
+	employer = db.query(Employer).filter(Employer.user_id == current_user.get("user_id")).first()
+	if not employer:
+		raise HTTPException(status_code=404, detail="Employer profile not found")
+	
+	# Get application and verify it belongs to employer's internship
+	application = db.query(InternshipApplication).join(
+		Internship, InternshipApplication.internship_id == Internship.internship_id
+	).filter(
+		InternshipApplication.application_id == application_id,
+		Internship.employer_id == employer.employer_id
+	).first()
+	
+	if not application:
+		raise HTTPException(status_code=404, detail="Application not found")
+	
+	# Only allow setting start date for accepted applications
+	if application.status != 'accepted':
+		raise HTTPException(
+			status_code=400, 
+			detail="Can only set start date for accepted applications"
+		)
+	
+	# VALIDATION: Check if student's requirements are validated
+	from models import RequirementSubmission
+	
+	submissions = db.query(RequirementSubmission).filter(
+		RequirementSubmission.student_id == application.student_id
+	).all()
+	
+	if not submissions:
+		raise HTTPException(
+			status_code=400,
+			detail="Cannot set OJT start date. Student has not uploaded any pre-OJT requirements yet."
+		)
+	
+	# Check if all submitted requirements are validated
+	unvalidated_requirements = [
+		sub for sub in submissions 
+		if not sub.validated or sub.status != 'approved'
+	]
+	
+	if unvalidated_requirements:
+		raise HTTPException(
+			status_code=400,
+			detail=f"Cannot set OJT start date. Student has {len(unvalidated_requirements)} requirement(s) not yet validated by OJT Coordinator. All pre-OJT requirements must be approved before starting OJT."
+		)
+	
+	# Parse and set start date
+	try:
+		from datetime import datetime as dt
+		application.ojt_start_date = dt.fromisoformat(ojt_start_date.replace('Z', '+00:00'))
+	except Exception as e:
+		raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
+	
+	db.commit()
+	db.refresh(application)
+	
+	return {
+		"status": "success",
+		"message": "OJT start date set successfully",
+		"data": {
+			"application_id": application.application_id,
+			"student_id": application.student_id,
+			"ojt_start_date": application.ojt_start_date.isoformat() if application.ojt_start_date else None
+		}
+	}
+
+
 @router.post("/{internship_id}/apply", status_code=status.HTTP_201_CREATED)
 async def apply_to_internship(
 	internship_id: int,
@@ -966,7 +1042,7 @@ async def get_employer_ongoing_ojts(
 			"assigned_supervisor_id": supervisor_id,
 			"supervisor_name": supervisor_name,
 			"hours_completed": total_ojt_hours,
-			"hours_required": 486,
+			"hours_required": student.required_hours or 486,
 			"invalid_logs_count": invalid_logs_count
 		})
 	

@@ -19,29 +19,93 @@
   >
     <div
       *ngFor="let student of students"
-      class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition"
+      class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition"
     >
-      <div class="flex items-center gap-4 mb-4">
-        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-          <span class="text-green-600 poppins-semibold text-lg">{{
-            getInitials(student.first_name, student.last_name)
-          }}</span>
+      <div class="p-6 cursor-pointer" (click)="toggleStudentDetails(student.student_id)">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <span class="text-green-600 poppins-semibold text-lg">{{
+              getInitials(student.first_name, student.last_name)
+            }}</span>
+          </div>
+          <div class="flex-1">
+            <h3 class="poppins-semibold text-gray-800">
+              {{ student.first_name }} {{ student.last_name }}
+            </h3>
+            <p class="text-sm text-gray-600">{{ student.student_number }}</p>
+          </div>
+          <i 
+            class="pi text-gray-400 transition-transform"
+            [ngClass]="expandedStudentId === student.student_id ? 'pi-chevron-up' : 'pi-chevron-down'"
+          ></i>
         </div>
-        <div>
-          <h3 class="poppins-semibold text-gray-800">
-            {{ student.first_name }} {{ student.last_name }}
-          </h3>
-          <p class="text-sm text-gray-600">{{ student.student_number }}</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-book text-gray-400"></i>
+            <span class="text-gray-600">{{ student.program || 'N/A' }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-calendar text-gray-400"></i>
+            <span class="text-gray-600">{{ student.ojt_status || 'Not Started' }}</span>
+          </div>
         </div>
       </div>
-      <div class="space-y-2 text-sm">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-book text-gray-400"></i>
-          <span class="text-gray-600">{{ student.program || 'N/A' }}</span>
+
+      <!-- Expanded Details -->
+      <div 
+        *ngIf="expandedStudentId === student.student_id"
+        class="px-6 pb-6 border-t border-gray-200 pt-4"
+      >
+        <div *ngIf="!getStudentDetails(student.student_id)" class="flex justify-center py-4">
+          <i class="pi pi-spinner pi-spin text-gray-400"></i>
         </div>
-        <div class="flex items-center gap-2">
-          <i class="pi pi-calendar text-gray-400"></i>
-          <span class="text-gray-600">{{ student.ojt_status || 'Not Started' }}</span>
+        
+        <div *ngIf="getStudentDetails(student.student_id) as details" class="space-y-3">
+          <h4 class="poppins-semibold text-gray-700 text-sm mb-3">OJT Details</h4>
+          
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="text-gray-500 text-xs">SR Code</p>
+              <p class="text-gray-800 poppins-medium">{{ details.sr_code }}</p>
+            </div>
+            
+            <div>
+              <p class="text-gray-500 text-xs">Required Hours</p>
+              <p class="text-gray-800 poppins-medium">{{ details.required_hours }} hrs</p>
+            </div>
+          </div>
+
+          <div *ngIf="details.application" class="mt-4 pt-3 border-t border-gray-100">
+            <p class="text-gray-500 text-xs mb-2">Application Details</p>
+            
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Status:</span>
+                <span class="poppins-medium text-gray-800">{{ details.application.status }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-gray-600">Start Date:</span>
+                <span class="poppins-medium" [class.text-gray-800]="details.application.ojt_start_date" [class.text-gray-400]="!details.application.ojt_start_date">
+                  {{ details.application.ojt_start_date ? (details.application.ojt_start_date | date: 'MMM dd, yyyy') : 'Not set' }}
+                </span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-gray-600">Semester:</span>
+                <span class="poppins-medium text-gray-800">{{ details.application.semester }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-gray-600">School Year:</span>
+                <span class="poppins-medium text-gray-800">{{ details.application.school_year }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!details.application" class="mt-4 pt-3 border-t border-gray-100">
+            <p class="text-gray-400 text-sm italic text-center">No application data available</p>
+          </div>
         </div>
       </div>
     </div>

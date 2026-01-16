@@ -366,6 +366,9 @@ class Student(Base):
 	# OJT Grade
 	final_grade = Column(String(10), nullable=True)
 	
+	# OJT Hours Required (default 486)
+	required_hours = Column(Integer, nullable=True, default=486)
+	
 	status = Column(String(8), default="active")
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow)

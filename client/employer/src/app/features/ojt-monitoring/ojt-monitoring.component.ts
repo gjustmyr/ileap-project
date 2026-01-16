@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { OjtMonitoringService } from './ojt-monitoring.service';
+import { environment } from '../../../environments/environment';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-ojt-monitoring',
@@ -23,7 +26,7 @@ export class OjtMonitoringComponent implements OnInit {
   selectedOjt: any = null;
   selectedSupervisorId: string = '';
 
-  constructor(private ojtService: OjtMonitoringService) {}
+  constructor(private ojtService: OjtMonitoringService, private http: HttpClient) {}
 
   ngOnInit(): void {
     this.loadOngoingOjts();
@@ -184,5 +187,75 @@ export class OjtMonitoringComponent implements OnInit {
     return this.filteredOjts.filter(
       (ojt) => ojt.ojt_status === 'Pending Requirements'
     ).length;
+  }
+
+  setStartDate(ojt: any): void {
+    Swal.fire({
+      title: 'Set OJT Start Date',
+      html: `
+        <p class="mb-3">Set the start date for <strong>${ojt.student_name}</strong></p>
+        <div class="text-left">
+          <label for="start-date" class="block text-sm font-medium text-gray-700 mb-2">
+            Start Date
+          </label>
+          <input
+            type="date"
+            id="start-date"
+            class="w-full border border-gray-300 rounded px-3 py-2"
+            min="${new Date().toISOString().split('T')[0]}"
+          />
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Set Start Date',
+      confirmButtonColor: '#10b981',
+      cancelButtonText: 'Cancel',
+      preConfirm: () => {
+        const dateInput = document.getElementById('start-date') as HTMLInputElement;
+        if (!dateInput.value) {
+          Swal.showValidationMessage('Please select a start date');
+          return false;
+        }
+        return { startDate: dateInput.value };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.updateStartDate(ojt.application_id, result.value.startDate);
+      }
+    });
+  }
+
+  private updateStartDate(applicationId: number, startDate: string): void {
+    const token = sessionStorage.getItem('auth_token');
+    const formData = new FormData();
+    formData.append('ojt_start_date', startDate);
+
+    this.http.put(
+      `${environment.apiUrl}/internships/applications/${applicationId}/start-date`,
+      formData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'OJT start date set successfully',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        this.loadOngoingOjts();
+      },
+      error: (error) => {
+        console.error('Error setting start date:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.error?.detail || 'Failed to set start date. Please ensure all pre-OJT requirements are approved.'
+        });
+      }
+    });
   }
 }

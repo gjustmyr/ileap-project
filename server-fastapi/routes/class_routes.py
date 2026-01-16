@@ -355,7 +355,8 @@ def get_class_students(
                 invalid_logs_count += 1
         
         # Check if OJT is completed (all hours done)
-        if total_ojt_hours >= 486 and ojt_status == "Ongoing":
+        student_required_hours = s.required_hours or 486
+        if total_ojt_hours >= student_required_hours and ojt_status == "Ongoing":
             ojt_status = "Completed"
         
         # Count post-OJT requirements (requirement_id 16-19) that are validated
@@ -378,7 +379,7 @@ def get_class_students(
             "total": total_pre_ojt_requirements,
             "ojtStatus": ojt_status,
             "hoursCompleted": total_ojt_hours,
-            "hoursRequired": 486,  # Default OJT hours
+            "hoursRequired": student_required_hours,
             "invalidLogsCount": invalid_logs_count,
             "postCompleted": post_ojt_completed,
             "postTotal": 4,  # Default post-OJT requirements

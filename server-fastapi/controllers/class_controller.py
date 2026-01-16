@@ -65,7 +65,8 @@ async def process_csv_file(csv_file: UploadFile) -> list:
                 'sr_code': sr_code,
                 'first_name': first_name,
                 'last_name': last_name,
-                'email': email
+                'email': email,
+                'required_hours': int(row.get('Required Hours', 486) or 486)  # Default to 486 if not provided
             })
         
         if not students:
@@ -170,6 +171,7 @@ def create_class_with_students(
             first_name=student_data['first_name'],
             last_name=student_data['last_name'],
             email=student_data['email'],
+            required_hours=student_data.get('required_hours', 486),
             status="active"
         )
         db.add(new_student)
