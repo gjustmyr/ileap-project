@@ -13,7 +13,6 @@ class SuperAdminCreate(BaseModel):
 class LoginRequest(BaseModel):
     email_address: EmailStr
     password: str
-    expected_role: str | None = None  # Optional: Role expected for this portal
 
 
 class LoginResponse(BaseModel):
