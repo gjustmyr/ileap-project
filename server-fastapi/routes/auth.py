@@ -11,8 +11,45 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=LoginResponse)
 async def login(credentials: LoginRequest, db: Session = Depends(get_db)):
-    """User login endpoint"""
+    """User login endpoint - Generic (legacy, not recommended)"""
     return auth_controller.login_user(credentials, db)
+
+
+@router.post("/superadmin/login", response_model=LoginResponse)
+async def login_superadmin(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """Superadmin portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="superadmin")
+
+
+@router.post("/employer/login", response_model=LoginResponse)
+async def login_employer(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """Employer portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="employer")
+
+
+@router.post("/coordinator/login", response_model=LoginResponse)
+async def login_coordinator(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """OJT Coordinator portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="ojt_coordinator")
+
+
+@router.post("/head/login", response_model=LoginResponse)
+async def login_head(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """OJT Head portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="ojt_head")
+
+
+@router.post("/student/login", response_model=LoginResponse)
+async def login_student(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """Student portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="student")
+
+
+@router.post("/supervisor/login", response_model=LoginResponse)
+async def login_supervisor(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """Supervisor portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="trainee_supervisor")
+
 
 
 @router.post("/logout")

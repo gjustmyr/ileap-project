@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Timezone configuration - Set to Philippine timezone
+TIMEZONE = os.getenv("TZ", "Asia/Manila")
+os.environ["TZ"] = TIMEZONE
+
 # Base directory (project root)
 BASE_DIR = Path(__file__).resolve().parent
 

@@ -29,6 +29,8 @@
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/crypto-js": "^4.2.2",
+    "crypto-js": "^4.2.0",
     "postcss": "^8.5.6",
     "primeicons": "^7.0.0",
     "rxjs": "~7.8.0",

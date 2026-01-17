@@ -4,8 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
 
-# Import configuration
-from config import CORS_ORIGINS, UPLOAD_BASE_DIR
+# Import configuration (this sets timezone)
+from config import CORS_ORIGINS, UPLOAD_BASE_DIR, TIMEZONE
+
+# Set timezone for the application
+os.environ['TZ'] = TIMEZONE
 
 # Import database
 from database import engine

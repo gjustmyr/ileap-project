@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { EncryptionService } from './encryption.service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,11 +10,15 @@ import { Observable } from 'rxjs';
 export class AuthService {
   private baseURL = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private encryption: EncryptionService
+  ) {}
 
   loginUser(email_address: string, password: string): Observable<any> {
-    const payload = { email_address, password };
-    return this.http.post(`${this.baseURL}/auth/login`, payload);
+    const encryptedPassword = this.encryption.encryptPassword(password);
+    const payload = { email_address, password: encryptedPassword };
+    return this.http.post(`${this.baseURL}/auth/coordinator/login`, payload);
   }
 
   validateToken(): Observable<any> {
