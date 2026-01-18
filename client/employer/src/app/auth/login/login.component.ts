@@ -23,7 +23,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.loginForm = this.fb.group({
       email_address: ['', [Validators.required, Validators.email]],
@@ -42,7 +42,7 @@ export class LoginComponent {
         },
         error: () => {
           sessionStorage.clear();
-        }
+        },
       });
     }
   }
@@ -68,17 +68,32 @@ export class LoginComponent {
           this.loading = false;
 
           if (response.status === 'success') {
-            sessionStorage.setItem('auth_token', `Bearer ${response.data.token}`);
+            sessionStorage.setItem(
+              'auth_token',
+              `Bearer ${response.data.token}`,
+            );
             sessionStorage.setItem('user_id', response.data.user.user_id);
 
-            Swal.fire({
-              title: 'Login Successful!',
-              text: `Welcome back!`,
-              icon: 'success',
-              confirmButtonColor: '#16a34a',
-            }).then(() => {
-              this.router.navigate(['/dashboard']);
-            });
+            // Check if password change is required
+            if (response.data.force_password_change) {
+              Swal.fire({
+                title: 'Password Change Required',
+                text: 'You must change your temporary password before continuing.',
+                icon: 'warning',
+                confirmButtonColor: '#16a34a',
+              }).then(() => {
+                this.router.navigate(['/change-password']);
+              });
+            } else {
+              Swal.fire({
+                title: 'Login Successful!',
+                text: `Welcome back!`,
+                icon: 'success',
+                confirmButtonColor: '#16a34a',
+              }).then(() => {
+                this.router.navigate(['/dashboard']);
+              });
+            }
           } else {
             Swal.fire({
               title: 'Login Failed',
@@ -106,5 +121,46 @@ export class LoginComponent {
         confirmButtonColor: '#dc2626',
       });
     }
+  }
+
+  showForgotPassword() {
+    Swal.fire({
+      title: 'Forgot Password',
+      html: '<input id="reset-email" type="email" class="swal2-input" placeholder="Enter your email">',
+      confirmButtonText: 'Send Reset Link',
+      confirmButtonColor: '#16a34a',
+      showCancelButton: true,
+      preConfirm: () => {
+        const email = (
+          document.getElementById('reset-email') as HTMLInputElement
+        ).value;
+        if (!email) {
+          Swal.showValidationMessage('Please enter your email');
+          return false;
+        }
+        return email;
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.authService.forgotPassword(result.value).subscribe({
+          next: () => {
+            Swal.fire({
+              title: 'Email Sent!',
+              text: 'If the email exists, a password reset link has been sent.',
+              icon: 'success',
+              confirmButtonColor: '#16a34a',
+            });
+          },
+          error: () => {
+            Swal.fire({
+              title: 'Success!',
+              text: 'If the email exists, a password reset link has been sent.',
+              icon: 'success',
+              confirmButtonColor: '#16a34a',
+            });
+          },
+        });
+      }
+    });
   }
 }

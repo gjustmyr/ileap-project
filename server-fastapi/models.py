@@ -52,6 +52,9 @@ class User(Base):
 	email_address = Column(String(255), unique=True, nullable=False, index=True)
 	password = Column(String(255), nullable=False)
 	role = Column(String(50), nullable=False)
+	reset_token = Column(String(255), nullable=True)
+	reset_token_expiry = Column(DateTime, nullable=True)
+	force_password_change = Column(Boolean, default=False)
 
 
 class Campus(Base):

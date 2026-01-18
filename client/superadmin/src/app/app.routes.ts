@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { MainComponent } from './core/main/main.component';
+import { ChangePasswordComponent } from './auth/change-password/change-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { CampusesComponent } from './features/school-info/campuses/campuses.component';
 import { DepartmentsComponent } from './features/school-info/departments/departments.component';
 import { ProgramsComponent } from './features/school-info/programs/programs.component';
@@ -30,6 +32,14 @@ export const routes: Routes = [
     data: {
       title: 'Login',
     },
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   {
     path: '',

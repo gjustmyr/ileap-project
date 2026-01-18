@@ -26,7 +26,10 @@ export class OjtMonitoringComponent implements OnInit {
   selectedOjt: any = null;
   selectedSupervisorId: string = '';
 
-  constructor(private ojtService: OjtMonitoringService, private http: HttpClient) {}
+  constructor(
+    private ojtService: OjtMonitoringService,
+    private http: HttpClient,
+  ) {}
 
   ngOnInit(): void {
     this.loadOngoingOjts();
@@ -40,7 +43,7 @@ export class OjtMonitoringComponent implements OnInit {
         this.supervisors = response.data || [];
         if (this.supervisors.length === 0) {
           console.warn(
-            '⚠️ No supervisors found. Please add supervisors first.'
+            '⚠️ No supervisors found. Please add supervisors first.',
           );
         }
       },
@@ -75,13 +78,13 @@ export class OjtMonitoringComponent implements OnInit {
       .assignSupervisor(
         this.selectedOjt.student_id,
         parseInt(this.selectedSupervisorId),
-        this.selectedOjt.application_id
+        this.selectedOjt.application_id,
       )
       .subscribe({
         next: (response) => {
           console.log('✅ Supervisor assigned:', response);
           const supervisor = this.supervisors.find(
-            (s) => s.supervisor_id == this.selectedSupervisorId
+            (s) => s.supervisor_id == this.selectedSupervisorId,
           );
           if (supervisor) {
             // Update the selected OJT object
@@ -109,7 +112,7 @@ export class OjtMonitoringComponent implements OnInit {
           console.error('❌ Error assigning supervisor:', error);
           alert(
             error.error?.detail ||
-              'Failed to assign supervisor. Please try again.'
+              'Failed to assign supervisor. Please try again.',
           );
         },
       });
@@ -185,7 +188,7 @@ export class OjtMonitoringComponent implements OnInit {
 
   getPendingRequirementsCount(): number {
     return this.filteredOjts.filter(
-      (ojt) => ojt.ojt_status === 'Pending Requirements'
+      (ojt) => ojt.ojt_status === 'Pending Requirements',
     ).length;
   }
 
@@ -211,13 +214,15 @@ export class OjtMonitoringComponent implements OnInit {
       confirmButtonColor: '#10b981',
       cancelButtonText: 'Cancel',
       preConfirm: () => {
-        const dateInput = document.getElementById('start-date') as HTMLInputElement;
+        const dateInput = document.getElementById(
+          'start-date',
+        ) as HTMLInputElement;
         if (!dateInput.value) {
           Swal.showValidationMessage('Please select a start date');
           return false;
         }
         return { startDate: dateInput.value };
-      }
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         this.updateStartDate(ojt.application_id, result.value.startDate);
@@ -230,32 +235,36 @@ export class OjtMonitoringComponent implements OnInit {
     const formData = new FormData();
     formData.append('ojt_start_date', startDate);
 
-    this.http.put(
-      `${environment.apiUrl}/internships/applications/${applicationId}/start-date`,
-      formData,
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).subscribe({
-      next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: 'OJT start date set successfully',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true
-        });
-        this.loadOngoingOjts();
-      },
-      error: (error) => {
-        console.error('Error setting start date:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.error?.detail || 'Failed to set start date. Please ensure all pre-OJT requirements are approved.'
-        });
-      }
-    });
+    this.http
+      .put(
+        `${environment.apiUrl}/internships/applications/${applicationId}/start-date`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      .subscribe({
+        next: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'OJT start date set successfully',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+          this.loadOngoingOjts();
+        },
+        error: (error) => {
+          console.error('Error setting start date:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text:
+              error.error?.detail ||
+              'Failed to set start date. Please ensure all pre-OJT requirements are approved.',
+          });
+        },
+      });
   }
 }

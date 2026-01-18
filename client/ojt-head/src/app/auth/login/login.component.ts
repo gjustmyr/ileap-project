@@ -20,12 +20,12 @@ import { AuthService } from '../auth.service';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   loading: boolean = false;
-  
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.loginForm = this.fb.group({
       email_address: ['', [Validators.required, Validators.email]],
@@ -47,12 +47,12 @@ export class LoginComponent implements OnInit {
         error: () => {
           // Token is invalid - clear it and stay on login page
           sessionStorage.clear();
-        }
+        },
       });
     }
 
     // Check if user was redirected due to expired session
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['expired'] === 'true') {
         Swal.fire({
           title: 'Session Expired',
@@ -86,12 +86,18 @@ export class LoginComponent implements OnInit {
 
           if (response.status === 'success') {
             // Store authentication data
-            sessionStorage.setItem('auth_token', `Bearer ${response.data.token}`);
+            sessionStorage.setItem(
+              'auth_token',
+              `Bearer ${response.data.token}`,
+            );
             sessionStorage.setItem('user_id', response.data.user.user_id);
-            
+
             // Store user info if needed
             if (response.data.user) {
-              sessionStorage.setItem('user_info', JSON.stringify(response.data.user));
+              sessionStorage.setItem(
+                'user_info',
+                JSON.stringify(response.data.user),
+              );
             }
 
             Swal.fire({
@@ -101,7 +107,8 @@ export class LoginComponent implements OnInit {
               confirmButtonColor: '#16a34a',
             }).then(() => {
               // Check if there's a return URL
-              const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/ojt-head';
+              const returnUrl =
+                this.route.snapshot.queryParams['returnUrl'] || '/ojt-head';
               this.router.navigateByUrl(returnUrl);
             });
           } else {
@@ -131,5 +138,46 @@ export class LoginComponent implements OnInit {
         confirmButtonColor: '#dc2626',
       });
     }
+  }
+
+  showForgotPassword() {
+    Swal.fire({
+      title: 'Forgot Password',
+      html: '<input id="reset-email" type="email" class="swal2-input" placeholder="Enter your email">',
+      confirmButtonText: 'Send Reset Link',
+      confirmButtonColor: '#16a34a',
+      showCancelButton: true,
+      preConfirm: () => {
+        const email = (
+          document.getElementById('reset-email') as HTMLInputElement
+        ).value;
+        if (!email) {
+          Swal.showValidationMessage('Please enter your email');
+          return false;
+        }
+        return email;
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.authService.forgotPassword(result.value).subscribe({
+          next: () => {
+            Swal.fire({
+              title: 'Email Sent!',
+              text: 'If the email exists, a password reset link has been sent.',
+              icon: 'success',
+              confirmButtonColor: '#16a34a',
+            });
+          },
+          error: () => {
+            Swal.fire({
+              title: 'Success!',
+              text: 'If the email exists, a password reset link has been sent.',
+              icon: 'success',
+              confirmButtonColor: '#16a34a',
+            });
+          },
+        });
+      }
+    });
   }
 }

@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { MainComponent } from './core/main/main.component';
 import { LoginComponent } from './auth/login/login.component';
 import { ForceChangePasswordComponent } from './auth/force-change-password/force-change-password.component';
+import { ChangePasswordComponent } from './auth/change-password/change-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { RequirementsComponent } from './features/requirements/requirements.component';
 import { authGuard } from './auth/auth.guard';
 
@@ -21,6 +23,14 @@ export const routes: Routes = [
   {
     path: 'force-change-password',
     component: ForceChangePasswordComponent,
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   {
     path: 'ojt-head',

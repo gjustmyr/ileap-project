@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { MainComponent } from './core/main/main.component';
 import { LoginComponent } from './auth/login/login.component';
+import { ChangePasswordComponent } from './auth/change-password/change-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ClassListingComponent } from './features/class-listing/class-listing.component';
 import { JobListingComponent } from './features/job-listing/job-listing.component';
@@ -19,6 +21,14 @@ export const routes: Routes = [
     data: {
       title: 'Login',
     },
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   {
     path: 'ojt-coordinator',

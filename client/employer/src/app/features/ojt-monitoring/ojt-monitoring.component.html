@@ -151,13 +151,25 @@
           <td class="px-4 py-4">
             <div *ngIf="ojt.ojt_start_date" class="flex items-center gap-2">
               <p class="text-sm text-gray-900">
-                {{ ojt.ojt_start_date | date : "MMM dd, yyyy" }}
+                {{ ojt.ojt_start_date | date: "MMM dd, yyyy" }}
               </p>
             </div>
-            <div *ngIf="!ojt.ojt_start_date && ojt.ojt_status !== 'Accepted - No Start Date Set'" class="flex items-center gap-2">
+            <div
+              *ngIf="
+                !ojt.ojt_start_date &&
+                ojt.ojt_status !== 'Accepted - No Start Date Set'
+              "
+              class="flex items-center gap-2"
+            >
               <p class="text-sm text-gray-400 italic">Not set</p>
             </div>
-            <div *ngIf="!ojt.ojt_start_date && ojt.ojt_status === 'Accepted - No Start Date Set'" class="flex items-center gap-2">
+            <div
+              *ngIf="
+                !ojt.ojt_start_date &&
+                ojt.ojt_status === 'Accepted - No Start Date Set'
+              "
+              class="flex items-center gap-2"
+            >
               <button
                 (click)="setStartDate(ojt)"
                 class="px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded poppins-medium"

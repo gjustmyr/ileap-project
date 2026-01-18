@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import * as CryptoJS from 'crypto-js';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EncryptionService {
   // Secret key for encryption - should match backend
@@ -16,7 +16,10 @@ export class EncryptionService {
    */
   encryptPassword(password: string): string {
     try {
-      const encrypted = CryptoJS.AES.encrypt(password, this.SECRET_KEY).toString();
+      const encrypted = CryptoJS.AES.encrypt(
+        password,
+        this.SECRET_KEY,
+      ).toString();
       return encrypted;
     } catch (error) {
       console.error('Encryption failed:', error);

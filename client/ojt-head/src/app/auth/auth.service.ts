@@ -14,13 +14,39 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private encryption: EncryptionService
+    private encryption: EncryptionService,
   ) {}
 
   loginUser(email_address: string, password: string): Observable<any> {
     const encryptedPassword = this.encryption.encryptPassword(password);
     const payload = { email_address, password: encryptedPassword };
     return this.http.post(`${this.baseURL}/auth/head/login`, payload);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/forgot-password`, {
+      email_address: email,
+    });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+  }
+
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({ Authorization: token || '' });
+    return this.http.post(
+      `${this.baseURL}/auth/change-password`,
+      { current_password: currentPassword, new_password: newPassword },
+      { headers },
+    );
   }
 
   validateToken(): Observable<any> {
@@ -37,7 +63,7 @@ export class AuthService {
   changePassword(
     user_id: string | null,
     current_password: string,
-    new_password: string
+    new_password: string,
   ): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
 
@@ -52,37 +78,39 @@ export class AuthService {
         current_password,
         new_password,
       },
-      { headers }
+      { headers },
     );
   }
 
   logout(): void {
     const token = sessionStorage.getItem('auth_token');
-    
+
     // Call backend logout endpoint to invalidate token immediately
     if (token) {
       const headers = new HttpHeaders({
         Authorization: token,
       });
-      
-      this.http.post(`${this.baseURL}/auth/logout`, {}, { headers })
-        .subscribe({
-          next: () => {
-            console.log('✅ Token invalidated on server');
-          },
-          error: (err) => {
-            console.warn('⚠️ Logout API failed (continuing with client-side logout):', err);
-          }
-        });
+
+      this.http.post(`${this.baseURL}/auth/logout`, {}, { headers }).subscribe({
+        next: () => {
+          console.log('✅ Token invalidated on server');
+        },
+        error: (err) => {
+          console.warn(
+            '⚠️ Logout API failed (continuing with client-side logout):',
+            err,
+          );
+        },
+      });
     }
-    
+
     // Clear all session storage data
     sessionStorage.clear();
-    
+
     // Clear any local storage data if used
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_info');
-    
+
     // Navigate to login page
     this.router.navigate(['/login']);
   }

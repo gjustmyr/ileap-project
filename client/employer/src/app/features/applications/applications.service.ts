@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApplicationsService {
   private apiUrl = `${environment.apiUrl}/internships`;
@@ -14,8 +14,8 @@ export class ApplicationsService {
   private getHeaders(): HttpHeaders {
     const token = sessionStorage.getItem('auth_token');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
   }
 
@@ -26,31 +26,44 @@ export class ApplicationsService {
 
     return this.http.get(`${this.apiUrl}/applications`, {
       headers: this.getHeaders(),
-      params
+      params,
     });
   }
 
-  updateApplicationStatus(applicationId: number, status: string, remarks?: string, ojtStartDate?: string | null): Observable<any> {
+  updateApplicationStatus(
+    applicationId: number,
+    status: string,
+    remarks?: string,
+    ojtStartDate?: string | null,
+  ): Observable<any> {
     const formData = new FormData();
     formData.append('status', status);
     if (remarks) formData.append('remarks', remarks);
     if (ojtStartDate) formData.append('ojt_start_date', ojtStartDate);
 
-    return this.http.put(`${this.apiUrl}/applications/${applicationId}/status`, formData, {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${sessionStorage.getItem('auth_token')}`
-      })
-    });
+    return this.http.put(
+      `${this.apiUrl}/applications/${applicationId}/status`,
+      formData,
+      {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${sessionStorage.getItem('auth_token')}`,
+        }),
+      },
+    );
   }
 
   setOjtStartDate(applicationId: number, startDate: string): Observable<any> {
     const formData = new FormData();
     formData.append('ojt_start_date', startDate);
 
-    return this.http.put(`${this.apiUrl}/applications/${applicationId}/start-date`, formData, {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${sessionStorage.getItem('auth_token')}`
-      })
-    });
+    return this.http.put(
+      `${this.apiUrl}/applications/${applicationId}/start-date`,
+      formData,
+      {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${sessionStorage.getItem('auth_token')}`,
+        }),
+      },
+    );
   }
 }

@@ -5,6 +5,7 @@ import bcrypt
 import jwt
 from datetime import datetime, timedelta
 import os
+import secrets
 from models_token_blacklist import token_blacklist
 from utils.encryption import decrypt_password
 
@@ -77,7 +78,8 @@ def login_user_by_role(credentials, db: Session, expected_role: str):
                 "user_id": user.user_id,
                 "email": user.email_address,
                 "role": user.role
-            }
+            },
+            "force_password_change": user.force_password_change
         }
     }
 
@@ -205,3 +207,91 @@ def logout_user(authorization: str):
     except Exception as e:
         print(f"❌ Logout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Logout failed")
+
+
+def forgot_password(email: str, db: Session):
+    """
+    Generate password reset token and send email
+    """
+    user = db.query(User).filter(User.email_address == email).first()
+    
+    if not user:
+        # Don't reveal if email exists or not
+        return {
+            "status": "success",
+            "message": "If the email exists, a password reset link has been sent."
+        }
+    
+    # Generate secure reset token
+    reset_token = secrets.token_urlsafe(32)
+    reset_token_expiry = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+    
+    user.reset_token = reset_token
+    user.reset_token_expiry = reset_token_expiry
+    db.commit()
+    
+    # TODO: Send email with reset link
+    # For now, just log the token (in production, send via email)
+    print(f"🔑 Password reset token for {email}: {reset_token}")
+    print(f"Reset link: http://localhost:4200/reset-password?token={reset_token}")
+    
+    return {
+        "status": "success",
+        "message": "If the email exists, a password reset link has been sent.",
+        "reset_token": reset_token  # Remove this in production
+    }
+
+
+def reset_password(token: str, new_password: str, db: Session):
+    """
+    Reset password using valid token
+    """
+    user = db.query(User).filter(User.reset_token == token).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    if not user.reset_token_expiry or datetime.utcnow() > user.reset_token_expiry:
+        raise HTTPException(status_code=400, detail="Reset token has expired")
+    
+    # Hash new password
+    hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Update password and clear reset token
+    user.password = hashed_password
+    user.reset_token = None
+    user.reset_token_expiry = None
+    user.force_password_change = False  # Clear force change flag
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Password has been reset successfully"
+    }
+
+
+def change_password(user_id: int, current_password: str, new_password: str, db: Session):
+    """
+    Change password for authenticated user
+    """
+    user = db.query(User).filter(User.user_id == user_id).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not bcrypt.checkpw(current_password.encode('utf-8'), user.password.encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Hash new password
+    hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Update password and clear force change flag
+    user.password = hashed_password
+    user.force_password_change = False
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Password changed successfully"
+    }

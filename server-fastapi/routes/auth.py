@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, Header
 from sqlalchemy.orm import Session
 from database import get_db
-from schemas.auth import SuperAdminCreate, LoginRequest, LoginResponse
+from schemas.auth import SuperAdminCreate, LoginRequest, LoginResponse, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest
 from schemas.common import Response
 from controllers import auth_controller
 from middleware.auth import verify_token, optional_verify_token
@@ -107,3 +107,26 @@ async def check_auth(token_data: dict = Depends(optional_verify_token)):
             "message": "User is not authenticated",
             "data": None
         }
+
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Request password reset - sends reset link to email"""
+    return auth_controller.forgot_password(request.email_address, db)
+
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password using token from email"""
+    return auth_controller.reset_password(request.token, request.new_password, db)
+
+
+@router.post("/change-password")
+async def change_password(
+    request: ChangePasswordRequest,
+    token_data: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Change password for authenticated user"""
+    user_id = token_data.get("user_id")
+    return auth_controller.change_password(user_id, request.current_password, request.new_password, db)

@@ -166,7 +166,7 @@ export class AttendanceComponent implements OnInit {
             },
             {
               headers: { Authorization: token || '' },
-            }
+            },
           )
           .subscribe({
             next: (response: any) => {
@@ -352,17 +352,17 @@ export class AttendanceComponent implements OnInit {
       // Parse directly without timezone conversion
       const timeStr = timeString.toString();
       const timePart = timeStr.includes('T') ? timeStr.split('T')[1] : timeStr.split(' ')[1];
-      
+
       if (!timePart) return 'N/A';
-      
+
       const [hours, minutes] = timePart.split(':');
       const hour = parseInt(hours);
       const min = minutes.padStart(2, '0');
-      
+
       // Convert to 12-hour format
-      const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       const ampm = hour >= 12 ? 'PM' : 'AM';
-      
+
       return `${hour12}:${min} ${ampm}`;
     } catch (error) {
       return timeString;
@@ -425,7 +425,7 @@ export class AttendanceComponent implements OnInit {
   getTotalApprovedHours(): number {
     // Accept both 'approved' and 'complete' as valid statuses
     const approvedRecords = this.records.filter(
-      (r) => r.validation_status === 'approved' || r.validation_status === 'complete'
+      (r) => r.validation_status === 'approved' || r.validation_status === 'complete',
     );
 
     const total = approvedRecords.reduce((sum, record) => {
@@ -455,7 +455,7 @@ export class AttendanceComponent implements OnInit {
 
   getApprovedDaysCount(): number {
     return this.records.filter(
-      (r) => r.validation_status === 'approved' || r.validation_status === 'complete'
+      (r) => r.validation_status === 'approved' || r.validation_status === 'complete',
     ).length;
   }
 }

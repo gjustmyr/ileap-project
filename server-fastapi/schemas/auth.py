@@ -19,3 +19,17 @@ class LoginResponse(BaseModel):
     status: str
     data: dict
     message: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email_address: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str

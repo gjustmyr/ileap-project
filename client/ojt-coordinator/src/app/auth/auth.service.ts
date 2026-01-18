@@ -12,13 +12,39 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private encryption: EncryptionService
+    private encryption: EncryptionService,
   ) {}
 
   loginUser(email_address: string, password: string): Observable<any> {
     const encryptedPassword = this.encryption.encryptPassword(password);
     const payload = { email_address, password: encryptedPassword };
     return this.http.post(`${this.baseURL}/auth/coordinator/login`, payload);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/forgot-password`, {
+      email_address: email,
+    });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+  }
+
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({ Authorization: token || '' });
+    return this.http.post(
+      `${this.baseURL}/auth/change-password`,
+      { current_password: currentPassword, new_password: newPassword },
+      { headers },
+    );
   }
 
   validateToken(): Observable<any> {

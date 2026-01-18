@@ -12,7 +12,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private encryption: EncryptionService
+    private encryption: EncryptionService,
   ) {}
 
   loginUser(email_address: string, password: string): Observable<any> {
@@ -21,6 +21,32 @@ export class AuthService {
     const payload = { email_address, password: encryptedPassword };
     // Use dedicated employer login endpoint
     return this.http.post(`${this.baseURL}/auth/employer/login`, payload);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/forgot-password`, {
+      email_address: email,
+    });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.baseURL}/auth/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+  }
+
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({ Authorization: token || '' });
+    return this.http.post(
+      `${this.baseURL}/auth/change-password`,
+      { current_password: currentPassword, new_password: newPassword },
+      { headers },
+    );
   }
 
   validateToken(): Observable<any> {
@@ -37,7 +63,7 @@ export class AuthService {
   changePassword(
     user_id: string | null,
     current_password: string,
-    new_password: string
+    new_password: string,
   ): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
 
@@ -52,7 +78,7 @@ export class AuthService {
         current_password,
         new_password,
       },
-      { headers }
+      { headers },
     );
   }
 }
