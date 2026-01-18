@@ -715,7 +715,7 @@ async def update_alumni(
         alumni.email = alumni_data['email']
         alumni.program_id = alumni_data.get('program_id')
         alumni.graduation_year = alumni_data.get('graduation_year')
-        alumni.updated_at = datetime.utcnow()
+        alumni.updated_at = philippine_utcnow()
         
         db.commit()
         db.refresh(alumni)

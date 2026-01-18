@@ -3,6 +3,7 @@ import { LoginComponent } from './auth/login/login.component';
 import { ForceChangePasswordComponent } from './auth/force-change-password/force-change-password.component';
 import { ChangePasswordComponent } from './auth/change-password/change-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { MainComponent } from './core/main/main.component';
 import { CompanyProfileComponent } from './features/company-profile/company-profile.component';
@@ -26,6 +27,10 @@ export const routes: Routes = [
   {
     path: 'change-password',
     component: ChangePasswordComponent,
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
   },
   {
     path: 'reset-password',

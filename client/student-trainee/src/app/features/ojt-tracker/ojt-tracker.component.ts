@@ -19,6 +19,7 @@ export class OjtTrackerComponent implements OnInit {
   allRequirementsValidated: boolean = false;
   hasOJTStarted: boolean = false;
   employerInfo: any = null;
+  isRefreshing: boolean = false;
 
   // OJT Progress
   hoursCompleted: number = 0;
@@ -196,6 +197,20 @@ export class OjtTrackerComponent implements OnInit {
         console.error('Error loading OJT logs:', error);
       },
     });
+  }
+
+  refreshTracker(): void {
+    this.isRefreshing = true;
+    
+    // Reload all data
+    this.checkOJTStatus();
+    this.loadStudentProfile();
+    this.loadClassInfo();
+    
+    // Reset refreshing state after a short delay
+    setTimeout(() => {
+      this.isRefreshing = false;
+    }, 1000);
   }
 
   calculatePresumedEndDate(): void {

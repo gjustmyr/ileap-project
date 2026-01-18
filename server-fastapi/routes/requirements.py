@@ -6,6 +6,7 @@ from models import RequirementSubmission, Student
 from typing import List
 import os
 from datetime import datetime
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 from config import get_upload_path, get_upload_url
 
 router = APIRouter(prefix="/api/requirements", tags=["Requirements"])
@@ -119,7 +120,7 @@ async def upload_requirement(
     await file.seek(0)
     
     # Generate unique filename using student_id
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = philippine_now().strftime("%Y%m%d_%H%M%S")
     safe_filename = f"student_{student.student_id}_req_{requirement_id}_{timestamp}{file_extension}"
     file_path = get_upload_path("requirements", safe_filename)
     
@@ -150,8 +151,8 @@ async def upload_requirement(
             existing.validated = False  # Reset validation when resubmitting
             existing.returned = False
             existing.remarks = None
-            existing.submitted_at = datetime.now()
-            existing.updated_at = datetime.now()
+            existing.submitted_at = philippine_now()
+            existing.updated_at = philippine_now()
         else:
             # Insert new submission
             print(f"➕ Creating new submission")
@@ -162,7 +163,7 @@ async def upload_requirement(
                 status='submitted',
                 validated=False,
                 returned=False,
-                submitted_at=datetime.now()
+                submitted_at=philippine_now()
             )
             db.add(new_submission)
         
@@ -211,8 +212,8 @@ def approve_requirement(
     submission.status = 'approved'
     submission.validated = True
     submission.returned = False
-    submission.validated_at = datetime.now()
-    submission.updated_at = datetime.now()
+    submission.validated_at = philippine_now()
+    submission.updated_at = philippine_now()
     
     try:
         db.commit()
@@ -251,7 +252,7 @@ def reject_requirement(
     submission.validated = False
     submission.returned = True
     submission.remarks = remarks.get('remarks', '')
-    submission.updated_at = datetime.now()
+    submission.updated_at = philippine_now()
     
     try:
         db.commit()
@@ -290,8 +291,8 @@ def approve_all_requirements(
         submission.status = 'approved'
         submission.validated = True
         submission.returned = False
-        submission.validated_at = datetime.now()
-        submission.updated_at = datetime.now()
+        submission.validated_at = philippine_now()
+        submission.updated_at = philippine_now()
     
     try:
         db.commit()

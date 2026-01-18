@@ -62,6 +62,7 @@ class Campus(Base):
 
 	campus_id = Column(Integer, primary_key=True, index=True)
 	campus_name = Column(String(150), nullable=False)
+	campus_address = Column(Text, nullable=True)
 	is_extension = Column(Boolean, default=False)
 	parent_campus_id = Column(Integer, ForeignKey("campuses.campus_id"), nullable=True)
 	status = Column(String(8), default="active")

@@ -1,0 +1,156 @@
+<div class="p-4">
+  <div class="mb-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+        Personal History Statement
+      </h1>
+      <p class="text-sm text-gray-500 poppins-regular mt-1">
+        Download your personal history statement document
+      </p>
+    </div>
+    <button
+      (click)="downloadDocument()"
+      [disabled]="isLoading || !studentData"
+      class="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors poppins-medium disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <i class="pi pi-download"></i>
+      <span>{{ isLoading ? 'Loading...' : 'Download Document' }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-96">
+    <div class="text-center">
+      <i class="pi pi-spin pi-spinner text-4xl text-red-600 mb-4"></i>
+      <p class="text-gray-600 poppins-regular">Loading your data...</p>
+    </div>
+  </div>
+
+  <!-- Preview Card -->
+  <div *ngIf="!isLoading && studentData" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 poppins-medium mb-4 border-l-4 border-red-600 pl-3">
+        Document Preview
+      </h2>
+      <p class="text-sm text-gray-600 poppins-regular mb-4">
+        This document contains your personal information, family background, and school details. 
+        Please review your profile to ensure all information is accurate before downloading.
+      </p>
+    </div>
+
+    <!-- Student Information Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Personal Information -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-gray-700 poppins-medium uppercase tracking-wide">
+          Personal Information
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Full Name:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.first_name }} {{ studentData.middle_name }} {{ studentData.last_name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Age:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.age || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Sex:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.sex || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Birthdate:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.birthdate || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Civil Status:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.civil_status || 'Not specified' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- School Information -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-gray-700 poppins-medium uppercase tracking-wide">
+          School Information
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Program:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.program || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Department:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.department || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Year Level:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.year_level || 'Not specified' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">OJT Coordinator:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.ojt_coordinator || 'Not assigned' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">OJT Head:</span>
+            <span class="text-gray-800 font-medium">{{ studentData.ojt_head || 'Not assigned' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Important Notice -->
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div class="flex gap-3">
+        <i class="pi pi-info-circle text-blue-600 text-xl"></i>
+        <div class="flex-1">
+          <h4 class="text-sm font-semibold text-blue-800 poppins-medium mb-1">
+            Important Information
+          </h4>
+          <ul class="text-sm text-blue-700 poppins-regular space-y-1">
+            <li>• Ensure all your profile information is complete and accurate</li>
+            <li>• The document follows the official BatStateU format (Reference No.: BatStateU-FO-OJT-02)</li>
+            <li>• You can update your profile information from the Profile tab</li>
+            <li>• The document includes all required fields as per university requirements</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-6 flex gap-3">
+      <button
+        (click)="downloadDocument()"
+        class="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors poppins-medium"
+      >
+        <i class="pi pi-download"></i>
+        <span>Download Document</span>
+      </button>
+      <a
+        routerLink="/profile"
+        class="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors poppins-medium"
+      >
+        <i class="pi pi-user-edit"></i>
+        <span>Update Profile</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- No Data State -->
+  <div *ngIf="!isLoading && !studentData" class="flex items-center justify-center h-96">
+    <div class="text-center max-w-md">
+      <i class="pi pi-file-excel text-6xl text-gray-300 mb-4"></i>
+      <h3 class="text-xl text-gray-600 mb-2 poppins-semibold">No Data Available</h3>
+      <p class="text-sm text-gray-500 mb-4 poppins-regular">
+        Please complete your profile information before generating your personal history statement.
+      </p>
+      <a
+        routerLink="/profile"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors poppins-medium"
+      >
+        <i class="pi pi-user-edit"></i>
+        <span>Go to Profile</span>
+      </a>
+    </div>
+  </div>
+</div>

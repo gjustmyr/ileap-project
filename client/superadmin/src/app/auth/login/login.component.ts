@@ -108,7 +108,7 @@ export class LoginComponent {
           this.loading = false;
           Swal.fire({
             title: 'Login Failed',
-            text: err?.error?.message || 'Something went wrong.',
+            text: err?.error?.detail || 'Something went wrong.',
             icon: 'error',
             confirmButtonColor: '#dc2626',
           });

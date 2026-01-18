@@ -117,7 +117,10 @@ export class CompanyProfileComponent implements OnInit {
         }
 
         if (this.companyProfile.logo) {
-          this.logoPreview = this.companyProfile.logo;
+          // Prepend API URL if logo path is relative
+          this.logoPreview = this.companyProfile.logo.startsWith('http')
+            ? this.companyProfile.logo
+            : `${environment.apiUrl.replace('/api', '')}${this.companyProfile.logo}`;
         }
       },
       error: (err) => {
@@ -173,6 +176,16 @@ export class CompanyProfileComponent implements OnInit {
   removeLogo(): void {
     this.logoFile = null;
     this.logoPreview = null;
+  }
+
+  getLogoUrl(logoPath: string | null | undefined): string {
+    if (!logoPath) return 'assets/company-logo.png';
+    
+    // If logo path starts with http, return as is (already full URL)
+    if (logoPath.startsWith('http')) return logoPath;
+    
+    // If it's a relative path (from backend), prepend the backend URL
+    return `${environment.apiUrl.replace('/api', '')}${logoPath}`;
   }
 
   loadIndustries(): void {
@@ -349,14 +362,14 @@ export class CompanyProfileComponent implements OnInit {
 
   previewMOA(): void {
     if (this.companyProfile?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.companyProfile.moa_file}`;
+      const moaUrl = `${environment.apiUrl.replace('/api', '')}${this.companyProfile.moa_file}`;
       window.open(moaUrl, '_blank');
     }
   }
 
   downloadMOA(): void {
     if (this.companyProfile?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.companyProfile.moa_file}`;
+      const moaUrl = `${environment.apiUrl.replace('/api', '')}${this.companyProfile.moa_file}`;
       const link = document.createElement('a');
       link.href = moaUrl;
       link.download = `MOA_${this.companyProfile.company_name}.pdf`;

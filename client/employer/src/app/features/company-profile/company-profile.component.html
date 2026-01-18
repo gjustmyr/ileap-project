@@ -1,4 +1,4 @@
-<div class="p-4 max-w-6xl mx-auto">
+<div class="p-4">
   <div class="mb-4">
     <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
       Company Profile
@@ -9,15 +9,13 @@
   </div>
 
   <!-- Profile Card -->
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
     <!-- Company Logo & Edit Button -->
     <div class="flex items-start justify-between mb-8">
       <div class="flex items-center gap-6">
         <div class="relative">
           <img
-            [src]="
-              logoPreview || companyProfile?.logo || 'assets/company-logo.png'
-            "
+            [src]="logoPreview || getLogoUrl(companyProfile?.logo)"
             alt="Company Logo"
             class="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
           />
@@ -339,11 +337,7 @@
                 class="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-50"
               >
                 <img
-                  [src]="
-                    logoPreview ||
-                    companyProfile?.logo ||
-                    'assets/company-logo.png'
-                  "
+                  [src]="logoPreview || getLogoUrl(companyProfile?.logo)"
                   alt="Logo Preview"
                   class="w-full h-full object-cover"
                 />

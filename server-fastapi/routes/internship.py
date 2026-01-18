@@ -14,6 +14,7 @@ from controllers.internship_controller import (
 from models import Employer, Skill, Internship, Student, ClassEnrollment, Class, Program, Department, InternshipApplication
 from sklearn.metrics.pairwise import cosine_similarity
 from datetime import datetime
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 import os
 import uuid
 from pathlib import Path
@@ -22,11 +23,11 @@ from pathlib import Path
 try:
 	from sentence_transformers import SentenceTransformer
 	BERT_AVAILABLE = True
-	print("✓ BERT (sentence-transformers) loaded successfully")
+	print("BERT (sentence-transformers) loaded successfully")
 except ImportError:
 	from sklearn.feature_extraction.text import TfidfVectorizer
 	BERT_AVAILABLE = False
-	print("⚠ BERT not available, using TF-IDF fallback")
+	print("WARNING: BERT not available, using TF-IDF fallback")
 
 router = APIRouter(prefix="/api/internships", tags=["Internships"])
 
@@ -715,7 +716,7 @@ def update_application_status(
 	
 	application.status = status
 	application.remarks = remarks
-	application.reviewed_at = datetime.utcnow()
+	application.reviewed_at = philippine_utcnow()
 	
 	# If accepting and start date provided, save it
 	if status == 'accepted' and ojt_start_date:
@@ -955,7 +956,7 @@ async def get_employer_ongoing_ojts(
 		# Determine OJT status
 		ojt_status = "Not Started"
 		if application.ojt_start_date:
-			if datetime.utcnow().date() >= application.ojt_start_date.date():
+			if philippine_utcnow().date() >= application.ojt_start_date.date():
 				ojt_status = "Ongoing" if all_validated else "Pending Requirements"
 			else:
 				ojt_status = "Scheduled"

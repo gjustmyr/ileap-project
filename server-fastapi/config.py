@@ -29,6 +29,7 @@ UPLOAD_DIRS = {
     "requirements": Path(UPLOAD_BASE_DIR) / "requirements",
     "resumes": Path(UPLOAD_BASE_DIR) / "resumes",
     "moa": Path(UPLOAD_BASE_DIR) / "moa",
+    "logos": Path(UPLOAD_BASE_DIR) / "logos",
     "requirement_templates": Path(UPLOAD_BASE_DIR) / "requirement_templates",
 }
 

@@ -457,8 +457,8 @@ def get_all_logs(
                 except (KeyError, ValueError, IndexError):
                     pass
         
-        # Only count valid hours
-        if validation_warning is None or log_hours > 0:
+        # Only count hours from logs without validation warnings (valid logs only)
+        if validation_warning is None:
             total_hours_sum += log_hours
         
         logs_data.append({

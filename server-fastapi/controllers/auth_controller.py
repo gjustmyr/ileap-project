@@ -4,6 +4,7 @@ from models import User
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 import os
 import secrets
 from models_token_blacklist import token_blacklist
@@ -48,8 +49,8 @@ def login_user_by_role(credentials, db: Session, expected_role: str):
     if user.role != expected_role:
         print(f"❌ Role mismatch - Expected: {expected_role}, Got: {user.role}")
         raise HTTPException(
-            status_code=403, 
-            detail=f"Access denied. You do not have permission to access this portal."
+            status_code=401, 
+            detail="Invalid email or password"
         )
 
     # Verify password with bcrypt
@@ -64,7 +65,7 @@ def login_user_by_role(credentials, db: Session, expected_role: str):
         "user_id": user.user_id,
         "email": user.email_address,
         "role": user.role,
-        "exp": datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+        "exp": philippine_utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -126,7 +127,7 @@ def login_user(credentials, db: Session):
         "user_id": user.user_id,
         "email": user.email_address,
         "role": user.role,
-        "exp": datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+        "exp": philippine_utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -224,7 +225,7 @@ def forgot_password(email: str, db: Session):
     
     # Generate secure reset token
     reset_token = secrets.token_urlsafe(32)
-    reset_token_expiry = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+    reset_token_expiry = philippine_utcnow() + timedelta(hours=1)  # 1 hour expiry
     
     user.reset_token = reset_token
     user.reset_token_expiry = reset_token_expiry
@@ -251,7 +252,7 @@ def reset_password(token: str, new_password: str, db: Session):
     if not user:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
     
-    if not user.reset_token_expiry or datetime.utcnow() > user.reset_token_expiry:
+    if not user.reset_token_expiry or philippine_utcnow() > user.reset_token_expiry:
         raise HTTPException(status_code=400, detail="Reset token has expired")
     
     # Hash new password

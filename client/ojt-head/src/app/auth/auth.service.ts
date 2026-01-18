@@ -36,19 +36,6 @@ export class AuthService {
     });
   }
 
-  changePassword(
-    currentPassword: string,
-    newPassword: string,
-  ): Observable<any> {
-    const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({ Authorization: token || '' });
-    return this.http.post(
-      `${this.baseURL}/auth/change-password`,
-      { current_password: currentPassword, new_password: newPassword },
-      { headers },
-    );
-  }
-
   validateToken(): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
     if (!token) {

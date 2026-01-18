@@ -5,6 +5,7 @@ from datetime import datetime, date, time
 from typing import List, Optional
 from database import get_db
 from middleware.auth import get_current_user
+from utils.datetime_helper import now as philippine_now
 from models import (
     DailyOJTRecord,
     Student,
@@ -72,7 +73,7 @@ def clock_in(
         raise HTTPException(status_code=400, detail="No active OJT found. You must have an accepted internship with a start date.")
     
     # Check if OJT has started
-    today = date.today()
+    today = philippine_now().date()
     ojt_start_date = application.ojt_start_date.date() if application.ojt_start_date else None
     
     if not ojt_start_date or today < ojt_start_date:
@@ -88,7 +89,7 @@ def clock_in(
         DailyOJTRecord.record_date <= today_end
     ).first()
     
-    now = datetime.now()
+    now = philippine_now()
     
     if existing_record:
         if existing_record.time_in:
@@ -136,7 +137,7 @@ def clock_out(
         raise HTTPException(status_code=404, detail="Student not found")
     
     # Get today's record
-    today = date.today()
+    today = philippine_now().date()
     today_start = datetime.combine(today, time.min)
     today_end = datetime.combine(today, time.max)
     
@@ -155,7 +156,7 @@ def clock_out(
     if record.time_out:
         raise HTTPException(status_code=400, detail="You have already clocked out today")
     
-    now = datetime.now()
+    now = philippine_now()
     record.time_out = now
     record.updated_at = now
     
@@ -201,7 +202,7 @@ def save_daily_task_accomplishment(
         raise HTTPException(status_code=400, detail="No active OJT found")
     
     # Get or create today's record
-    today = date.today()
+    today = philippine_now().date()
     today_start = datetime.combine(today, time.min)
     today_end = datetime.combine(today, time.max)
     
@@ -211,7 +212,7 @@ def save_daily_task_accomplishment(
         DailyOJTRecord.record_date <= today_end
     ).first()
     
-    now = datetime.now()
+    now = philippine_now()
     
     if record:
         # Update existing record
@@ -260,7 +261,7 @@ def submit_todays_record(
         raise HTTPException(status_code=404, detail="Student not found")
     
     # Get today's record
-    today = date.today()
+    today = philippine_now().date()
     today_start = datetime.combine(today, time.min)
     today_end = datetime.combine(today, time.max)
     
@@ -279,7 +280,7 @@ def submit_todays_record(
     if not record.task_for_the_day or not record.accomplishment_for_the_day:
         raise HTTPException(status_code=400, detail="Please fill in both task and accomplishment before submitting")
     
-    now = datetime.now()
+    now = philippine_now()
     record.status = 'submitted'
     record.submitted_at = now
     record.updated_at = now
@@ -310,7 +311,7 @@ def get_todays_record(
         raise HTTPException(status_code=404, detail="Student not found")
     
     # Get today's record
-    today = date.today()
+    today = philippine_now().date()
     today_start = datetime.combine(today, time.min)
     today_end = datetime.combine(today, time.max)
     

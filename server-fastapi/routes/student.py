@@ -328,3 +328,115 @@ async def submit_student_grade(
         print(f"Error submitting grade: {str(e)}")
         return {"success": False, "message": "Failed to submit grade"}
 
+
+@router.get("/personal-history-statement-data")
+async def get_personal_history_statement_data(
+    token_data: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Get all data needed for Personal History Statement document"""
+    from models import Student, Class, Department, Campus, OJTCoordinator, OJTHead, Program, ClassEnrollment
+    from sqlalchemy import func
+    
+    # Get student record
+    student = db.query(Student).filter(Student.user_id == token_data["user_id"]).first()
+    if not student:
+        return {"status": "error", "message": "Student not found"}
+    
+    # Get class through enrollment
+    enrollment = db.query(ClassEnrollment).filter(
+        ClassEnrollment.student_id == student.student_id,
+        ClassEnrollment.status == "active"
+    ).first()
+    
+    student_class = None
+    department = None
+    campus = None
+    program = None
+    ojt_coordinator = None
+    ojt_head = None
+    
+    if enrollment:
+        student_class = db.query(Class).filter(Class.class_id == enrollment.class_id).first()
+        
+        if student_class:
+            # Get program first (class has program_id)
+            program = db.query(Program).filter(
+                Program.program_id == student_class.program_id
+            ).first()
+            
+            # Get department through program (program has department_id)
+            if program:
+                department = db.query(Department).filter(
+                    Department.department_id == program.department_id
+                ).first()
+                
+                # Get campus through department
+                if department:
+                    campus = db.query(Campus).filter(
+                        Campus.campus_id == department.campus_id
+                    ).first()
+                    
+                    # Get OJT Head from campus (OJTHead only has campus_id, not department_id)
+                    ojt_head = db.query(OJTHead).filter(
+                        OJTHead.campus_id == department.campus_id
+                    ).first()
+            
+            # Get OJT Coordinator
+            if student_class.ojt_coordinator_id:
+                ojt_coordinator = db.query(OJTCoordinator).filter(
+                    OJTCoordinator.ojt_coordinator_id == student_class.ojt_coordinator_id
+                ).first()
+    
+    return {
+        "status": "success",
+        "data": {
+            # Student Information
+            "first_name": student.first_name,
+            "middle_name": student.middle_name or "",
+            "last_name": student.last_name,
+            "age": student.age,
+            "sex": student.sex,
+            "height": student.height,
+            "weight": student.weight,
+            "complexion": student.complexion,
+            "disability": student.disability or "",
+            "birthdate": student.birthdate,
+            "birthplace": student.birthplace,
+            "citizenship": student.citizenship,
+            "civil_status": student.civil_status,
+            
+            # Contact Information
+            "present_address": student.present_address,
+            "tel_no_present": student.tel_no_present or "",
+            "provincial_address": student.provincial_address or "",
+            "tel_no_provincial": student.tel_no_provincial or "",
+            
+            # Family Background
+            "father_name": student.father_name or "",
+            "father_occupation": student.father_occupation or "",
+            "mother_name": student.mother_name or "",
+            "mother_occupation": student.mother_occupation or "",
+            "parents_address": student.parents_address or "",
+            "parents_tel_no": student.parents_tel_no or "",
+            "guardian_name": student.guardian_name or "",
+            "guardian_tel_no": student.guardian_tel_no or "",
+            
+            # School Information
+            "program": program.program_name if program else (student.program or ""),
+            "major": student.major or "",
+            "department": department.department_name if department else (student.department or ""),
+            "year_level": student.year_level or "",
+            "length_of_program": student.length_of_program or "",
+            "school_address": campus.campus_address if campus else (student.school_address or ""),
+            "campus_name": campus.campus_name if campus else "",
+            
+            # Staff Information
+            "ojt_coordinator": f"{ojt_coordinator.first_name} {ojt_coordinator.last_name}" if ojt_coordinator else (student.ojt_coordinator or ""),
+            "ojt_coordinator_tel": ojt_coordinator.contact_number if ojt_coordinator else (student.ojt_coordinator_tel or ""),
+            "ojt_head": f"{ojt_head.first_name} {ojt_head.last_name}" if ojt_head else (student.ojt_head or ""),
+            "ojt_head_tel": ojt_head.contact_number if ojt_head else (student.ojt_head_tel or ""),
+            "emergency_contact_address": student.emergency_contact_address or "",
+            "emergency_contact_tel": student.emergency_contact_tel or ""
+        }
+    }

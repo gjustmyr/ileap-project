@@ -37,8 +37,9 @@ export class ChangePasswordComponent {
     if (this.passwordForm.valid) {
       this.loading = true;
       const { currentPassword, newPassword } = this.passwordForm.value;
+      const userId = sessionStorage.getItem('user_id');
 
-      this.authService.changePassword(currentPassword, newPassword).subscribe({
+      this.authService.changePassword(userId, currentPassword, newPassword).subscribe({
         next: () => {
           this.loading = false;
           Swal.fire({

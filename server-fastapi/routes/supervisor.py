@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import os
 from datetime import datetime, date, time as datetime_time
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 
 from database import get_db
 from controllers.supervisor_controller import (
@@ -142,7 +143,7 @@ def update_supervisor_profile(
 		supervisor.department = payload.department
 	
 	from datetime import datetime
-	supervisor.updated_at = datetime.utcnow()
+	supervisor.updated_at = philippine_utcnow()
 	db.commit()
 	db.refresh(supervisor)
 	
@@ -293,7 +294,7 @@ def get_assigned_students(
 				# Determine OJT status based on application status and start date
 				if application.status == "accepted" and application.ojt_start_date:
 					from datetime import datetime
-					if application.ojt_start_date <= datetime.utcnow():
+					if application.ojt_start_date <= philippine_utcnow():
 						ojt_status = "In Progress"
 					else:
 						ojt_status = "Starting Soon"
@@ -444,7 +445,7 @@ def validate_ojt_record(
 	# Update validation status
 	from datetime import datetime
 	time_log.status = "complete" if validation_status == "approved" else validation_status
-	time_log.updated_at = datetime.utcnow()
+	time_log.updated_at = philippine_utcnow()
 	
 	# Note: DailyTimeLog doesn't have validated_by or remarks fields
 	# If you need these, add them to the model or use a separate table
@@ -543,7 +544,7 @@ def update_ojt_record(
 		if accomplishments is not None:
 			accomplishment.accomplishments = accomplishments
 			print(f"DEBUG: Set accomplishments to: {accomplishments}")
-		accomplishment.updated_at = datetime.utcnow()
+		accomplishment.updated_at = philippine_utcnow()
 	elif tasks is not None or accomplishments is not None:
 		# Create new accomplishment if it doesn't exist and data is provided
 		print(f"DEBUG: Creating new accomplishment")
@@ -553,13 +554,13 @@ def update_ojt_record(
 			log_date=time_log.log_date,
 			tasks=tasks,
 			accomplishments=accomplishments,
-			created_at=datetime.utcnow(),
-			updated_at=datetime.utcnow()
+			created_at=philippine_utcnow(),
+			updated_at=philippine_utcnow()
 		)
 		db.add(accomplishment)
 		print(f"DEBUG: Added new accomplishment to session")
 	
-	time_log.updated_at = datetime.utcnow()
+	time_log.updated_at = philippine_utcnow()
 	print(f"DEBUG: About to commit changes")
 	print(f"DEBUG: Before commit - time_in: {time_log.time_in}, time_out: {time_log.time_out}, total_hours: {time_log.total_hours}")
 	db.commit()
@@ -713,7 +714,7 @@ async def submit_requirement_for_student(
 	upload_dir = get_upload_path("requirements", f"student_{student_id}")
 	
 	# Generate unique filename
-	timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+	timestamp = philippine_utcnow().strftime("%Y%m%d_%H%M%S")
 	file_extension = os.path.splitext(file.filename)[1]
 	filename = f"req_{requirement_id}_{timestamp}{file_extension}"
 	file_path = upload_dir / filename
@@ -732,16 +733,16 @@ async def submit_requirement_for_student(
 	if submission:
 		# Update existing submission
 		submission.file_path = f"/{file_path}"
-		submission.submitted_at = datetime.utcnow()
+		submission.submitted_at = philippine_utcnow()
 		submission.status = "submitted"
-		submission.updated_at = datetime.utcnow()
+		submission.updated_at = philippine_utcnow()
 	else:
 		# Create new submission
 		submission = RequirementSubmission(
 			student_id=student_id,
 			requirement_id=requirement_id,
 			file_path=f"/{file_path}",
-			submitted_at=datetime.utcnow(),
+			submitted_at=philippine_utcnow(),
 			status="submitted"
 		)
 		db.add(submission)
@@ -797,7 +798,7 @@ def get_supervisor_dashboard_stats(
 	
 	# Count recent records (last 7 days)
 	from datetime import datetime, timedelta
-	seven_days_ago = datetime.utcnow().date() - timedelta(days=7)
+	seven_days_ago = philippine_utcnow().date() - timedelta(days=7)
 	
 	recent_records_count = db.query(DailyTimeLog).join(
 		StudentSupervisorAssignment,
