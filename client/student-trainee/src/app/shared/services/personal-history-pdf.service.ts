@@ -38,8 +38,19 @@ export class PersonalHistoryPdfService {
     doc.line(margin + logoCell + refCell + effCell, y, margin + logoCell + refCell + effCell, y + headerHeight);
     doc.line(margin, y + headerHeight, pageWidth - margin, y + headerHeight);
 
+    // Logo
+    try {
+      const logoData = await this.loadImage('/assets/img/logo.png');
+      // Maintain aspect ratio - use smaller dimension
+      const logoMaxWidth = 20;
+      const logoMaxHeight = 14;
+      doc.addImage(logoData, 'PNG', margin + 5, y + 2, logoMaxWidth, logoMaxHeight, undefined, 'FAST');
+    } catch (error) {
+      console.warn('Logo not found');
+    }
+
     // Header text
-    doc.setFontSize(8);
+    doc.setFontSize(10.5);
     doc.setFont('times', 'normal');
     doc.text('Reference No.: BatStateU-FO-OJT-02', margin + logoCell + 2, y + 9);
     doc.text('Effectivity Date: May 18, 2022', margin + logoCell + refCell + 2, y + 9);
@@ -55,14 +66,13 @@ export class PersonalHistoryPdfService {
     doc.line(pageWidth - margin - pictureWidth, y, pageWidth - margin - pictureWidth, y + titleRowHeight);
     doc.line(margin, y + titleRowHeight, pageWidth - margin, y + titleRowHeight);
     
-    // Picture box
-    doc.rect(pageWidth - margin - pictureWidth + 3, y + 3, pictureWidth - 6, 20);
-    doc.setFontSize(7);
+    // Picture box - no inner border, just text
+    doc.setFontSize(10.5);
     doc.text('"1X1"', pageWidth - margin - pictureWidth / 2, y + 11, { align: 'center' });
     doc.text('PICTURE', pageWidth - margin - pictureWidth / 2, y + 15, { align: 'center' });
 
     // Title
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setFont('times', 'bold');
     doc.text("STUDENT TRAINEE'S PERSONAL HISTORY STATEMENT", pageWidth / 2, y + 13, { align: 'center' });
     
@@ -70,35 +80,47 @@ export class PersonalHistoryPdfService {
 
     // Student Information header
     const sectionHeight = 6;
-    doc.setFontSize(8);
+    doc.setFontSize(10.5);
     doc.setFont('times', 'bold');
     doc.text('Student Information', margin + 1, y + 4);
     doc.setFont('times', 'normal');
     doc.line(margin, y + sectionHeight, pageWidth - margin, y + sectionHeight);
     y += sectionHeight;
 
-    doc.setFontSize(7);
+    doc.setFontSize(10.5);
 
-    // NAME row with underlines
-    const nameRowHeight = 9;
-    doc.text('NAME:', margin + 1, y + 6);
+    // NAME row with NAME: label and 3 separate underlined sections
+    const nameRowHeight = 14;
+    
+    // NAME: label on the left
+    doc.text('NAME:', margin + 1, y + 4);
     
     const nameStartX = margin + 35;
-    const lastNameEnd = nameStartX + 60;
-    const firstNameEnd = lastNameEnd + 60;
-    const middleNameEnd = pageWidth - margin - 2;
+    const nameEndX = pageWidth - margin - 2;
+    const nameWidth = nameEndX - nameStartX;
     
-    doc.line(nameStartX, y + 7, lastNameEnd, y + 7);
-    doc.line(lastNameEnd + 5, y + 7, firstNameEnd, y + 7);
-    doc.line(firstNameEnd + 5, y + 7, middleNameEnd, y + 7);
+    // Calculate section widths (roughly equal thirds with gaps)
+    const sectionWidth = (nameWidth - 10) / 3; // 10mm total for gaps between sections
+    const lastSectionEnd = nameStartX + sectionWidth;
+    const firstSectionStart = lastSectionEnd + 5;
+    const firstSectionEnd = firstSectionStart + sectionWidth;
+    const middleSectionStart = firstSectionEnd + 5;
+    const middleSectionEnd = middleSectionStart + sectionWidth;
     
-    doc.text('LAST', nameStartX + 25, y + 2, { align: 'center' });
-    doc.text('FIRST', lastNameEnd + 30, y + 2, { align: 'center' });
-    doc.text('MIDDLE', firstNameEnd + 25, y + 2, { align: 'center' });
+    // Data centered on underline (if exists)
+    if (studentData.last_name) doc.text(studentData.last_name, nameStartX + sectionWidth / 2, y + 6, { align: 'center' });
+    if (studentData.first_name) doc.text(studentData.first_name, firstSectionStart + sectionWidth / 2, y + 6, { align: 'center' });
+    if (studentData.middle_name) doc.text(studentData.middle_name, middleSectionStart + sectionWidth / 2, y + 6, { align: 'center' });
     
-    if (studentData.last_name) doc.text(studentData.last_name, nameStartX + 2, y + 6);
-    if (studentData.first_name) doc.text(studentData.first_name, lastNameEnd + 7, y + 6);
-    if (studentData.middle_name) doc.text(studentData.middle_name, firstNameEnd + 7, y + 6);
+    // Three separate underlines
+    doc.line(nameStartX, y + 6.5, lastSectionEnd, y + 6.5);
+    doc.line(firstSectionStart, y + 6.5, firstSectionEnd, y + 6.5);
+    doc.line(middleSectionStart, y + 6.5, middleSectionEnd, y + 6.5);
+    
+    // LAST, FIRST, MIDDLE labels below underline - centered
+    doc.text('LAST', nameStartX + sectionWidth / 2, y + 9.5, { align: 'center' });
+    doc.text('FIRST', firstSectionStart + sectionWidth / 2, y + 9.5, { align: 'center' });
+    doc.text('MIDDLE', middleSectionStart + sectionWidth / 2, y + 9.5, { align: 'center' });
     
     doc.line(margin, y + nameRowHeight, pageWidth - margin, y + nameRowHeight);
     y += nameRowHeight;
@@ -108,7 +130,6 @@ export class PersonalHistoryPdfService {
     const ageWidth = 45;
     
     doc.text('AGE:', margin + 1, y + 4);
-    doc.line(margin + 10, y + 4.5, margin + ageWidth - 2, y + 4.5);
     if (studentData.age) doc.text(studentData.age.toString(), margin + 12, y + 4);
     
     doc.line(margin + ageWidth, y, margin + ageWidth, y + fieldRowHeight);
@@ -133,19 +154,16 @@ export class PersonalHistoryPdfService {
     const weightWidth = 55;
     
     doc.text('HEIGHT:', margin + 1, y + 4);
-    doc.line(margin + 17, y + 4.5, margin + heightWidth - 2, y + 4.5);
     if (studentData.height) doc.text(studentData.height, margin + 19, y + 4);
     
     doc.line(margin + heightWidth, y, margin + heightWidth, y + fieldRowHeight);
     
     doc.text('WEIGHT:', margin + heightWidth + 2, y + 4);
-    doc.line(margin + heightWidth + 19, y + 4.5, margin + heightWidth + weightWidth - 2, y + 4.5);
     if (studentData.weight) doc.text(studentData.weight, margin + heightWidth + 21, y + 4);
     
     doc.line(margin + heightWidth + weightWidth, y, margin + heightWidth + weightWidth, y + fieldRowHeight);
     
     doc.text('COMPLEXION:', margin + heightWidth + weightWidth + 2, y + 4);
-    doc.line(margin + heightWidth + weightWidth + 24, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.complexion) doc.text(studentData.complexion, margin + heightWidth + weightWidth + 26, y + 4);
     
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
@@ -153,62 +171,60 @@ export class PersonalHistoryPdfService {
 
     // DISABILITY row
     doc.text('DISABILITY(IF ANY)', margin + 1, y + 4);
-    doc.line(margin + 38, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.disability) doc.text(studentData.disability, margin + 40, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     // BIRTHDATE, BIRTHPLACE row with vertical line
-    const bdRowHeight = 8;
+    const bdRowHeight = 12;
     const birthdateWidth = 95;
     
-    doc.text('BIRTHDATE:', margin + 1, y + 5);
+    doc.text('BIRTHDATE:', margin + 1, y + 7);
     
     const bdX = margin + 24;
     const boxSize = 4.5;
     const boxGap = 1;
     
     // Month boxes
-    doc.rect(bdX, y + 2, boxSize, boxSize);
-    doc.rect(bdX + boxSize + boxGap, y + 2, boxSize, boxSize);
-    doc.setFontSize(6);
-    doc.text('m', bdX + 1.5, y + 0.5);
-    doc.text('m', bdX + boxSize + boxGap + 1.5, y + 0.5);
+    doc.rect(bdX, y + 3, boxSize, boxSize);
+    doc.rect(bdX + boxSize + boxGap, y + 3, boxSize, boxSize);
+    doc.setFontSize(10.5);
+    doc.text('m', bdX + 1.5, y + 10);
+    doc.text('m', bdX + boxSize + boxGap + 1.5, y + 10);
     
     // Day boxes
     const dayX = bdX + (boxSize + boxGap) * 2 + 2;
-    doc.rect(dayX, y + 2, boxSize, boxSize);
-    doc.rect(dayX + boxSize + boxGap, y + 2, boxSize, boxSize);
-    doc.text('d', dayX + 1.5, y + 0.5);
-    doc.text('d', dayX + boxSize + boxGap + 1.5, y + 0.5);
+    doc.rect(dayX, y + 3, boxSize, boxSize);
+    doc.rect(dayX + boxSize + boxGap, y + 3, boxSize, boxSize);
+    doc.text('d', dayX + 1.5, y + 10);
+    doc.text('d', dayX + boxSize + boxGap + 1.5, y + 10);
     
     // Year boxes
     const yearX = dayX + (boxSize + boxGap) * 2 + 2;
-    doc.rect(yearX, y + 2, boxSize, boxSize);
-    doc.rect(yearX + boxSize + boxGap, y + 2, boxSize, boxSize);
-    doc.text('y', yearX + 1.5, y + 0.5);
-    doc.text('y', yearX + boxSize + boxGap + 1.5, y + 0.5);
+    doc.rect(yearX, y + 3, boxSize, boxSize);
+    doc.rect(yearX + boxSize + boxGap, y + 3, boxSize, boxSize);
+    doc.text('y', yearX + 1.5, y + 10);
+    doc.text('y', yearX + boxSize + boxGap + 1.5, y + 10);
     
-    doc.setFontSize(7);
+    doc.setFontSize(10.5);
     if (studentData.birthdate) {
       const date = new Date(studentData.birthdate);
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
       const year = date.getFullYear().toString().slice(-2);
       
-      doc.text(month[0], bdX + 1.3, y + 5);
-      doc.text(month[1], bdX + boxSize + boxGap + 1.3, y + 5);
-      doc.text(day[0], dayX + 1.3, y + 5);
-      doc.text(day[1], dayX + boxSize + boxGap + 1.3, y + 5);
-      doc.text(year[0], yearX + 1.3, y + 5);
-      doc.text(year[1], yearX + boxSize + boxGap + 1.3, y + 5);
+      doc.text(month[0], bdX + 1.3, y + 6.5);
+      doc.text(month[1], bdX + boxSize + boxGap + 1.3, y + 6.5);
+      doc.text(day[0], dayX + 1.3, y + 6.5);
+      doc.text(day[1], dayX + boxSize + boxGap + 1.3, y + 6.5);
+      doc.text(year[0], yearX + 1.3, y + 6.5);
+      doc.text(year[1], yearX + boxSize + boxGap + 1.3, y + 6.5);
     }
 
     doc.line(margin + birthdateWidth, y, margin + birthdateWidth, y + bdRowHeight);
     
-    doc.text('BIRTHPLACE:', margin + birthdateWidth + 2, y + 5);
-    doc.line(margin + birthdateWidth + 24, y + 5.5, pageWidth - margin - 2, y + 5.5);
-    if (studentData.birthplace) doc.text(studentData.birthplace, margin + birthdateWidth + 26, y + 5);
+    doc.text('BIRTHPLACE:', margin + birthdateWidth + 2, y + 7);
+    if (studentData.birthplace) doc.text(studentData.birthplace, margin + birthdateWidth + 26, y + 7);
     
     doc.line(margin, y + bdRowHeight, pageWidth - margin, y + bdRowHeight);
     y += bdRowHeight;
@@ -217,13 +233,11 @@ export class PersonalHistoryPdfService {
     const citizenshipWidth = 95;
     
     doc.text('CITIZENSHIP:', margin + 1, y + 4);
-    doc.line(margin + 26, y + 4.5, margin + citizenshipWidth - 2, y + 4.5);
     if (studentData.citizenship) doc.text(studentData.citizenship, margin + 28, y + 4);
     
     doc.line(margin + citizenshipWidth, y, margin + citizenshipWidth, y + fieldRowHeight);
     
     doc.text('CIVIL STATUS:', margin + citizenshipWidth + 2, y + 4);
-    doc.line(margin + citizenshipWidth + 25, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.civil_status) doc.text(studentData.civil_status, margin + citizenshipWidth + 27, y + 4);
     
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
@@ -233,7 +247,6 @@ export class PersonalHistoryPdfService {
     const presentAddrWidth = 135;
     
     doc.text('PRESENT ADDRESS:', margin + 1, y + 4);
-    doc.line(margin + 38, y + 4.5, margin + presentAddrWidth - 2, y + 4.5);
     if (studentData.present_address) {
       const addr = doc.splitTextToSize(studentData.present_address, 85);
       doc.text(addr[0], margin + 40, y + 4);
@@ -242,7 +255,6 @@ export class PersonalHistoryPdfService {
     doc.line(margin + presentAddrWidth, y, margin + presentAddrWidth, y + fieldRowHeight);
     
     doc.text('TEL. NO.', margin + presentAddrWidth + 2, y + 4);
-    doc.line(margin + presentAddrWidth + 20, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.tel_no_present) doc.text(studentData.tel_no_present, margin + presentAddrWidth + 22, y + 4);
     
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
@@ -252,7 +264,6 @@ export class PersonalHistoryPdfService {
     const provincialAddrWidth = 135;
     
     doc.text('PROVINCIAL ADDRESS:', margin + 1, y + 4);
-    doc.line(margin + 42, y + 4.5, margin + provincialAddrWidth - 2, y + 4.5);
     if (studentData.provincial_address) {
       const addr = doc.splitTextToSize(studentData.provincial_address, 80);
       doc.text(addr[0], margin + 44, y + 4);
@@ -261,7 +272,6 @@ export class PersonalHistoryPdfService {
     doc.line(margin + provincialAddrWidth, y, margin + provincialAddrWidth, y + fieldRowHeight);
     
     doc.text('TEL. NO.', margin + provincialAddrWidth + 2, y + 4);
-    doc.line(margin + provincialAddrWidth + 20, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.tel_no_provincial) doc.text(studentData.tel_no_provincial, margin + provincialAddrWidth + 22, y + 4);
     
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
@@ -269,7 +279,7 @@ export class PersonalHistoryPdfService {
 
     // Family Background header
     doc.setFont('times', 'bold');
-    doc.setFontSize(7);
+    doc.setFontSize(10.5);
     const fbHeaderHeight = 8;
     doc.text('Family Background (if parents are deceased, give data for the nearest relative and indicate relationship to applicant)', margin + 1, y + 5);
     doc.line(margin, y + fbHeaderHeight, pageWidth - margin, y + fbHeaderHeight);
@@ -281,41 +291,33 @@ export class PersonalHistoryPdfService {
     const familyNameWidth = 115;
     
     doc.text("FATHER'S NAME:", margin + 1, y + 4);
-    doc.line(margin + 32, y + 4.5, margin + familyNameWidth - 2, y + 4.5);
     if (studentData.father_name) doc.text(studentData.father_name, margin + 34, y + 4);
     doc.line(margin + familyNameWidth, y, margin + familyNameWidth, y + fieldRowHeight);
     doc.text('OCCUPATION:', margin + familyNameWidth + 2, y + 4);
-    doc.line(margin + familyNameWidth + 25, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.father_occupation) doc.text(studentData.father_occupation, margin + familyNameWidth + 27, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text("MOTHER'S NAME:", margin + 1, y + 4);
-    doc.line(margin + 33, y + 4.5, margin + familyNameWidth - 2, y + 4.5);
     if (studentData.mother_name) doc.text(studentData.mother_name, margin + 35, y + 4);
     doc.line(margin + familyNameWidth, y, margin + familyNameWidth, y + fieldRowHeight);
     doc.text('OCCUPATION:', margin + familyNameWidth + 2, y + 4);
-    doc.line(margin + familyNameWidth + 25, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.mother_occupation) doc.text(studentData.mother_occupation, margin + familyNameWidth + 27, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('ADDRESS OF PARENTS:', margin + 1, y + 4);
-    doc.line(margin + 42, y + 4.5, margin + familyNameWidth - 2, y + 4.5);
     if (studentData.parents_address) doc.text(studentData.parents_address, margin + 44, y + 4);
     doc.line(margin + familyNameWidth, y, margin + familyNameWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + familyNameWidth + 2, y + 4);
-    doc.line(margin + familyNameWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.parents_tel_no) doc.text(studentData.parents_tel_no, margin + familyNameWidth + 20, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text("GUARDIAN'S NAME:", margin + 1, y + 4);
-    doc.line(margin + 37, y + 4.5, margin + familyNameWidth - 2, y + 4.5);
     if (studentData.guardian_name) doc.text(studentData.guardian_name, margin + 39, y + 4);
     doc.line(margin + familyNameWidth, y, margin + familyNameWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + familyNameWidth + 2, y + 4);
-    doc.line(margin + familyNameWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.guardian_tel_no) doc.text(studentData.guardian_tel_no, margin + familyNameWidth + 20, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
@@ -330,63 +332,51 @@ export class PersonalHistoryPdfService {
     const schoolFieldWidth = 115;
     
     doc.text('PROGRAM:', margin + 1, y + 4);
-    doc.line(margin + 20, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     if (studentData.program) {
       const prog = doc.splitTextToSize(studentData.program, 82);
       doc.text(prog[0], margin + 22, y + 4);
     }
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('YEAR LEVEL:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 23, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.year_level) doc.text(studentData.year_level, margin + schoolFieldWidth + 25, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('MAJOR:', margin + 1, y + 4);
-    doc.line(margin + 15, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     if (studentData.major) doc.text(studentData.major, margin + 17, y + 4);
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('LENGTH OF PROGRAM:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 38, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.length_of_program) doc.text(studentData.length_of_program, margin + schoolFieldWidth + 40, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('DEPARTMENT:', margin + 1, y + 4);
-    doc.line(margin + 27, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     if (studentData.department) doc.text(studentData.department, margin + 29, y + 4);
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('SCHOOL ADDRESS:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 35, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.school_address) doc.text(studentData.school_address, margin + schoolFieldWidth + 37, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('OJT COORDINATOR:', margin + 1, y + 4);
-    doc.line(margin + 38, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     if (studentData.ojt_coordinator) doc.text(studentData.ojt_coordinator, margin + 40, y + 4);
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.ojt_coordinator_tel) doc.text(studentData.ojt_coordinator_tel, margin + schoolFieldWidth + 20, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('OJT HEAD:', margin + 1, y + 4);
-    doc.line(margin + 20, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     if (studentData.ojt_head) doc.text(studentData.ojt_head, margin + 22, y + 4);
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.ojt_head_tel) doc.text(studentData.ojt_head_tel, margin + schoolFieldWidth + 20, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('DEAN:', margin + 1, y + 4);
-    doc.line(margin + 13, y + 4.5, margin + schoolFieldWidth - 2, y + 4.5);
     doc.line(margin + schoolFieldWidth, y, margin + schoolFieldWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + schoolFieldWidth + 2, y + 4);
-    doc.line(margin + schoolFieldWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
@@ -400,37 +390,33 @@ export class PersonalHistoryPdfService {
     const emergencyNameWidth = 115;
     
     doc.text('NAME:', margin + 1, y + 4);
-    doc.line(margin + 13, y + 4.5, margin + emergencyNameWidth - 2, y + 4.5);
     doc.line(margin + emergencyNameWidth, y, margin + emergencyNameWidth, y + fieldRowHeight);
     doc.text('RELATIONSHIP:', margin + emergencyNameWidth + 2, y + 4);
-    doc.line(margin + emergencyNameWidth + 30, y + 4.5, pageWidth - margin - 2, y + 4.5);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
     y += fieldRowHeight;
 
     doc.text('ADDRESS:', margin + 1, y + 4);
-    doc.line(margin + 19, y + 4.5, margin + emergencyNameWidth - 2, y + 4.5);
     if (studentData.emergency_contact_address) {
       const addr = doc.splitTextToSize(studentData.emergency_contact_address, 85);
       doc.text(addr[0], margin + 21, y + 4);
     }
     doc.line(margin + emergencyNameWidth, y, margin + emergencyNameWidth, y + fieldRowHeight);
     doc.text('TEL. NO.:', margin + emergencyNameWidth + 2, y + 4);
-    doc.line(margin + emergencyNameWidth + 18, y + 4.5, pageWidth - margin - 2, y + 4.5);
     if (studentData.emergency_contact_tel) doc.text(studentData.emergency_contact_tel, margin + emergencyNameWidth + 20, y + 4);
     doc.line(margin, y + fieldRowHeight, pageWidth - margin, y + fieldRowHeight);
-    y += fieldRowHeight + 2;
+    y += fieldRowHeight + 4;
 
     // Privacy Notice
-    doc.setFontSize(6);
+    doc.setFontSize(10.5);
     const privacyText = 'Pursuant to Republic Act No. 10173, also known as the Data Privacy Act of 2012, the Batangas State University, the National Engineering University, recognizes its commitment to protect and respect the privacy of its customers and/or stakeholders and ensure that all information collected from them are all processed in accordance with the principles of transparency, legitimate purpose and proportionality mandated under the Data Privacy Act of 2012.';
     const privacyLines = doc.splitTextToSize(privacyText, contentWidth - 4);
-    doc.text(privacyLines, margin + 2, y + 2);
-    y += privacyLines.length * 2.5 + 3;
+    doc.text(privacyLines, margin + 2, y + 2, { align: 'justify', maxWidth: contentWidth - 4 });
+    y += privacyLines.length * 3.5 + 5;
 
     // Certification
-    doc.setFontSize(7);
+    doc.setFontSize(10.5);
     doc.text('I hereby certify that the foregoing answers are true and correct to the best to my knowledge, belief and ability.', margin + 2, y + 2);
-    y += 7;
+    y += 10;
 
     // Signed at and Date row
     doc.text('Signed at:', margin + 2, y + 3);
@@ -438,16 +424,49 @@ export class PersonalHistoryPdfService {
     
     doc.text('Date:', pageWidth / 2 + 10, y + 3);
     doc.line(pageWidth / 2 + 20, y + 3.5, pageWidth - margin - 2, y + 3.5);
-    y += 13;
+    y += 15;
 
     // Signature line
     doc.line(pageWidth / 2 - 40, y, pageWidth / 2 + 40, y);
-    y += 3;
+    y += 4;
     doc.setFont('times', 'bold');
     doc.text("Applicant's Signature over Printed Name", pageWidth / 2, y, { align: 'center' });
 
     // Save the PDF
     const fileName = `Personal_History_Statement_${studentData.last_name}_${studentData.first_name}.pdf`;
     doc.save(fileName);
+  }
+
+  private loadImage(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxWidth = 200;
+        const maxHeight = 140;
+        let width = img.width;
+        let height = img.height;
+        
+        // Calculate aspect ratio
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = width * ratio;
+        height = height * ratio;
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          reject(new Error('Failed to get canvas context'));
+        }
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = url;
+    });
   }
 }
