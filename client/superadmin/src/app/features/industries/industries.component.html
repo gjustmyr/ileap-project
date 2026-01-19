@@ -34,7 +34,7 @@
         </div>
       </div>
       <button
-        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2"
+        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2 cursor-pointer"
         (click)="handleAddDialog()"
       >
         <i class="pi pi-plus"></i>
@@ -180,7 +180,9 @@
   *ngIf="isAddDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Add Industry</h3>
       <button
@@ -241,7 +243,9 @@
   *ngIf="isUpdateDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Update Industry</h3>
       <button
@@ -302,7 +306,9 @@
   *ngIf="isStatusDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Change Industry Status</h3>
       <button

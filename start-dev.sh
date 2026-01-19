@@ -33,7 +33,7 @@ declare -A FRONTENDS=(
     ["ojt-coordinator"]="4202"
     ["ojt-head"]="4203"
     ["student-trainee"]="4204"
-    ["supervisor"]="4700"
+    ["supervisor"]="4205"
 )
 
 # Start each frontend
@@ -58,7 +58,7 @@ echo "Employer:           http://localhost:4201"
 echo "OJT Coordinator:    http://localhost:4202"
 echo "OJT Head:           http://localhost:4203"
 echo "Student Trainee:    http://localhost:4204"
-echo "Supervisor:         http://localhost:4700"
+echo "Supervisor:         http://localhost:4205"
 echo ""
 echo -e "${YELLOW}Note: If terminals didn't open automatically, run the commands manually${NC}"
 echo "================================================"

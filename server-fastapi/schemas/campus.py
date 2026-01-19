@@ -6,6 +6,7 @@ from models import StatusEnum
 
 class CampusCreate(BaseModel):
     campus_name: str
+    address: Optional[str] = None
     is_extension: bool
     parent_campus_id: Optional[int] = None
     status: StatusEnum
@@ -13,6 +14,7 @@ class CampusCreate(BaseModel):
 
 class CampusUpdate(BaseModel):
     campus_name: str
+    address: Optional[str] = None
     is_extension: bool
     parent_campus_id: Optional[int] = None
     status: StatusEnum
@@ -21,6 +23,7 @@ class CampusUpdate(BaseModel):
 class CampusResponse(BaseModel):
     campus_id: int
     campus_name: str
+    address: Optional[str] = None
     is_extension: bool
     parent_campus_id: Optional[int] = None
     parent_campus_name: Optional[str] = None

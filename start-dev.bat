@@ -42,8 +42,8 @@ start "Student Trainee (Port 4204)" cmd /k "cd /d %WORKSPACE_ROOT%client\student
 
 timeout /t 1 /nobreak >nul
 
-echo Starting Supervisor on port 4700...
-start "Supervisor (Port 4700)" cmd /k "cd /d %WORKSPACE_ROOT%client\supervisor && npm start"
+echo Starting Supervisor on port 4205...
+start "Supervisor (Port 4205)" cmd /k "cd /d %WORKSPACE_ROOT%client\supervisor && npm start"
 
 echo.
 echo ================================================
@@ -56,7 +56,7 @@ echo Employer:           http://localhost:4201
 echo OJT Coordinator:    http://localhost:4202
 echo OJT Head:           http://localhost:4203
 echo Student Trainee:    http://localhost:4204
-echo Supervisor:         http://localhost:4700
+echo Supervisor:         http://localhost:4205
 echo.
 echo ================================================
 

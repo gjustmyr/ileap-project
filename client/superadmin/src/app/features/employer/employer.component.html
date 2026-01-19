@@ -22,7 +22,10 @@
           [(ngModel)]="selectedIndustryId"
         >
           <option [value]="null">All Industries</option>
-          <option *ngFor="let industry of industries" [value]="industry.industry_id">
+          <option
+            *ngFor="let industry of industries"
+            [value]="industry.industry_id"
+          >
             {{ industry.industry_name }}
           </option>
         </select>
@@ -46,19 +49,19 @@
     <div class="flex gap-3 mb-6">
       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Apply Filters
       </button>
       <button
         (click)="resetFilters()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Reset
       </button>
       <button
         (click)="openAddDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2 cursor-pointer"
       >
         <i class="pi pi-plus"></i>
         Add Employer
@@ -125,7 +128,7 @@
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ employer.created_at | date : "mediumDate" }}
+                {{ employer.created_at | date: "mediumDate" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"

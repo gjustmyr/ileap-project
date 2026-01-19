@@ -8,7 +8,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -29,7 +28,6 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
   imports: [
     CommonModule,
     TableModule,
-    InputGroup,
     InputGroupAddonModule,
     InputTextModule,
     ButtonModule,

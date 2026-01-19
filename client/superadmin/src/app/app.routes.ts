@@ -23,11 +23,6 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'school-information',
-    redirectTo: 'school-information/campuses',
-    pathMatch: 'full',
-  },
-  {
     path: 'login',
     component: LoginComponent,
     data: {
@@ -47,44 +42,34 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
   },
   {
-    path: 'reset-password',
-    component: ResetPasswordComponent,
-  },
-  {
-    path: '',
+    path: 'superadmin',
     component: MainComponent,
     canActivate: [authGuard],
     children: [
       {
         path: '',
-        redirectTo: 'school-information/campuses',
+        redirectTo: 'school-information',
         pathMatch: 'full',
       },
       {
         path: 'school-information',
+        component: CampusesComponent,
         data: { title: 'School Information' },
-        children: [
-          {
-            path: 'campuses',
-            component: CampusesComponent,
-            data: { title: 'Campuses' },
-          },
-          {
-            path: 'departments',
-            component: DepartmentsComponent,
-            data: { title: 'Departments' },
-          },
-          {
-            path: 'programs',
-            component: ProgramsComponent,
-            data: { title: 'Programs' },
-          },
-        ],
+      },
+      {
+        path: 'departments',
+        component: DepartmentsComponent,
+        data: { title: 'Departments' },
+      },
+      {
+        path: 'programs',
+        component: ProgramsComponent,
+        data: { title: 'Programs' },
       },
       {
         path: 'job-placement',
         component: JobPlacementComponent,
-        data: { title: 'Job Placement' },
+        data: { title: 'Job Placement Office' },
       },
       {
         path: 'ojt-head',
@@ -117,5 +102,9 @@ export const routes: Routes = [
         data: { title: 'Alumni' },
       },
     ],
+  },
+  {
+    path: '**',
+    redirectTo: 'login',
   },
 ];

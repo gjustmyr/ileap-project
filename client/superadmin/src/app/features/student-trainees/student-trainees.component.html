@@ -23,7 +23,8 @@
         >
           <option value="">All Campuses</option>
           <option *ngFor="let campus of campuses" [value]="campus.campus_id">
-            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+            {{ campus.campus_name
+            }}{{ campus.is_extension ? " (Extension)" : "" }}
           </option>
         </select>
       </div>
@@ -46,13 +47,13 @@
     <div class="flex gap-3 mb-6">
       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Apply Filters
       </button>
       <button
         (click)="resetFilters()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Reset
       </button>
@@ -64,22 +65,34 @@
         <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-white text-sm poppins-medium">
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 SR Code
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Name
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Email
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Campus
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 Program
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
                 Actions
               </td>
             </tr>
@@ -111,13 +124,13 @@
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ student.campus_name || 'N/A' }}
+                {{ student.campus_name || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ student.program_name || 'N/A' }}
+                {{ student.program_name || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
@@ -125,7 +138,9 @@
               >
                 <button
                   class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-sm rounded cursor-pointer"
-                  (click)="handleSendNewPassword(student.user_id, student.email)"
+                  (click)="
+                    handleSendNewPassword(student.user_id, student.email)
+                  "
                   title="Send New Password"
                 >
                   <i class="pi pi-key"></i>

@@ -2,9 +2,7 @@
   <div class="container">
     <!-- Title -->
     <div class="mb-4">
-      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
-        Alumni
-      </h1>
+      <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Alumni</h1>
       <p class="text-sm text-gray-500 poppins-regular mt-1">
         View alumni who have completed their OJT/internship
       </p>
@@ -30,7 +28,7 @@
     <div class="flex gap-3 mb-6">
       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Apply Filters
       </button>
@@ -42,7 +40,7 @@
       </button>
       <button
         (click)="handleAddDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Add Alumni
       </button>
@@ -54,22 +52,34 @@
         <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-white text-sm poppins-medium">
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 SR Code
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[30%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[30%] text-sm"
+              >
                 Name
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[30%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[30%] text-sm"
+              >
                 Email
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 Program
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
                 Year Graduated
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-center w-[10%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-center w-[10%] text-sm"
+              >
                 Actions
               </td>
             </tr>
@@ -101,13 +111,13 @@
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ alumnus.program_name || 'N/A' }}
+                {{ alumnus.program_name || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ alumnus.graduation_year || 'N/A' }}
+                {{ alumnus.graduation_year || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2 text-center"
@@ -185,7 +195,7 @@
         class="flex items-center justify-between px-6 py-4 border-b border-gray-200"
       >
         <h2 class="text-lg font-semibold text-gray-800 poppins-semibold">
-          {{ isEditMode ? 'Edit Alumni' : 'Add Alumni' }}
+          {{ isEditMode ? "Edit Alumni" : "Add Alumni" }}
         </h2>
         <button
           (click)="closeDialog()"
@@ -273,7 +283,10 @@
               class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
             >
               <option value="">Select program</option>
-              <option *ngFor="let program of programs" [value]="program.program_id">
+              <option
+                *ngFor="let program of programs"
+                [value]="program.program_id"
+              >
                 {{ program.program_name }}
               </option>
             </select>
@@ -309,7 +322,7 @@
           [disabled]="alumniForm.invalid"
           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isEditMode ? 'Update' : 'Add' }}
+          {{ isEditMode ? "Update" : "Add" }}
         </button>
       </div>
     </div>

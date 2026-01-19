@@ -23,7 +23,8 @@
         >
           <option value="">All Campuses</option>
           <option *ngFor="let campus of campuses" [value]="campus.campus_id">
-            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+            {{ campus.campus_name
+            }}{{ campus.is_extension ? " (Extension)" : "" }}
           </option>
         </select>
       </div>
@@ -46,19 +47,19 @@
     <div class="flex gap-3 mb-6">
       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Apply Filters
       </button>
       <button
         (click)="resetFilters()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Reset
       </button>
       <button
         (click)="handleAddDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded flex items-center gap-2 cursor-pointer"
       >
         <i class="pi pi-plus"></i>
         Add OJT Head

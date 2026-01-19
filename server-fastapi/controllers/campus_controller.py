@@ -22,6 +22,7 @@ def get_all_campuses(pageNo: int, pageSize: int, keyword: str, db: Session):
             campus_list.append({
                 "campus_id": campus.campus_id,
                 "campus_name": campus.campus_name,
+                "address": campus.campus_address,
                 "is_extension": campus.is_extension,
                 "parent_campus_id": campus.parent_campus_id,
                 "parent_campus_name": campus.parent_campus.campus_name if campus.parent_campus else None,
@@ -61,12 +62,17 @@ def add_campus(campus: CampusCreate, db: Session):
                     detail="Parent campus not found"
                 )
         
+        print(f"📝 Creating campus with address: {campus.address}")
+        
         new_campus = Campus(
             campus_name=campus.campus_name,
+            campus_address=campus.address,
             is_extension=campus.is_extension,
             parent_campus_id=campus.parent_campus_id if campus.is_extension else None,
             status=campus.status
-        )
+        )   
+        
+        print(f"✅ New campus object - Name: {new_campus.campus_name}, Address: {new_campus.campus_address}")
         
         db.add(new_campus)
         db.commit()
@@ -103,6 +109,7 @@ def get_campus_by_id(campus_id: int, db: Session):
         "data": {
             "campus_id": campus.campus_id,
             "campus_name": campus.campus_name,
+            "address": campus.campus_address,
             "is_extension": campus.is_extension,
             "parent_campus_id": campus.parent_campus_id,
             "status": campus.status.value if hasattr(campus.status, 'value') else campus.status
@@ -122,10 +129,15 @@ def update_campus(campus_id: int, campus_data: CampusUpdate, db: Session):
         )
     
     try:
+        print(f"📝 Updating campus {campus_id} with address: {campus_data.address}")
+        
         campus.campus_name = campus_data.campus_name
+        campus.campus_address = campus_data.address
         campus.is_extension = campus_data.is_extension
         campus.parent_campus_id = campus_data.parent_campus_id if campus_data.is_extension else None
         campus.status = campus_data.status
+        
+        print(f"✅ Updated campus object - Name: {campus.campus_name}, Address: {campus.campus_address}")
         
         db.commit()
         

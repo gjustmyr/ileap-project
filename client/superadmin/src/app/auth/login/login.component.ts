@@ -20,7 +20,7 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   loading: boolean = false;
-  returnUrl: string = '/school-information/campuses';
+  returnUrl: string = '/superadmin/school-information';
 
   constructor(
     private fb: FormBuilder,
@@ -83,6 +83,7 @@ export class LoginComponent {
               `Bearer ${response.data.token}`,
             );
             sessionStorage.setItem('user_id', response.data.user.user_id);
+            sessionStorage.setItem('user_email', response.data.user.email);
 
             Swal.fire({
               title: 'Login Successful!',

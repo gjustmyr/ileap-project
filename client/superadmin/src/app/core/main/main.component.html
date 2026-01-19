@@ -1,19 +1,166 @@
-<!-- <div class="h-screen flex">
-  <app-sidebar class="w-[16rem] h-full"></app-sidebar>
+<div class="flex px-20 bg-gray-100 h-full">
   <div class="flex flex-col flex-1">
-    <app-header class="h-[10%]"></app-header>
-    <div class="flex-1 overflow-auto">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
-</div> -->
+    <app-header></app-header>
+    <!-- Header Extras: User Dropdown -->
+    <div
+      class="flex justify-end items-center p-4 bg-white border-b border-gray-200 relative"
+    >
+      <!-- User Dropdown Trigger -->
+      <button
+        (click)="toggleUserDropdown()"
+        class="flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      >
+        <i class="pi pi-user text-red-500"></i>
+        <span class="text-sm text-gray-700 poppins-medium">{{ userName }}</span>
+        <i class="pi pi-chevron-down text-xs text-gray-600"></i>
+      </button>
 
-<div class="h-screen flex">
-  <app-sidebar [isCollapsed]="isSidebarCollapsed" class="h-full"></app-sidebar>
-  <div class="flex flex-col flex-1">
-    <app-header (toggleSidebar)="toggleSidebar()" class="h-[10%]"></app-header>
-    <div class="flex-1 overflow-auto">
-      <router-outlet></router-outlet>
+      <!-- Dropdown Menu -->
+      <div
+        *ngIf="isUserDropdownOpen"
+        class="absolute right-4 top-16 bg-white rounded shadow-lg border border-gray-200 w-64 z-50"
+      >
+        <!-- Time Display -->
+        <div class="px-4 py-3 border-b border-gray-200">
+          <div class="text-xs text-gray-500 poppins-regular">Current Time</div>
+          <div class="text-sm text-gray-700 poppins-medium mt-1">
+            {{ dateTime }}
+          </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="px-4 py-3 border-b border-gray-200">
+          <div class="text-xs text-gray-500 poppins-regular">Logged in as</div>
+          <div class="text-sm text-gray-700 poppins-medium mt-1">
+            {{ userName }}
+          </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="py-1">
+          <button
+            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 poppins-regular flex items-center gap-2 cursor-pointer"
+            disabled
+            title="Coming soon"
+          >
+            <i class="pi pi-cog text-gray-400"></i>
+            <span class="text-gray-400">Settings</span>
+          </button>
+          <button
+            (click)="logout()"
+            class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 poppins-regular flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-sign-out"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 bg-white">
+      <div class="border-b border-gray-200">
+        <nav class="flex gap-4">
+          <button
+            (click)="navigateToTab('/superadmin/school-information')"
+            [class.border-b-2]="isActiveRoute('/superadmin/school-information')"
+            [class.border-green-500]="
+              isActiveRoute('/superadmin/school-information')
+            "
+            [class.text-green-600]="
+              isActiveRoute('/superadmin/school-information')
+            "
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-book"></i>
+            School Information
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/job-placement')"
+            [class.border-b-2]="isActiveRoute('/superadmin/job-placement')"
+            [class.border-green-500]="
+              isActiveRoute('/superadmin/job-placement')
+            "
+            [class.text-green-600]="isActiveRoute('/superadmin/job-placement')"
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-briefcase"></i>
+            Job Placement Office
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/ojt-head')"
+            [class.border-b-2]="isActiveRoute('/superadmin/ojt-head')"
+            [class.border-green-500]="isActiveRoute('/superadmin/ojt-head')"
+            [class.text-green-600]="isActiveRoute('/superadmin/ojt-head')"
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-user"></i>
+            OJT Head
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/ojt-coordinator')"
+            [class.border-b-2]="isActiveRoute('/superadmin/ojt-coordinator')"
+            [class.border-green-500]="
+              isActiveRoute('/superadmin/ojt-coordinator')
+            "
+            [class.text-green-600]="
+              isActiveRoute('/superadmin/ojt-coordinator')
+            "
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-users"></i>
+            OJT Coordinator
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/employer')"
+            [class.border-b-2]="isActiveRoute('/superadmin/employer')"
+            [class.border-green-500]="isActiveRoute('/superadmin/employer')"
+            [class.text-green-600]="isActiveRoute('/superadmin/employer')"
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-building"></i>
+            Employer
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/student-trainees')"
+            [class.border-b-2]="isActiveRoute('/superadmin/student-trainees')"
+            [class.border-green-500]="
+              isActiveRoute('/superadmin/student-trainees')
+            "
+            [class.text-green-600]="
+              isActiveRoute('/superadmin/student-trainees')
+            "
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-id-card"></i>
+            Student Trainees
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/alumni')"
+            [class.border-b-2]="isActiveRoute('/superadmin/alumni')"
+            [class.border-green-500]="isActiveRoute('/superadmin/alumni')"
+            [class.text-green-600]="isActiveRoute('/superadmin/alumni')"
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-graduation-cap"></i>
+            Alumni
+          </button>
+          <button
+            (click)="navigateToTab('/superadmin/industries')"
+            [class.border-b-2]="isActiveRoute('/superadmin/industries')"
+            [class.border-green-500]="isActiveRoute('/superadmin/industries')"
+            [class.text-green-600]="isActiveRoute('/superadmin/industries')"
+            class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <i class="pi pi-sitemap"></i>
+            Industries
+          </button>
+        </nav>
+      </div>
+
+      <!-- Router Outlet for Tab Content -->
+      <div class="flex-1 overflow-auto">
+        <router-outlet></router-outlet>
+      </div>
     </div>
   </div>
 </div>

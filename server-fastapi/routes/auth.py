@@ -73,12 +73,7 @@ async def validate_token(token_data: dict = Depends(verify_token)):
     """
     return {
         "success": True,
-        "message": "Token is valid",
-        "data": {
-            "user_id": token_data.get("user_id"),
-            "email": token_data.get("email"),
-            "role": token_data.get("role")
-        }
+        "message": "Token is valid"
     }
 
 

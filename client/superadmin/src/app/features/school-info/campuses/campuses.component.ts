@@ -9,7 +9,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -21,7 +20,6 @@ import Swal from 'sweetalert2';
   imports: [
     CommonModule,
     TableModule,
-    InputGroup,
     InputGroupAddonModule,
     InputTextModule,
     ButtonModule,
@@ -57,15 +55,17 @@ export class CampusesComponent {
   //Inialized Module
   constructor(
     private campusesService: CampusesService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {
     this.newCampus = this.fb.group({
       campus_name: ['', Validators.required],
+      address: [''],
       is_extension: [false, Validators.required],
       parent_campus_id: [null],
     });
     this.updateCampusForm = this.fb.group({
       campus_name: ['', Validators.required],
+      address: [''],
       is_extension: [false, Validators.required],
       parent_campus_id: [null],
       status: ['', Validators.required],
@@ -117,6 +117,7 @@ export class CampusesComponent {
 
           this.updateCampusForm.patchValue({
             campus_name: campus.campus_name,
+            address: campus.address,
             is_extension: campus.is_extension,
             parent_campus_id: campus.parent_campus_id,
             status: campus.status,
@@ -218,7 +219,12 @@ export class CampusesComponent {
     if (this.newCampus.valid) {
       const payload = {
         ...this.newCampus.value,
-        is_extension: this.newCampus.value.is_extension === 'true' || this.newCampus.value.is_extension === true
+        is_extension:
+          this.newCampus.value.is_extension === 'true' ||
+          this.newCampus.value.is_extension === true,
+        parent_campus_id: this.newCampus.value.parent_campus_id
+          ? Number(this.newCampus.value.parent_campus_id)
+          : null,
       };
       this.campusesService.addCampus(payload).subscribe({
         next: (res) => {
@@ -228,7 +234,7 @@ export class CampusesComponent {
               title: 'Success!',
               text: 'Campus added successfully',
               timer: 2000,
-              showConfirmButton: false
+              showConfirmButton: false,
             });
             this.getAllCampuses();
             this.isAddDialogVisible = false;
@@ -237,7 +243,7 @@ export class CampusesComponent {
             Swal.fire({
               icon: 'error',
               title: 'Error',
-              text: res?.message || 'Failed to add campus'
+              text: res?.message || 'Failed to add campus',
             });
           }
         },
@@ -245,7 +251,7 @@ export class CampusesComponent {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Something went wrong while adding campus'
+            text: 'Something went wrong while adding campus',
           });
           console.error('Error adding campus:', err);
         },
@@ -261,14 +267,16 @@ export class CampusesComponent {
 
     const payload = {
       ...this.updateCampusForm.value,
-      is_extension: this.updateCampusForm.value.is_extension === 'true' || this.updateCampusForm.value.is_extension === true
+      is_extension:
+        this.updateCampusForm.value.is_extension === 'true' ||
+        this.updateCampusForm.value.is_extension === true,
+      parent_campus_id: this.updateCampusForm.value.parent_campus_id
+        ? Number(this.updateCampusForm.value.parent_campus_id)
+        : null,
     };
 
     this.campusesService
-      .updateCampus(
-        this.selectedCampusId as string,
-        payload
-      )
+      .updateCampus(this.selectedCampusId as string, payload)
       .subscribe((res) => {
         if (res && res.success) {
           Swal.fire({
@@ -276,7 +284,7 @@ export class CampusesComponent {
             title: 'Success!',
             text: 'Campus updated successfully',
             timer: 2000,
-            showConfirmButton: false
+            showConfirmButton: false,
           });
           this.getAllCampuses();
           this.isUpdateDialogVisible = false;
@@ -284,7 +292,7 @@ export class CampusesComponent {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Failed to update campus'
+            text: 'Failed to update campus',
           });
         }
       });
@@ -293,7 +301,7 @@ export class CampusesComponent {
   handleUpdateStatus(
     event: Event,
     campus_id: string,
-    currentStatus: string
+    currentStatus: string,
   ): void {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const actionText = newStatus === 'inactive' ? 'disable' : 'enable';
@@ -305,8 +313,9 @@ export class CampusesComponent {
       showCancelButton: true,
       confirmButtonColor: newStatus === 'inactive' ? '#dc3545' : '#28a745',
       cancelButtonColor: '#6c757d',
-      confirmButtonText: actionText.charAt(0).toUpperCase() + actionText.slice(1),
-      cancelButtonText: 'Cancel'
+      confirmButtonText:
+        actionText.charAt(0).toUpperCase() + actionText.slice(1),
+      cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
         this.campusesService.toggleCampusStatus(campus_id).subscribe({
@@ -317,14 +326,14 @@ export class CampusesComponent {
                 title: 'Status Updated',
                 text: `Campus is now ${newStatus}`,
                 timer: 2000,
-                showConfirmButton: false
+                showConfirmButton: false,
               });
               this.getAllCampuses();
             } else {
               Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: res.message || 'Failed to update campus status'
+                text: res.message || 'Failed to update campus status',
               });
             }
           },
@@ -332,7 +341,7 @@ export class CampusesComponent {
             Swal.fire({
               icon: 'error',
               title: 'Error',
-              text: 'Something went wrong while updating status'
+              text: 'Something went wrong while updating status',
             });
             console.error('Status update error:', err);
           },

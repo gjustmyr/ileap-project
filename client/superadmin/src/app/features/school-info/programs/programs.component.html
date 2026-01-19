@@ -4,12 +4,8 @@
     <nav class="mb-4">
       <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
         <li>
-          <a routerLink="/dashboard" class="hover:text-green-600">Home</a>
-        </li>
-        <li><i class="pi pi-angle-right text-xs"></i></li>
-        <li>
           <a
-            routerLink="/school-information/campuses"
+            routerLink="/superadmin/school-information"
             class="hover:text-green-600"
             >Campuses</a
           >
@@ -19,10 +15,10 @@
         </li>
         <li *ngIf="currentCampusName">
           <a
-            [routerLink]="['/school-information/departments']"
+            [routerLink]="['/superadmin/departments']"
             [queryParams]="{
               campusId: currentCampusId,
-              campusName: currentCampusName
+              campusName: currentCampusName,
             }"
             class="hover:text-green-600"
             >{{ currentCampusName }}</a
@@ -50,35 +46,41 @@
     </div>
 
     <!-- Controls -->
-    <div class="controls mb-4 flex justify-between items-center gap-3">
-      <div class="flex gap-3 flex-1">
-        <div class="w-[300px]">
-          <p-inputgroup>
-            <input
-              pInputText
-              placeholder="Search programs..."
-              [(ngModel)]="keyword"
-              (keyup.enter)="handleSearch()"
-            />
-            <p-inputgroup-addon>
-              <button
-                pButton
-                icon="pi pi-search"
-                severity="secondary"
-                variant="text"
-                (click)="handleSearch()"
-              ></button>
-            </p-inputgroup-addon>
-          </p-inputgroup>
+    <div class="mb-6">
+      <div class="flex items-center gap-3">
+        <!-- Search Box -->
+        <div class="w-[400px]">
+          <input
+            type="text"
+            [(ngModel)]="keyword"
+            placeholder="Search programs..."
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+          />
         </div>
+
+        <!-- Action Buttons -->
+        <button
+          (click)="handleSearch()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow cursor-pointer"
+        >
+          <i class="pi pi-search mr-1"></i>
+          Search
+        </button>
+        <button
+          (click)="keyword = ''; handleSearch()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow cursor-pointer"
+        >
+          <i class="pi pi-refresh mr-1"></i>
+          Reset
+        </button>
+        <button
+          (click)="handleAddDialog()"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow flex items-center gap-2 ml-auto cursor-pointer"
+        >
+          <i class="pi pi-plus"></i>
+          Add Program
+        </button>
       </div>
-      <button
-        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs cursor-pointer flex items-center gap-2"
-        (click)="handleAddDialog()"
-      >
-        <i class="pi pi-plus"></i>
-        Add Program
-      </button>
     </div>
 
     <div class="card poppins-regular text-sm">
@@ -169,7 +171,8 @@
                     [ngClass]="{
                       'bg-green-500 hover:bg-green-600':
                         program.status === 'inactive',
-                      'bg-red-500 hover:bg-red-600': program.status === 'active'
+                      'bg-red-500 hover:bg-red-600':
+                        program.status === 'active',
                     }"
                     class="p-2 text-white rounded cursor-pointer text-sm"
                     (click)="
@@ -246,7 +249,9 @@
   *ngIf="isAddDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Add Program</h3>
       <button
@@ -316,7 +321,9 @@
   *ngIf="isUpdateDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Update Program</h3>
       <button
@@ -533,7 +540,7 @@
                     [ngClass]="{
                       'bg-green-500 hover:bg-green-600':
                         major.status === 'inactive',
-                      'bg-red-500 hover:bg-red-600': major.status === 'active'
+                      'bg-red-500 hover:bg-red-600': major.status === 'active',
                     }"
                     class="p-2 text-white rounded cursor-pointer text-xs"
                     (click)="
@@ -589,7 +596,9 @@
   *ngIf="isUpdateMajorDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-[60]"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Update Major</h3>
       <button
@@ -825,12 +834,12 @@
                   section.year_level === 1
                     ? "1st Year"
                     : section.year_level === 2
-                    ? "2nd Year"
-                    : section.year_level === 3
-                    ? "3rd Year"
-                    : section.year_level === 4
-                    ? "4th Year"
-                    : section.year_level
+                      ? "2nd Year"
+                      : section.year_level === 3
+                        ? "3rd Year"
+                        : section.year_level === 4
+                          ? "4th Year"
+                          : section.year_level
                 }}
               </td>
               <td
@@ -866,7 +875,8 @@
                     [ngClass]="{
                       'bg-green-500 hover:bg-green-600':
                         section.status === 'inactive',
-                      'bg-red-500 hover:bg-red-600': section.status === 'active'
+                      'bg-red-500 hover:bg-red-600':
+                        section.status === 'active',
                     }"
                     class="p-2 text-white rounded cursor-pointer text-xs"
                     (click)="
@@ -924,7 +934,9 @@
   *ngIf="isUpdateSectionDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-[60]"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Update Section</h3>
       <button

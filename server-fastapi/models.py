@@ -56,8 +56,7 @@ class User(Base):
 	reset_token_expiry = Column(DateTime, nullable=True)
 	force_password_change = Column(Boolean, default=False)
 
-
-class Campus(Base):
+class 	Campus(Base):
 	__tablename__ = "campuses"
 
 	campus_id = Column(Integer, primary_key=True, index=True)

@@ -8,7 +8,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -27,7 +26,6 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
   imports: [
     CommonModule,
     TableModule,
-    InputGroup,
     InputGroupAddonModule,
     InputTextModule,
     ButtonModule,
@@ -197,6 +195,15 @@ export class DepartmentsComponent {
     }
   }
 
+  onDeanModeChange(): void {
+    // Clear dean fields when switching modes
+    this.newDepartmentForm.patchValue({
+      dean_name: '',
+      dean_email: '',
+      dean_contact: ''
+    });
+  }
+
   onUpdateDeanSelect(event: any): void {
     if (event.value && this.updateDeanSelectionMode === 'existing') {
       const selectedDean = this.availableDeans.find(d => d.dean_email === event.value);
@@ -241,10 +248,24 @@ export class DepartmentsComponent {
         cancelButtonText: 'Cancel'
       }).then((result) => {
         if (result.isConfirmed) {
-          const payload = {
-            ...this.newDepartmentForm.value,
-            campus_id: this.currentCampusId
+          let payload: any = {
+            department_name: this.newDepartmentForm.value.department_name,
+            abbrev: this.newDepartmentForm.value.abbrev,
+            campus_id: this.currentCampusId,
+            status: 'active'
           };
+
+          // If existing dean selected, only send dean_email
+          if (this.deanSelectionMode === 'existing' && this.newDepartmentForm.value.dean_email) {
+            payload.dean_email = this.newDepartmentForm.value.dean_email;
+          } 
+          // If new dean, send all dean fields
+          else if (this.deanSelectionMode === 'new' && this.newDepartmentForm.value.dean_name) {
+            payload.dean_name = this.newDepartmentForm.value.dean_name;
+            payload.dean_email = this.newDepartmentForm.value.dean_email;
+            payload.dean_contact = this.newDepartmentForm.value.dean_contact;
+          }
+
           this.departmentsService.addDepartment(payload).subscribe({
             next: (res) => {
               if (res?.success) {
