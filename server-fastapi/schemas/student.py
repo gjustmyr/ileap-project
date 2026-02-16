@@ -40,7 +40,6 @@ class StudentProfileUpdate(BaseModel):
     
     # School Information
     program: Optional[str] = None
-    major: Optional[str] = None
     department: Optional[str] = None
     year_level: Optional[str] = None
     length_of_program: Optional[str] = None

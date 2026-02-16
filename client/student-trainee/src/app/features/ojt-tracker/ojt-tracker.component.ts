@@ -60,7 +60,7 @@ export class OjtTrackerComponent implements OnInit {
     });
 
     this.http
-      .get(`${environment.apiUrl}/students/class-info`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/class-info`, { headers })
       .subscribe({
         next: (response: any) => {
           console.log('📚 Class Info Response:', response);
@@ -87,7 +87,7 @@ export class OjtTrackerComponent implements OnInit {
     });
 
     this.http
-      .get(`${environment.apiUrl}/students/profile`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/profile`, { headers })
       .subscribe({
         next: (response: any) => {
           console.log('📝 Profile Response:', response);
@@ -114,7 +114,7 @@ export class OjtTrackerComponent implements OnInit {
 
     // Check hiring and requirements status
     this.http
-      .get(`${environment.apiUrl}/students/hiring-status`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/hiring-status`, { headers })
       .subscribe({
         next: (response: any) => {
           console.log('📊 OJT Status Response:', response);

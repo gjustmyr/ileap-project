@@ -558,12 +558,23 @@ def get_internship_applications(
 			student = app.student
 			internship = app.internship
 			
+			# Get student's class information
+			student_class = db.query(Class).filter(Class.class_id == student.class_id).first() if student and student.class_id else None
+			
 			result_data.append({
 				"application_id": app.application_id,
 				"student_id": app.student_id,
 				"student_name": f"{student.first_name} {student.last_name}" if student else None,
 				"student_email": student.email if student else None,
+				"student_contact": student.contact_number if student else None,
+				"student_gender": student.gender if student else None,
+				"student_birthdate": student.birthdate.isoformat() if student and student.birthdate else None,
 				"student_program": student.program if student else None,
+				"student_major": student.major if student else None,
+				"student_school_year": student_class.schoolyear if student_class else None,
+				"student_semester": student_class.semester if student_class else None,
+				"student_section": student_class.section if student_class else None,
+				"student_required_hours": student.required_hours if student else None,
 				"student_skills": [skill.skill_name for skill in student.skills] if student and student.skills else [],
 				"internship_id": app.internship_id,
 				"internship_title": internship.title if internship else None,

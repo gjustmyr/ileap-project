@@ -11,14 +11,14 @@
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="flex gap-4 mb-2">
       <!-- Campus Filter Dropdown -->
       <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Campus
         </label>
         <select
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
           [(ngModel)]="selectedCampusId"
           (change)="onCampusFilterChange($event)"
         >
@@ -36,7 +36,7 @@
           Department
         </label>
         <select
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
           [disabled]="!selectedCampusId"
           [(ngModel)]="selectedDepartmentId"
         >
@@ -50,7 +50,7 @@
       </div>
 
       <!-- Search Box -->
-      <div class="lg:col-span-2">
+      <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Search
         </label>
@@ -58,7 +58,7 @@
           type="text"
           [(ngModel)]="keyword"
           placeholder="Search by name, email, campus, or department"
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
         />
       </div>
     </div>
@@ -76,13 +76,6 @@
         class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Reset
-      </button>
-      <button
-        (click)="handleSendAccountDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded ml-auto cursor-pointer"
-      >
-        <i class="pi pi-plus mr-2"></i>
-        Add OJT Coordinator
       </button>
     </div>
 

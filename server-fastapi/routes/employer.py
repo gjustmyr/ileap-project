@@ -268,7 +268,7 @@ async def update_my_employer_profile(
 		with open(saved_path, "wb") as f:
 			f.write(content)
 		
-		employer.logo = f"/uploads/logos/{filename}"
+		employer.logo = f"uploads/logos/{filename}"
 
 	# Handle MOA file upload
 	if moa_file is not None:
@@ -288,7 +288,7 @@ async def update_my_employer_profile(
 		with open(saved_path, "wb") as f:
 			f.write(content)
 		
-		employer.moa_file = f"/uploads/moa/{filename}"
+		employer.moa_file = f"uploads/moa/{filename}"
 
 	employer.updated_at = datetime.utcnow()
 	db.commit()

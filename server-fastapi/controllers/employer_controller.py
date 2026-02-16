@@ -6,6 +6,8 @@ def get_all_companies(db: Session):
         {"employer_id": c.employer_id, "company_name": c.company_name}
         for c in companies
     ]
+
+    
     return {
         "status": "success",
         "data": result,

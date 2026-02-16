@@ -7,6 +7,7 @@ from datetime import datetime, date, time as dt_time
 from typing import Optional
 from pydantic import BaseModel
 import json
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow, format_datetime_for_api
 
 router = APIRouter(prefix="/api/oeams", tags=["OEAMS - OJT Evaluation and Management System"])
 
@@ -124,7 +125,7 @@ def time_in(
         ).first()
     
     # Validate against working days if configured (allow time in anytime, hours will be adjusted during time out)
-    now = datetime.now()
+    now = philippine_now()
     current_day = now.strftime('%A')  # Monday, Tuesday, etc.
     
     if employer and employer.work_schedule:
@@ -156,30 +157,39 @@ def time_in(
         raise HTTPException(status_code=400, detail="Already timed in today")
     
     # Create or update time log
+    current_time = philippine_now()
+    print(f"DEBUG TIME-IN: Current Philippine time = {current_time}")
+    print(f"DEBUG TIME-IN: ISO format = {current_time.isoformat()}")
+    print(f"DEBUG TIME-IN: Timezone = {current_time.tzinfo}")
+    
     if existing_log:
-        existing_log.time_in = datetime.now()
-        existing_log.updated_at = datetime.now()
+        existing_log.time_in = current_time
+        existing_log.updated_at = current_time
         db.commit()
         db.refresh(existing_log)
         time_log = existing_log
+        print(f"DEBUG TIME-IN: Saved time_in = {time_log.time_in}")
+        print(f"DEBUG TIME-IN: Saved time_in ISO = {time_log.time_in.isoformat() if time_log.time_in else 'None'}")
     else:
         time_log = DailyTimeLog(
             student_id=student.student_id,
             application_id=application.application_id,
             log_date=today,
-            time_in=datetime.now(),
+            time_in=current_time,
             status='incomplete'
         )
         db.add(time_log)
         db.commit()
         db.refresh(time_log)
+        print(f"DEBUG TIME-IN (NEW): Saved time_in = {time_log.time_in}")
+        print(f"DEBUG TIME-IN (NEW): Saved time_in ISO = {time_log.time_in.isoformat() if time_log.time_in else 'None'}")
     
     return {
         "status": "success",
         "message": "Time in recorded successfully",
         "data": {
             "log_id": time_log.log_id,
-            "time_in": time_log.time_in.isoformat() if time_log.time_in else None,
+            "time_in": format_datetime_for_api(time_log.time_in),
             "log_date": time_log.log_date.isoformat()
         }
     }
@@ -233,14 +243,14 @@ def time_out(
             ).first()
     
     # Record time out
-    time_out_timestamp = datetime.now()
+    time_out_timestamp = philippine_now()
     time_log.time_out = time_out_timestamp
     time_log.status = 'complete'
     
     # Calculate total hours using standard working hours (7AM-12PM, 1PM-5PM)
     time_log.total_hours = calculate_valid_hours(time_log.time_in, time_log.time_out)
     
-    time_log.updated_at = datetime.now()
+    time_log.updated_at = philippine_now()
     db.commit()
     db.refresh(time_log)
     
@@ -249,8 +259,8 @@ def time_out(
         "message": "Time out recorded successfully",
         "data": {
             "log_id": time_log.log_id,
-            "time_in": time_log.time_in.isoformat() if time_log.time_in else None,
-            "time_out": time_log.time_out.isoformat() if time_log.time_out else None,
+            "time_in": format_datetime_for_api(time_log.time_in),
+            "time_out": format_datetime_for_api(time_log.time_out),
             "total_hours": float(time_log.total_hours) if time_log.total_hours else 0,
             "log_date": time_log.log_date.isoformat()
         }
@@ -295,7 +305,7 @@ def save_accomplishments(
         # Update existing
         accomplishment.tasks = data.tasks
         accomplishment.accomplishments = data.accomplishments
-        accomplishment.updated_at = datetime.now()
+        accomplishment.updated_at = philippine_now()
     else:
         # Create new
         accomplishment = DailyAccomplishment(
@@ -368,8 +378,8 @@ def get_today_log(
             "log_id": time_log.log_id,
             "has_timed_in": time_log.time_in is not None,
             "has_timed_out": time_log.time_out is not None,
-            "time_in": time_log.time_in.isoformat() if time_log.time_in else None,
-            "time_out": time_log.time_out.isoformat() if time_log.time_out else None,
+            "time_in": format_datetime_for_api(time_log.time_in),
+            "time_out": format_datetime_for_api(time_log.time_out),
             "total_hours": float(time_log.total_hours) if time_log.total_hours else 0,
             "status": time_log.status,
             "tasks": accomplishment.tasks if accomplishment else None,
@@ -464,8 +474,8 @@ def get_all_logs(
         logs_data.append({
             "log_id": time_log.log_id,
             "log_date": time_log.log_date.isoformat(),
-            "time_in": time_log.time_in.isoformat() if time_log.time_in else None,
-            "time_out": time_log.time_out.isoformat() if time_log.time_out else None,
+            "time_in": format_datetime_for_api(time_log.time_in),
+            "time_out": format_datetime_for_api(time_log.time_out),
             "total_hours": log_hours,
             "status": time_log.status,
             "tasks": accomplishment.tasks if accomplishment else None,

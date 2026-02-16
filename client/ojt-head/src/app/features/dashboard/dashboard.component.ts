@@ -255,28 +255,28 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  campusChartData = {
-    labels: ['Main I', 'Main II', 'Lipa', 'Nasugbu'],
+  campusChartData: any = {
+    labels: [],
     datasets: [
       {
         label: 'Interns',
         backgroundColor: '#60A5FA',
-        data: [35, 28, 40, 25],
+        data: [],
       },
     ],
   };
 
-  ojtCompletionStackedChartData = {
-    labels: ['BSIT', 'BSBA', 'BSCE', 'BSA', 'BEED'],
+  ojtCompletionStackedChartData: any = {
+    labels: [],
     datasets: [
       {
         label: 'Completed',
-        data: [80, 65, 75, 60, 90],
+        data: [],
         backgroundColor: '#10b981',
       },
       {
         label: 'Pending',
-        data: [20, 35, 25, 40, 10],
+        data: [],
         backgroundColor: '#f97316',
       },
     ],
@@ -339,28 +339,28 @@ export class DashboardComponent implements OnInit {
     },
   };
 
-  ojtProgramOpportunityMismatch = {
-    labels: ['BSIT', 'BSBA', 'BEED', 'BSECE', 'BSME'],
+  ojtProgramOpportunityMismatch: any = {
+    labels: [],
     datasets: [
       {
         label: 'Enrolled Students',
         backgroundColor: '#3B82F6',
-        data: [120, 80, 45, 60, 100],
+        data: [],
       },
       {
         label: 'Internship Opportunities',
         backgroundColor: '#34D399',
-        data: [60, 50, 40, 20, 30],
+        data: [],
       },
     ],
   };
 
-  ojtTopCompaniesChartData = {
-    labels: ['Company A', 'Company B', 'Company C', 'Company D', 'Company E'],
+  ojtTopCompaniesChartData: any = {
+    labels: [],
     datasets: [
       {
         label: 'Number of Interns',
-        data: [45, 38, 30, 22, 18],
+        data: [],
         backgroundColor: [
           '#3B82F6',
           '#10B981',
@@ -372,12 +372,12 @@ export class DashboardComponent implements OnInit {
     ],
   };
 
-  ojtMonthlyChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  ojtMonthlyChartData: any = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     datasets: [
       {
         label: 'Internship Activities',
-        data: [15, 25, 18, 30, 22, 28],
+        data: [],
         fill: false,
         borderColor: '#3b82f6',
         tension: 0.4,
@@ -385,34 +385,34 @@ export class DashboardComponent implements OnInit {
     ],
   };
 
-  evaluationStatusChartData = {
+  evaluationStatusChartData: any = {
     labels: ['Evaluated', 'Pending'],
     datasets: [
       {
-        data: [73, 27],
+        data: [0, 0],
         backgroundColor: ['#22c55e', '#f97316'],
       },
     ],
   };
 
-  ojtListingsByIndustryChartData = {
-    labels: ['IT', 'Engineering', 'Education', 'Healthcare'],
+  ojtListingsByIndustryChartData: any = {
+    labels: [],
     datasets: [
       {
         label: 'Internship Listings',
-        data: [40, 30, 20, 10],
-        backgroundColor: ['#4f46e5', '#22c55e', '#f59e0b', '#ec4899'],
+        data: [],
+        backgroundColor: ['#4f46e5', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
       },
     ],
   };
 
-  programChartData = {
-    labels: ['BSIT', 'BSCE', 'BSBA', 'BSA'],
+  programChartData: any = {
+    labels: [],
     datasets: [
       {
         label: 'Interns',
         backgroundColor: '#34D399',
-        data: [50, 25, 30, 23],
+        data: [],
       },
     ],
   };

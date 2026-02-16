@@ -57,7 +57,7 @@ export class RequirementsComponent implements OnInit {
     const headers = new HttpHeaders({ Authorization: token || '' });
 
     this.http
-      .get(`${environment.apiUrl}/requirement-templates`, { headers })
+      .get(`${environment.apiUrl}/ojt-head/requirement-templates`, { headers })
       .subscribe({
         next: (response: any) => {
           this.requirements = response.data || [];
@@ -84,6 +84,12 @@ export class RequirementsComponent implements OnInit {
           .includes(this.searchKeyword.toLowerCase());
       return matchesType && matchesSearch;
     });
+  }
+
+  resetFilters(): void {
+    this.filterType = 'all';
+    this.searchKeyword = '';
+    this.applyFilters();
   }
 
   openAddModal(): void {
@@ -154,8 +160,8 @@ export class RequirementsComponent implements OnInit {
     }
 
     const url = this.showEditModal
-      ? `${environment.apiUrl}/requirement-templates/${this.selectedRequirement.template_id}`
-      : `${environment.apiUrl}/requirement-templates`;
+      ? `${environment.apiUrl}/ojt-head/requirement-templates/${this.selectedRequirement.template_id}`
+      : `${environment.apiUrl}/ojt-head/requirement-templates`;
 
     const request = this.showEditModal
       ? this.http.put(url, formData, { headers })
@@ -200,7 +206,7 @@ export class RequirementsComponent implements OnInit {
 
         this.http
           .delete(
-            `${environment.apiUrl}/requirement-templates/${template_id}`,
+            `${environment.apiUrl}/ojt-head/requirement-templates/${template_id}`,
             { headers }
           )
           .subscribe({

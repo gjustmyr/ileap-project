@@ -83,6 +83,16 @@ async def delete_campus(
     return campus_controller.remove_campus(campus_id, db)
 
 
+@router.put("/campuses/{campus_id}/toggle-status")
+async def toggle_campus_status(
+    campus_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Toggle campus status (superadmin only)"""
+    return campus_controller.toggle_campus_status(campus_id, db)
+
+
 # ============= DEPARTMENTS =============
 @router.get("/departments")
 async def get_all_departments(
@@ -128,6 +138,16 @@ async def delete_department(
     return department_controller.remove_department(department_id, db)
 
 
+@router.put("/departments/{department_id}/toggle-status")
+async def toggle_department_status(
+    department_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Toggle department status (superadmin only)"""
+    return department_controller.toggle_department_status(department_id, db)
+
+
 # ============= PROGRAMS =============
 @router.get("/programs")
 async def get_all_programs(
@@ -171,6 +191,16 @@ async def delete_program(
 ):
     """Delete a program (superadmin only)"""
     return program_controller.remove_program(program_id, db)
+
+
+@router.put("/programs/{program_id}/toggle-status")
+async def toggle_program_status(
+    program_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Toggle program status (superadmin only)"""
+    return program_controller.toggle_program_status(program_id, db)
 
 
 # ============= EMPLOYERS =============
@@ -262,60 +292,6 @@ async def delete_industry(
     return industry_controller.delete_industry(industry_id, db)
 
 
-# ============= MAJORS =============
-@router.get("/programs/{program_id}/majors")
-async def get_majors_by_program(
-    program_id: int,
-    pageNo: int = 1,
-    pageSize: int = 10,
-    keyword: str = "",
-    db: Session = Depends(get_db),
-    token_data: dict = Depends(verify_superadmin)
-):
-    """Get all majors for a program (superadmin)"""
-    from controllers import major_controller
-    return major_controller.get_all_majors(program_id, pageNo, pageSize, keyword, db)
-
-
-@router.post("/programs/{program_id}/majors", status_code=status.HTTP_201_CREATED)
-async def create_major(
-    program_id: int,
-    major: dict,
-    db: Session = Depends(get_db),
-    token_data: dict = Depends(verify_superadmin)
-):
-    """Create a new major (superadmin only)"""
-    from controllers import major_controller
-    from schemas.major import MajorCreate
-    major_data = MajorCreate(**major, program_id=program_id)
-    return major_controller.add_major(major_data, db)
-
-
-@router.put("/majors/{major_id}")
-async def update_major(
-    major_id: int,
-    major: dict,
-    db: Session = Depends(get_db),
-    token_data: dict = Depends(verify_superadmin)
-):
-    """Update a major (superadmin only)"""
-    from controllers import major_controller
-    from schemas.major import MajorUpdate
-    major_data = MajorUpdate(**major)
-    return major_controller.update_major(major_id, major_data, db)
-
-
-@router.delete("/majors/{major_id}")
-async def delete_major(
-    major_id: int,
-    db: Session = Depends(get_db),
-    token_data: dict = Depends(verify_superadmin)
-):
-    """Delete a major (superadmin only)"""
-    from controllers import major_controller
-    return major_controller.remove_major(major_id, db)
-
-
 # ============= SECTIONS =============
 @router.get("/sections")
 async def get_all_sections(
@@ -323,13 +299,12 @@ async def get_all_sections(
     pageSize: int = 10,
     keyword: str = "",
     program_id: int = None,
-    major_id: int = None,
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_superadmin)
 ):
     """Get all sections with optional filters (superadmin)"""
     from controllers import section_controller
-    return section_controller.get_all_sections(pageNo, pageSize, keyword, program_id, major_id, db)
+    return section_controller.get_all_sections(pageNo, pageSize, keyword, program_id, db)
 
 
 @router.post("/sections", status_code=status.HTTP_201_CREATED)
@@ -396,6 +371,17 @@ async def delete_section(
     """Delete a section (superadmin only)"""
     from controllers import section_controller
     return section_controller.remove_section(section_id, db)
+
+
+@router.put("/sections/{section_id}/toggle-status")
+async def toggle_section_status(
+    section_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Toggle section status (superadmin only)"""
+    from controllers import section_controller
+    return section_controller.toggle_section_status(section_id, db)
 
 # OJT Coordinator endpoints
 @router.post("/ojt-coordinators/{user_id}/send-new-password")
@@ -764,3 +750,545 @@ async def delete_alumni(
             status_code=500,
             detail=f"Failed to delete alumni: {str(e)}"
         )
+
+
+# ============= JOB PLACEMENT OFFICERS =============
+@router.get("/jp-officers")
+async def get_all_jp_officers(
+    pageNo: int = 1,
+    pageSize: int = 10,
+    keyword: str = "",
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get all job placement officers (superadmin only)"""
+    from models import User, JobPlacementOfficer, Campus
+    from sqlalchemy import or_
+    
+    try:
+        # Query with join to JobPlacementOfficer profile
+        query = db.query(
+            User.user_id,
+            User.email_address,
+            JobPlacementOfficer.first_name,
+            JobPlacementOfficer.last_name,
+            JobPlacementOfficer.contact_number,
+            JobPlacementOfficer.position_title,
+            JobPlacementOfficer.campus_id,
+            JobPlacementOfficer.status,
+            JobPlacementOfficer.created_at,
+            Campus.campus_name
+        ).join(
+            JobPlacementOfficer, User.user_id == JobPlacementOfficer.user_id
+        ).outerjoin(
+            Campus, JobPlacementOfficer.campus_id == Campus.campus_id
+        ).filter(User.role == "job_placement_officer")
+        
+        # Apply search filter
+        if keyword:
+            search_filter = or_(
+                JobPlacementOfficer.first_name.ilike(f"%{keyword}%"),
+                JobPlacementOfficer.last_name.ilike(f"%{keyword}%"),
+                User.email_address.ilike(f"%{keyword}%")
+            )
+            query = query.filter(search_filter)
+        
+        # Get total count
+        total_records = query.count()
+        
+        # Apply pagination
+        offset = (pageNo - 1) * pageSize
+        jpo_data = query.offset(offset).limit(pageSize).all()
+        
+        # Transform to response format
+        jpo_list = []
+        for row in jpo_data:
+            jpo_list.append({
+                "user_id": row.user_id,
+                "email_address": row.email_address,
+                "first_name": row.first_name,
+                "last_name": row.last_name,
+                "contact_number": row.contact_number,
+                "position_title": row.position_title,
+                "campus_id": row.campus_id,
+                "campus_name": row.campus_name,
+                "status": row.status,
+                "created_at": row.created_at.isoformat() if row.created_at else None
+            })
+        
+        return {
+            "status": "success",
+            "data": jpo_list,
+            "pagination": {
+                "page": pageNo,
+                "per_page": pageSize,
+                "total_records": total_records,
+                "total_pages": (total_records + pageSize - 1) // pageSize
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch job placement officers: {str(e)}"
+        )
+
+
+@router.get("/jp-officers/{user_id}")
+async def get_jp_officer_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get a specific job placement officer by user_id (superadmin only)"""
+    from models import User, JobPlacementOfficer, Campus
+    
+    try:
+        # Query with join
+        result = db.query(
+            User.user_id,
+            User.email_address,
+            JobPlacementOfficer.first_name,
+            JobPlacementOfficer.last_name,
+            JobPlacementOfficer.contact_number,
+            JobPlacementOfficer.position_title,
+            JobPlacementOfficer.campus_id,
+            JobPlacementOfficer.status,
+            Campus.campus_name
+        ).join(
+            JobPlacementOfficer, User.user_id == JobPlacementOfficer.user_id
+        ).outerjoin(
+            Campus, JobPlacementOfficer.campus_id == Campus.campus_id
+        ).filter(
+            User.user_id == user_id,
+            User.role == "job_placement_officer"
+        ).first()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="Job placement officer not found")
+        
+        return {
+            "status": "SUCCESS",
+            "data": {
+                "user_id": result.user_id,
+                "email_address": result.email_address,
+                "first_name": result.first_name,
+                "last_name": result.last_name,
+                "contact_number": result.contact_number,
+                "position_title": result.position_title,
+                "campus_id": result.campus_id,
+                "campus_name": result.campus_name,
+                "status": result.status
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch job placement officer: {str(e)}"
+        )
+
+
+@router.post("/jp-officers/register", status_code=status.HTTP_201_CREATED)
+async def register_jp_officer(
+    jpo_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Register a new job placement officer with auto-generated password (superadmin only)"""
+    from models import User, JobPlacementOfficer, Campus
+    from utils.datetime_helper import utcnow
+    import bcrypt
+    import secrets
+    import string
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    try:
+        # Check if email already exists
+        existing_user = db.query(User).filter(
+            User.email_address == jpo_data['email_address']
+        ).first()
+        
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address already exists"
+            )
+        
+        # Check if campus exists (if provided)
+        if jpo_data.get('campus_id'):
+            campus = db.query(Campus).filter(Campus.campus_id == jpo_data['campus_id']).first()
+            if not campus:
+                raise HTTPException(status_code=404, detail="Campus not found")
+        
+        # Generate random password
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        temp_password = ''.join(secrets.choice(characters) for _ in range(12))
+        temp_password = temp_password[:72]  # BCrypt limit
+        
+        # Hash password
+        hashed_password = bcrypt.hashpw(
+            temp_password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        
+        # Create new user
+        new_user = User(
+            email_address=jpo_data['email_address'],
+            password=hashed_password,
+            role="job_placement_officer"
+        )
+        
+        db.add(new_user)
+        db.flush()
+        
+        # Create Job Placement Officer profile
+        new_jpo = JobPlacementOfficer(
+            user_id=new_user.user_id,
+            first_name=jpo_data['first_name'],
+            last_name=jpo_data['last_name'],
+            contact_number=jpo_data.get('contact_number'),
+            position_title=jpo_data.get('position_title'),
+            campus_id=jpo_data.get('campus_id'),
+            status=jpo_data.get('status', 'active'),
+            created_at=utcnow(),
+            updated_at=utcnow()
+        )
+        db.add(new_jpo)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Send email with temporary password
+        try:
+            email_body = f"""Hello {jpo_data['first_name']} {jpo_data['last_name']},
+
+You have been registered as a Job Placement Officer in the ILEAP System.
+
+Email: {jpo_data['email_address']}
+Temporary Password: {temp_password}
+
+Please login and change your password immediately for security.
+
+Best regards,
+ILEAP System"""
+            
+            msg = MIMEMultipart()
+            msg['From'] = os.getenv("EMAIL_USER")
+            msg['To'] = jpo_data['email_address']
+            msg['Subject'] = "Job Placement Officer Account - ILEAP System"
+            msg.attach(MIMEText(email_body, 'plain'))
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+            server.send_message(msg)
+            server.quit()
+        except Exception as email_error:
+            print(f"Failed to send email: {email_error}")
+            # Don't fail the registration if email fails
+        
+        return {
+            "status": "SUCCESS",
+            "data": {
+                "user_id": new_user.user_id,
+                "email_address": new_user.email_address
+            },
+            "message": "Job placement officer registered successfully. Temporary password sent to email."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to register job placement officer: {str(e)}"
+        )
+
+
+@router.patch("/jp-officers/{user_id}")
+async def update_jp_officer(
+    user_id: int,
+    jpo_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Update a job placement officer (superadmin only)"""
+    from models import User, JobPlacementOfficer
+    from utils.datetime_helper import utcnow
+    
+    try:
+        user = db.query(User).filter(
+            User.user_id == user_id,
+            User.role == "job_placement_officer"
+        ).first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Job placement officer not found")
+        
+        jpo_profile = db.query(JobPlacementOfficer).filter(
+            JobPlacementOfficer.user_id == user_id
+        ).first()
+        
+        if not jpo_profile:
+            raise HTTPException(status_code=404, detail="Job placement officer profile not found")
+        
+        # Update User fields
+        if 'email_address' in jpo_data:
+            # Check if new email already exists
+            existing = db.query(User).filter(
+                User.email_address == jpo_data['email_address'],
+                User.user_id != user_id
+            ).first()
+            if existing:
+                raise HTTPException(status_code=400, detail="Email already exists")
+            user.email_address = jpo_data['email_address']
+        
+        if 'status' in jpo_data:
+            jpo_profile.status = jpo_data['status']
+        
+        # Update JobPlacementOfficer profile fields
+        if 'first_name' in jpo_data:
+            jpo_profile.first_name = jpo_data['first_name']
+        if 'last_name' in jpo_data:
+            jpo_profile.last_name = jpo_data['last_name']
+        if 'contact_number' in jpo_data:
+            jpo_profile.contact_number = jpo_data['contact_number']
+        if 'position_title' in jpo_data:
+            jpo_profile.position_title = jpo_data['position_title']
+        if 'campus_id' in jpo_data:
+            jpo_profile.campus_id = jpo_data['campus_id']
+        
+        jpo_profile.updated_at = utcnow()
+        
+        db.commit()
+        db.refresh(user)
+        
+        return {
+            "status": "SUCCESS",
+            "data": {
+                "user_id": user.user_id,
+                "message": "Job placement officer updated successfully"
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update job placement officer: {str(e)}"
+        )
+
+
+# ============= OJT HEAD =============
+@router.get("/ojt-heads")
+async def get_all_ojt_heads(
+    pageNo: int = 1,
+    pageSize: int = 10,
+    keyword: str = "",
+    campus_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get all OJT heads (superadmin only)"""
+    from controllers import ojt_head_controller
+    return ojt_head_controller.get_all_ojt_heads(db, pageNo, pageSize, keyword, campus_id)
+
+
+@router.post("/ojt-heads/register", status_code=status.HTTP_201_CREATED)
+async def register_ojt_head(
+    ojt_head_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Register a new OJT head (superadmin only)"""
+    from controllers import ojt_head_controller
+    from schemas.ojt_head import OJTHeadCreate
+    ojt_head = OJTHeadCreate(**ojt_head_data)
+    return ojt_head_controller.register_ojt_head(ojt_head, db)
+
+
+@router.patch("/ojt-heads/{user_id}")
+async def update_ojt_head(
+    user_id: int,
+    ojt_head_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Update an OJT head (superadmin only)"""
+    from controllers import ojt_head_controller
+    from schemas.ojt_head import OJTHeadUpdate
+    ojt_head = OJTHeadUpdate(**ojt_head_data)
+    return ojt_head_controller.update_ojt_head(user_id, ojt_head, db)
+
+
+@router.post("/ojt-heads/{user_id}/send-new-password")
+async def send_new_password_ojt_head(
+    user_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Send new password to OJT head (superadmin only)"""
+    from controllers import ojt_head_controller
+    return ojt_head_controller.send_new_password(user_id, db)
+
+
+# ============= OJT COORDINATORS =============
+@router.get("/ojt-coordinators")
+async def get_all_ojt_coordinators(
+    pageNo: int = 1,
+    pageSize: int = 10,
+    keyword: str = "",
+    campus_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get all OJT coordinators (superadmin only)"""
+    from controllers import ojt_coordinator_controller
+    # Superadmin can see all coordinators across all campuses
+    return ojt_coordinator_controller.get_all_ojt_coordinators_for_superadmin(db, pageNo, pageSize, keyword, campus_id)
+
+
+@router.post("/ojt-coordinators/register", status_code=status.HTTP_201_CREATED)
+async def register_ojt_coordinator(
+    coordinator_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Register a new OJT coordinator (superadmin only)"""
+    from models import User, OJTCoordinator, Campus, Department
+    from utils.datetime_helper import utcnow
+    import bcrypt
+    import secrets
+    import string
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    try:
+        # Check if email already exists
+        existing_user = db.query(User).filter(
+            User.email_address == coordinator_data['email_address']
+        ).first()
+        
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address already exists"
+            )
+        
+        # Check if campus exists
+        campus = db.query(Campus).filter(
+            Campus.campus_id == coordinator_data['campus_id']
+        ).first()
+        if not campus:
+            raise HTTPException(status_code=404, detail="Campus not found")
+        
+        # Check if department exists
+        department = db.query(Department).filter(
+            Department.department_id == coordinator_data['department_id']
+        ).first()
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
+        
+        # Generate random password
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        temp_password = ''.join(secrets.choice(characters) for _ in range(12))
+        temp_password = temp_password[:72]  # BCrypt limit
+        
+        # Hash password
+        hashed_password = bcrypt.hashpw(
+            temp_password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        
+        # Create new user
+        new_user = User(
+            email_address=coordinator_data['email_address'],
+            password=hashed_password,
+            role="ojt_coordinator",
+            created_at=utcnow(),
+            updated_at=utcnow()
+        )
+        
+        db.add(new_user)
+        db.flush()
+        
+        # Create OJT Coordinator profile
+        new_coordinator = OJTCoordinator(
+            user_id=new_user.user_id,
+            first_name=coordinator_data['first_name'],
+            last_name=coordinator_data['last_name'],
+            contact_number=coordinator_data.get('contact_number'),
+            position_title=coordinator_data.get('position_title'),
+            campus_id=coordinator_data['campus_id'],
+            department_id=coordinator_data['department_id'],
+            status="active"
+        )
+        db.add(new_coordinator)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Send email with temporary password
+        try:
+            email_body = f"""Hello {coordinator_data['first_name']} {coordinator_data['last_name']},
+
+You have been registered as an OJT Coordinator in the ILEAP System.
+
+Email: {coordinator_data['email_address']}
+Temporary Password: {temp_password}
+
+Please login and change your password immediately for security.
+
+Best regards,
+ILEAP System"""
+            
+            msg = MIMEMultipart()
+            msg['From'] = os.getenv("EMAIL_USER")
+            msg['To'] = coordinator_data['email_address']
+            msg['Subject'] = "OJT Coordinator Account - ILEAP System"
+            msg.attach(MIMEText(email_body, 'plain'))
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+            server.send_message(msg)
+            server.quit()
+        except Exception as email_error:
+            print(f"Failed to send email: {email_error}")
+            # Don't fail the registration if email fails
+        
+        return {
+            "status": "SUCCESS",
+            "data": {
+                "user_id": new_user.user_id,
+                "email_address": new_user.email_address
+            },
+            "message": "OJT coordinator registered successfully. Temporary password sent to email."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to register OJT coordinator: {str(e)}"
+        )
+
+
+@router.patch("/ojt-coordinators/{user_id}")
+async def update_ojt_coordinator(
+    user_id: int,
+    coordinator_data: dict,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Update an OJT coordinator (superadmin only)"""
+    from controllers import ojt_coordinator_controller
+    from schemas.ojt_coordinator import OJTCoordinatorUpdate
+    coordinator = OJTCoordinatorUpdate(**coordinator_data)
+    return ojt_coordinator_controller.update_ojt_coordinator_superadmin(user_id, coordinator, db)

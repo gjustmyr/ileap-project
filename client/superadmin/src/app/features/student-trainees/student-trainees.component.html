@@ -11,14 +11,14 @@
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="flex gap-4 mb-2">
       <!-- Campus Filter -->
       <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Campus
         </label>
         <select
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
           [(ngModel)]="selectedCampusId"
         >
           <option value="">All Campuses</option>
@@ -30,7 +30,7 @@
       </div>
 
       <!-- Search Box -->
-      <div class="lg:col-span-3">
+      <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Search
         </label>
@@ -38,7 +38,7 @@
           type="text"
           [(ngModel)]="keyword"
           placeholder="Search by name, SR code, or email"
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
         />
       </div>
     </div>
@@ -62,7 +62,7 @@
     <div class="card poppins-regular text-sm">
       <!-- Table -->
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse border border-gray-300">
+        <table class="w-full border-collapse border border-gray-300 text-xs">
           <thead>
             <tr class="bg-white text-sm poppins-medium">
               <td
@@ -137,7 +137,7 @@
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 <button
-                  class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-sm rounded cursor-pointer"
+                  class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-xs rounded cursor-pointer"
                   (click)="
                     handleSendNewPassword(student.user_id, student.email)
                   "

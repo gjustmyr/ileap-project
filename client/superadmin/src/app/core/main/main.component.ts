@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-main',
@@ -11,37 +12,83 @@ import { CommonModule } from '@angular/common';
   standalone: true,
 })
 export class MainComponent implements OnInit {
-  dateTime: string = '';
   userEmail: string = '';
   userName: string = 'Super Admin';
   isUserDropdownOpen: boolean = false;
+  currentDateTime: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.loadUserInfo();
+    this.startClock();
+  }
 
+  startClock(): void {
+    // Update time immediately
+    this.updateDateTime();
+    
+    // Update every second
     setInterval(() => {
-      const now = new Date();
-
-      const time = now.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true,
-      });
-
-      const date = now.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-
-      this.dateTime = `${date}, ${time}`;
+      this.updateDateTime();
     }, 1000);
   }
 
+  updateDateTime(): void {
+    const now = new Date();
+    
+    // Format time (12-hour format with AM/PM)
+    const time = now.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    // Format date
+    const date = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+
+    this.currentDateTime = `${time} - ${date}`;
+  }
+
   loadUserInfo(): void {
+    // Try to get user profile from API first
+    this.authService.getUserProfile().subscribe({
+      next: (response: any) => {
+        if (response.success && response.data) {
+          const userData = response.data;
+          this.userEmail = userData.email || '';
+          
+          // Use full_name if available, otherwise construct from first/last name
+          if (userData.full_name) {
+            this.userName = userData.full_name;
+          } else if (userData.first_name && userData.last_name) {
+            this.userName = `${userData.first_name} ${userData.last_name}`;
+          } else if (userData.first_name) {
+            this.userName = userData.first_name;
+          } else {
+            // Fallback to email-based name extraction
+            this.extractNameFromEmail();
+          }
+        } else {
+          // Fallback to email-based name extraction
+          this.extractNameFromEmail();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load user profile:', error);
+        // Fallback to email-based name extraction
+        this.extractNameFromEmail();
+      }
+    });
+  }
+
+  private extractNameFromEmail(): void {
     this.userEmail = sessionStorage.getItem('user_email') || '';
 
     // Extract name from email (before @)

@@ -11,14 +11,14 @@
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div class="flex gap-4 mb-2">
       <!-- Campus Filter -->
       <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Campus
         </label>
         <select
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
           [(ngModel)]="selectedCampusId"
         >
           <option value="">All Campuses</option>
@@ -38,34 +38,45 @@
           type="text"
           [(ngModel)]="keyword"
           placeholder="Search by name or email"
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
         />
       </div>
     </div>
 
     <!-- Filter Action Buttons -->
-    <div class="flex gap-3 mb-6">
-      <button
+    <div class="flex gap-3 mb-6 justify-between">
+     <div class="flex gap-3">
+       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
+        [disabled]="isLoading"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Apply Filters
       </button>
       <button
         (click)="resetFilters()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        [disabled]="isLoading"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Reset
       </button>
+     </div>
       <button
         (click)="handleAddDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
+        [disabled]="isLoading"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Add JPO
+      <i class="pi pi-plus"></i>
+        Add JP Officer
       </button>
     </div>
 
-    <div class="card poppins-regular text-sm">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    </div>
+
+    <div *ngIf="!isLoading" class="card poppins-regular text-sm">
       <!-- Table -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse border border-gray-300">
@@ -109,45 +120,45 @@
               class="transition-colors duration-200 hover:bg-gray-200"
             >
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 {{ jpo.campus_name }}
               </td>
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 {{ jpo.last_name }}, {{ jpo.first_name }}
               </td>
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 {{ jpo.email_address }}
               </td>
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 {{ jpo.contact_number }}
               </td>
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 {{ jpo.position_title }}
               </td>
               <td
-                class="border border-gray-300 px-4 py-2"
+                class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 <button
-                  class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                  class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
                   (click)="handleUpdateDialog(jpo.user_id)"
                   title="Edit Job Placement Officer"
                 >
-                  <i class="pi pi-pencil"></i>
+                  <i class="pi pi-pencil text-xs"></i>
                 </button>
               </td>
             </tr>
@@ -197,7 +208,7 @@
   <!-- Add/Edit JPO Modal -->
   <div
     *ngIf="showDialog"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center"
   >
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md z-10 relative">
       <!-- Header -->
@@ -220,8 +231,18 @@
       </div>
 
       <!-- Body -->
-      <div class="px-6 py-4">
+      <div class="px-6 py-4 max-h-96 overflow-y-auto">
         <form [formGroup]="jpoForm" class="space-y-4">
+          <!-- Info message (only show on add) -->
+          <div
+            *ngIf="!isEditMode"
+            class="bg-blue-50 border border-blue-200 rounded p-3 text-xs poppins-regular text-blue-800"
+          >
+            <i class="pi pi-info-circle mr-1"></i>
+            A temporary password will be auto-generated and sent to the email
+            address provided.
+          </div>
+
           <!-- Email -->
           <div>
             <label class="block text-sm text-gray-700 mb-1 poppins-medium">
@@ -232,19 +253,6 @@
               formControlName="email_address"
               class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
               placeholder="Enter email address"
-            />
-          </div>
-
-          <!-- Password (only show on add) -->
-          <div *ngIf="!isEditMode">
-            <label class="block text-sm text-gray-700 mb-1 poppins-medium">
-              Password <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="password"
-              formControlName="password"
-              class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
-              placeholder="Enter password"
             />
           </div>
 
@@ -340,16 +348,18 @@
       <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
         <button
           (click)="closeDialog()"
-          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+          [disabled]="isSubmitting"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           (click)="handleSubmit()"
-          [disabled]="jpoForm.invalid"
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="jpoForm.invalid || isSubmitting"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          {{ isEditMode ? "Update" : "Add" }}
+          <span *ngIf="isSubmitting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          {{ isSubmitting ? 'Processing...' : (isEditMode ? "Update" : "Add") }}
         </button>
       </div>
     </div>

@@ -48,7 +48,7 @@ export class OjtCoordinatorComponent implements OnInit {
   filteredCoordinators: OjtCoordinator[] = [];
   campuses: Campus[] = [];
   departments: Department[] = [];
-  
+
   selectedCampusId: number | string = '';
   selectedDepartmentId: number | string = '';
   keyword: string = '';
@@ -61,7 +61,10 @@ export class OjtCoordinatorComponent implements OnInit {
 
   selectedCoordinator: OjtCoordinator | null = null;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+  ) {
     this.coordinatorUpdateForm = this.fb.group({
       email_address: ['', [Validators.required, Validators.email]],
       first_name: ['', Validators.required],
@@ -104,37 +107,43 @@ export class OjtCoordinatorComponent implements OnInit {
   }
 
   loadCampuses(): void {
-    this.http.get<any>(`${environment.apiUrl}/superadmin/campuses?pageSize=1000`).subscribe({
-      next: (response) => {
-        this.campuses = response?.data?.campuses || [];
-      },
-      error: (error) => {
-        console.error('Error loading campuses:', error);
-      },
-    });
+    this.http
+      .get<any>(`${environment.apiUrl}/superadmin/campuses?pageSize=1000`)
+      .subscribe({
+        next: (response) => {
+          this.campuses = response?.data?.campuses || [];
+        },
+        error: (error) => {
+          console.error('Error loading campuses:', error);
+        },
+      });
   }
 
   getDepartmentsByCampus(campusId: number): void {
-    this.http.get<any>(`${environment.apiUrl}/superadmin/departments?campus_id=${campusId}&pageSize=1000`).subscribe({
-      next: (response) => {
-        this.departments = response?.data?.departments || [];
-      },
-      error: (error) => {
-        console.error('Error loading departments:', error);
-        this.departments = [];
-      },
-    });
+    this.http
+      .get<any>(
+        `${environment.apiUrl}/superadmin/departments?campus_id=${campusId}&pageSize=1000`,
+      )
+      .subscribe({
+        next: (response) => {
+          this.departments = response?.data?.departments || [];
+        },
+        error: (error) => {
+          console.error('Error loading departments:', error);
+          this.departments = [];
+        },
+      });
   }
 
   onCampusFilterChange(event: any): void {
     this.selectedCampusId = event?.target?.value || '';
-    
+
     if (this.selectedCampusId) {
       this.getDepartmentsByCampus(parseInt(this.selectedCampusId as string));
     } else {
       this.departments = [];
     }
-    
+
     this.selectedDepartmentId = '';
   }
 
@@ -162,11 +171,21 @@ export class OjtCoordinatorComponent implements OnInit {
     this.filteredCoordinators = this.ojtCoordinators.filter((coordinator) => {
       const matchesKeyword =
         !this.keyword ||
-        (coordinator.first_name || '').toLowerCase().includes(this.keyword.toLowerCase()) ||
-        (coordinator.last_name || '').toLowerCase().includes(this.keyword.toLowerCase()) ||
-        (coordinator.email_address || '').toLowerCase().includes(this.keyword.toLowerCase()) ||
-        (coordinator.campus_name || '').toLowerCase().includes(this.keyword.toLowerCase()) ||
-        (coordinator.department_name || '').toLowerCase().includes(this.keyword.toLowerCase());
+        (coordinator.first_name || '')
+          .toLowerCase()
+          .includes(this.keyword.toLowerCase()) ||
+        (coordinator.last_name || '')
+          .toLowerCase()
+          .includes(this.keyword.toLowerCase()) ||
+        (coordinator.email_address || '')
+          .toLowerCase()
+          .includes(this.keyword.toLowerCase()) ||
+        (coordinator.campus_name || '')
+          .toLowerCase()
+          .includes(this.keyword.toLowerCase()) ||
+        (coordinator.department_name || '')
+          .toLowerCase()
+          .includes(this.keyword.toLowerCase());
 
       const matchesCampus =
         !this.selectedCampusId ||
@@ -174,7 +193,8 @@ export class OjtCoordinatorComponent implements OnInit {
 
       const matchesDepartment =
         !this.selectedDepartmentId ||
-        coordinator.department_id?.toString() === this.selectedDepartmentId.toString();
+        coordinator.department_id?.toString() ===
+          this.selectedDepartmentId.toString();
 
       return matchesKeyword && matchesCampus && matchesDepartment;
     });
@@ -200,11 +220,11 @@ export class OjtCoordinatorComponent implements OnInit {
       department_id: coordinator.department_id,
       status: coordinator.status,
     });
-    
+
     if (coordinator.campus_id) {
       this.getDepartmentsByCampus(coordinator.campus_id);
     }
-    
+
     this.isUpdateDialogVisible = true;
   }
 
@@ -213,7 +233,7 @@ export class OjtCoordinatorComponent implements OnInit {
       this.http
         .put(
           `${environment.apiUrl}/ojt-coordinators/${this.selectedCoordinator.user_id}`,
-          this.coordinatorUpdateForm.value
+          this.coordinatorUpdateForm.value,
         )
         .subscribe({
           next: () => {
@@ -240,13 +260,15 @@ export class OjtCoordinatorComponent implements OnInit {
       this.http
         .post(
           `${environment.apiUrl}/ojt-coordinators/send-account`,
-          this.sendAccountForm.value
+          this.sendAccountForm.value,
         )
         .subscribe({
           next: () => {
             this.isSendAccountDialogVisible = false;
             this.loadOjtCoordinators();
-            alert('Account credentials sent successfully to the OJT coordinator');
+            alert(
+              'Account credentials sent successfully to the OJT coordinator',
+            );
           },
           error: (error) => {
             console.error('Error sending account:', error);
@@ -265,11 +287,14 @@ export class OjtCoordinatorComponent implements OnInit {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, send it!',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
         this.http
-          .post(`${environment.apiUrl}/superadmin/ojt-coordinators/${userId}/send-new-password`, {})
+          .post(
+            `${environment.apiUrl}/superadmin/ojt-coordinators/${userId}/send-new-password`,
+            {},
+          )
           .subscribe({
             next: () => {
               Swal.fire({
@@ -277,7 +302,7 @@ export class OjtCoordinatorComponent implements OnInit {
                 title: 'Password Sent!',
                 text: 'A new password has been sent successfully',
                 timer: 2000,
-                showConfirmButton: false
+                showConfirmButton: false,
               });
             },
             error: (error) => {
@@ -285,7 +310,7 @@ export class OjtCoordinatorComponent implements OnInit {
               Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to send new password. Please try again.'
+                text: 'Failed to send new password. Please try again.',
               });
             },
           });

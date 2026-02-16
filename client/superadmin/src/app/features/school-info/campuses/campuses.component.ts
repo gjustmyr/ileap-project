@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { CampusesService } from './campuses.service';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
@@ -31,6 +31,8 @@ import Swal from 'sweetalert2';
   styleUrl: './campuses.component.css',
 })
 export class CampusesComponent {
+  @Output() viewDepartmentsEvent = new EventEmitter<{campusId: string, campusName: string}>();
+
   //Datasets
   campuses: any[] = [];
   mainCampuses: any[] = [];
@@ -348,5 +350,9 @@ export class CampusesComponent {
         });
       }
     });
+  }
+
+  viewDepartments(campusId: string, campusName: string): void {
+    this.viewDepartmentsEvent.emit({ campusId, campusName });
   }
 }

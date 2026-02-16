@@ -60,4 +60,12 @@ export class DropdownsService {
   /**
    * 🆕 Optional: Get departments by campus ID
    */
+  
+  getDepartments(): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({
+      Authorization: token as string,
+    });
+    return this.http.get(`${this.baseURL}/dropdown/departments`, { headers });
+  }
 }

@@ -9,7 +9,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 gap-4 mb-6">
+    <div class="flex gap-4 mb-2">
       <!-- Search Box -->
       <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
@@ -19,7 +19,7 @@
           type="text"
           [(ngModel)]="keyword"
           placeholder="Search by name, SR code, or email"
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
         />
       </div>
     </div>
@@ -37,12 +37,6 @@
         class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
       >
         Reset
-      </button>
-      <button
-        (click)="handleAddDialog()"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
-      >
-        Add Alumni
       </button>
     </div>
 
@@ -187,7 +181,7 @@
   <!-- Add/Edit Alumni Modal -->
   <div
     *ngIf="showDialog"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center"
   >
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md z-10 relative">
       <!-- Header -->
@@ -206,7 +200,7 @@
       </div>
 
       <!-- Body -->
-      <div class="px-6 py-4">
+      <div class="px-6 py-4 max-h-96 overflow-y-auto">
         <form [formGroup]="alumniForm" class="space-y-4">
           <!-- SR Code -->
           <div>

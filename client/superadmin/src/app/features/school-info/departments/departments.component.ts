@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import {
@@ -39,7 +39,11 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
   templateUrl: './departments.component.html',
   styleUrl: './departments.component.css',
 })
-export class DepartmentsComponent {
+export class DepartmentsComponent implements OnChanges {
+  @Input() campusId?: string;
+  @Input() campusName?: string;
+  @Output() viewProgramsEvent = new EventEmitter<{departmentId: string, departmentName: string}>();
+
   departments: any[] = [];
   currentCampusId!: number;
   currentCampusName: string = '';
@@ -87,16 +91,36 @@ export class DepartmentsComponent {
   }
 
   ngOnInit(): void {
-    // Get campus_id and campus_name from query params
-    this.route.queryParams.subscribe(params => {
-      console.log('Query params:', params);
-      this.currentCampusId = +params['campusId'];
-      this.currentCampusName = params['campusName'] || '';
-      console.log('Current Campus ID:', this.currentCampusId);
-      console.log('Current Campus Name:', this.currentCampusName);
+    // Check if campusId and campusName are provided as Input properties
+    if (this.campusId && this.campusName) {
+      this.currentCampusId = +this.campusId;
+      this.currentCampusName = this.campusName;
       this.getAllDepartments();
       this.loadAvailableDeans();
-    });
+    } else {
+      // Fall back to query params for backward compatibility
+      this.route.queryParams.subscribe(params => {
+        console.log('Query params:', params);
+        this.currentCampusId = +params['campusId'];
+        this.currentCampusName = params['campusName'] || '';
+        console.log('Current Campus ID:', this.currentCampusId);
+        console.log('Current Campus Name:', this.currentCampusName);
+        this.getAllDepartments();
+        this.loadAvailableDeans();
+      });
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Handle changes to Input properties
+    if ((changes['campusId'] || changes['campusName']) && !changes['campusId']?.firstChange) {
+      if (this.campusId && this.campusName) {
+        this.currentCampusId = +this.campusId;
+        this.currentCampusName = this.campusName;
+        this.getAllDepartments();
+        this.loadAvailableDeans();
+      }
+    }
   }
 
   loadAvailableDeans(): void {
@@ -467,5 +491,9 @@ export class DepartmentsComponent {
         });
       }
     });
+  }
+
+  viewPrograms(departmentId: string, departmentName: string): void {
+    this.viewProgramsEvent.emit({ departmentId, departmentName });
   }
 }

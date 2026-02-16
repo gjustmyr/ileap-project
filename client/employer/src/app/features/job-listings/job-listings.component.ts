@@ -258,9 +258,9 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import Swal from 'sweetalert2';
 
-import { TableModule } from 'primeng/table';
-import { CommonModule } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { DropdownModule } from 'primeng/dropdown';
 import { DatePickerModule } from 'primeng/datepicker';
 import { EditorModule } from 'primeng/editor';
@@ -276,7 +276,6 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    TableModule,
     DropdownModule,
     DatePickerModule,
     ChipsModule,
@@ -329,6 +328,7 @@ export class JobListingsComponent implements OnInit {
     this.fetchEmployerEligibility();
     this.fetchIndustries();
     this.fetchSkills();
+    this.fetchInternships(); // Fetch internships on initialization
 
     this.internshipForm = this.fb.group({
       title: ['', Validators.required],
@@ -578,6 +578,40 @@ export class JobListingsComponent implements OnInit {
     this.fetchInternships();
   }
 
+  // New pagination methods for standard HTML table
+  getPaginatedInternships(): any[] {
+    // Backend already returns paginated data, so just return the internships array
+    return this.internships;
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  getShowingStart(): number {
+    if (this.totalRecords === 0) return 0;
+    return this.pageNo * this.pageSize + 1;
+  }
+
+  getShowingEnd(): number {
+    const end = (this.pageNo + 1) * this.pageSize;
+    return Math.min(end, this.totalRecords);
+  }
+
+  previousPage(): void {
+    if (this.pageNo > 0) {
+      this.pageNo--;
+      this.fetchInternships();
+    }
+  }
+
+  nextPage(): void {
+    if (this.pageNo < this.getTotalPages() - 1) {
+      this.pageNo++;
+      this.fetchInternships();
+    }
+  }
+
   fetchInternships(): void {
     this.isLoading = true;
 
@@ -585,34 +619,8 @@ export class JobListingsComponent implements OnInit {
       .getAllInternships(this.pageNo + 1, this.pageSize, this.keyword)
       .subscribe({
         next: (res) => {
-          let internships = res.data;
-
-          if (this.sortField) {
-            internships = [...internships].sort((a, b) => {
-              const valA = a[this.sortField];
-              const valB = b[this.sortField];
-
-              if (valA == null && valB == null) return 0;
-              if (valA == null) return 1;
-              if (valB == null) return -1;
-
-              return typeof valA === 'string'
-                ? this.sortOrder === 1
-                  ? valA.localeCompare(valB)
-                  : valB.localeCompare(valA)
-                : this.sortOrder === 1
-                ? valA > valB
-                  ? 1
-                  : -1
-                : valA < valB
-                ? 1
-                : -1;
-            });
-          }
-
-          this.internships = internships;
-          this.totalRecords =
-            res.pagination?.totalRecords || internships.length;
+          this.internships = res.data || [];
+          this.totalRecords = res.pagination?.totalRecords || res.data?.length || 0;
           this.isLoading = false;
         },
         error: (err) => {
@@ -638,5 +646,110 @@ export class JobListingsComponent implements OnInit {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  }
+
+  deleteInternship(internship: any): void {
+    Swal.fire({
+      title: 'Delete Draft?',
+      text: `Are you sure you want to delete "${internship.title}"? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.jobService.deleteInternship(internship.internship_id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Draft deleted successfully',
+            });
+            this.showViewDialog = false;
+            this.fetchInternships();
+          },
+          error: (err: any) => {
+            console.error('Error deleting internship:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err?.error?.detail || 'Failed to delete draft',
+            });
+          },
+        });
+      }
+    });
+  }
+
+  submitForApproval(internship: any): void {
+    const action = internship.status === 'rejected' ? 'Resubmit' : 'Submit';
+    Swal.fire({
+      title: `${action} for Approval?`,
+      text: `Are you sure you want to ${action.toLowerCase()} "${internship.title}" for OJT Head approval?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: `Yes, ${action.toLowerCase()} it!`,
+      cancelButtonText: 'Cancel',
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.changeStatus('pending');
+      }
+    });
+  }
+
+  closeInternship(internship: any): void {
+    Swal.fire({
+      title: 'Close Posting?',
+      text: `Are you sure you want to close "${internship.title}"? Students will no longer be able to apply.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f97316',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, close it!',
+      cancelButtonText: 'Cancel',
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.changeStatus('closed');
+      }
+    });
+  }
+
+  reopenInternship(internship: any): void {
+    Swal.fire({
+      title: 'Reopen Posting?',
+      text: `Are you sure you want to reopen "${internship.title}"? Students will be able to apply again.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, reopen it!',
+      cancelButtonText: 'Cancel',
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.changeStatus('open');
+      }
+    });
+  }
+
+  confirmEdit(internship: any): void {
+    Swal.fire({
+      title: 'Edit Internship?',
+      text: `Do you want to edit "${internship.title}"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, edit it!',
+      cancelButtonText: 'Cancel',
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.showViewDialog = false;
+        this.editInternship(internship);
+      }
+    });
   }
 }

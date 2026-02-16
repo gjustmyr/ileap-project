@@ -20,7 +20,7 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   loading: boolean = false;
-  returnUrl: string = '/superadmin/school-information';
+  returnUrl: string = '/superadmin/job-placement';
 
   constructor(
     private fb: FormBuilder,

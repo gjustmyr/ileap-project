@@ -5,8 +5,8 @@ class SuperAdminCreate(BaseModel):
     email_address: EmailStr
     first_name: str
     last_name: str
-    contact_number: str
-    position_title: str
+    contact_number: str = None
+    position_title: str = None
     admin_key: str
 
 

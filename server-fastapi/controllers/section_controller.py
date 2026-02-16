@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from models import Section, Program, Major
+from models import Section, Program
 from schemas.section import SectionCreate, SectionUpdate
 from sqlalchemy import or_
 import math
 
 
-def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: int = None, major_id: int = None, db: Session = None):
+def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: int = None, db: Session = None):
     """Get all sections with pagination and filters"""
     try:
         offset = (pageNo - 1) * pageSize
@@ -16,10 +16,6 @@ def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: int =
         # Filter by program_id if provided
         if program_id:
             query = query.filter(Section.program_id == program_id)
-        
-        # Filter by major_id if provided
-        if major_id:
-            query = query.filter(Section.major_id == major_id)
         
         # Filter by keyword if provided
         if keyword:
@@ -35,18 +31,15 @@ def get_all_sections(pageNo: int, pageSize: int, keyword: str, program_id: int =
         # Get paginated results
         sections = query.offset(offset).limit(pageSize).all()
         
-        # Format response with program and major info
+        # Format response with program info
         section_list = []
         for section in sections:
             program = db.query(Program).filter(Program.program_id == section.program_id).first()
-            major = db.query(Major).filter(Major.major_id == section.major_id).first() if section.major_id else None
             
             section_list.append({
                 "section_id": section.section_id,
                 "program_id": section.program_id,
                 "program_name": program.program_name if program else None,
-                "major_id": section.major_id,
-                "major_name": major.major_name if major else None,
                 "year_level": section.year_level,
                 "section_name": section.section_name,
                 "status": section.status,
@@ -88,20 +81,9 @@ def add_section(section_data: SectionCreate, db: Session):
                 "message": "Program not found"
             }
         
-        # Check if major exists (if provided)
-        if section_data.major_id:
-            major = db.query(Major).filter(Major.major_id == section_data.major_id).first()
-            if not major:
-                return {
-                    "success": False,
-                    "data": None,
-                    "message": "Major not found"
-                }
-        
         # Create new section
         new_section = Section(
             program_id=section_data.program_id,
-            major_id=section_data.major_id,
             year_level=section_data.year_level,
             section_name=section_data.section_name,
             status=section_data.status
@@ -116,7 +98,6 @@ def add_section(section_data: SectionCreate, db: Session):
             "data": {
                 "section_id": new_section.section_id,
                 "program_id": new_section.program_id,
-                "major_id": new_section.major_id,
                 "year_level": new_section.year_level,
                 "section_name": new_section.section_name,
                 "status": new_section.status
@@ -146,7 +127,6 @@ def get_section_by_id(section_id: int, db: Session):
             }
         
         program = db.query(Program).filter(Program.program_id == section.program_id).first()
-        major = db.query(Major).filter(Major.major_id == section.major_id).first() if section.major_id else None
         
         return {
             "success": True,
@@ -154,8 +134,6 @@ def get_section_by_id(section_id: int, db: Session):
                 "section_id": section.section_id,
                 "program_id": section.program_id,
                 "program_name": program.program_name if program else None,
-                "major_id": section.major_id,
-                "major_name": major.major_name if major else None,
                 "year_level": section.year_level,
                 "section_name": section.section_name,
                 "status": section.status
@@ -183,31 +161,25 @@ def update_section(section_id: int, section_data: SectionUpdate, db: Session):
                 "message": "Section not found"
             }
         
-        # Check if program exists
-        program = db.query(Program).filter(Program.program_id == section_data.program_id).first()
-        if not program:
-            return {
-                "success": False,
-                "data": None,
-                "message": "Program not found"
-            }
-        
-        # Check if major exists (if provided)
-        if section_data.major_id:
-            major = db.query(Major).filter(Major.major_id == section_data.major_id).first()
-            if not major:
+        # Check if program exists (if provided)
+        if section_data.program_id:
+            program = db.query(Program).filter(Program.program_id == section_data.program_id).first()
+            if not program:
                 return {
                     "success": False,
                     "data": None,
-                    "message": "Major not found"
+                    "message": "Program not found"
                 }
         
-        # Update section
-        section.program_id = section_data.program_id
-        section.major_id = section_data.major_id
-        section.year_level = section_data.year_level
-        section.section_name = section_data.section_name
-        section.status = section_data.status
+        # Update fields
+        if section_data.program_id is not None:
+            section.program_id = section_data.program_id
+        if section_data.year_level is not None:
+            section.year_level = section_data.year_level
+        if section_data.section_name is not None:
+            section.section_name = section_data.section_name
+        if section_data.status is not None:
+            section.status = section_data.status
         
         db.commit()
         db.refresh(section)
@@ -217,7 +189,6 @@ def update_section(section_id: int, section_data: SectionUpdate, db: Session):
             "data": {
                 "section_id": section.section_id,
                 "program_id": section.program_id,
-                "major_id": section.major_id,
                 "year_level": section.year_level,
                 "section_name": section.section_name,
                 "status": section.status
@@ -247,7 +218,7 @@ def toggle_section_status(section_id: int, db: Session):
             }
         
         # Toggle status
-        section.status = "active" if section.status == "inactive" else "inactive"
+        section.status = "inactive" if section.status == "active" else "active"
         
         db.commit()
         db.refresh(section)
@@ -258,7 +229,7 @@ def toggle_section_status(section_id: int, db: Session):
                 "section_id": section.section_id,
                 "status": section.status
             },
-            "message": f"Section {section.status} successfully"
+            "message": f"Section status changed to {section.status}"
         }
     except Exception as e:
         db.rollback()

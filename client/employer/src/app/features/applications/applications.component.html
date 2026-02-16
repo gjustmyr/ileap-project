@@ -203,16 +203,62 @@
                 {{ selectedApplication.student_email }}
               </p>
             </div>
+            <div *ngIf="selectedApplication.student_contact">
+              <p class="text-sm text-gray-600 poppins-medium">Contact Number</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_contact }}
+              </p>
+            </div>
+            <div *ngIf="selectedApplication.student_gender">
+              <p class="text-sm text-gray-600 poppins-medium">Gender</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_gender }}
+              </p>
+            </div>
+            <div *ngIf="selectedApplication.student_birthdate">
+              <p class="text-sm text-gray-600 poppins-medium">Birthdate</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_birthdate | date : "MMMM dd, yyyy" }}
+              </p>
+            </div>
             <div>
               <p class="text-sm text-gray-600 poppins-medium">Program</p>
               <p class="poppins-regular">
                 {{ selectedApplication.student_program }}
               </p>
             </div>
-            <div>
-              <p class="text-sm text-gray-600 poppins-medium">Applied Date</p>
+            <div *ngIf="selectedApplication.student_major">
+              <p class="text-sm text-gray-600 poppins-medium">Major</p>
               <p class="poppins-regular">
-                {{ selectedApplication.applied_at | date : "MMMM dd, yyyy" }}
+                {{ selectedApplication.student_major }}
+              </p>
+            </div>
+            <div *ngIf="selectedApplication.student_required_hours">
+              <p class="text-sm text-gray-600 poppins-medium">Required Hours</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_required_hours }} hours
+              </p>
+            </div>
+          </div>
+
+          <!-- Academic Info -->
+          <div class="mt-4 grid grid-cols-3 gap-4" *ngIf="selectedApplication.student_school_year">
+            <div>
+              <p class="text-sm text-gray-600 poppins-medium">School Year</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_school_year }}
+              </p>
+            </div>
+            <div *ngIf="selectedApplication.student_semester">
+              <p class="text-sm text-gray-600 poppins-medium">Semester</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_semester }}
+              </p>
+            </div>
+            <div *ngIf="selectedApplication.student_section">
+              <p class="text-sm text-gray-600 poppins-medium">Section</p>
+              <p class="poppins-regular">
+                {{ selectedApplication.student_section }}
               </p>
             </div>
           </div>
@@ -231,6 +277,14 @@
                 {{ skill }}
               </span>
             </div>
+          </div>
+
+          <!-- Applied Date -->
+          <div class="mt-4">
+            <p class="text-sm text-gray-600 poppins-medium">Applied Date</p>
+            <p class="poppins-regular">
+              {{ selectedApplication.applied_at | date : "MMMM dd, yyyy" }}
+            </p>
           </div>
         </div>
 

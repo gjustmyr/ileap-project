@@ -31,7 +31,12 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
   },
   {
-    path: 'main',
+    path: 'student-trainee',
     component: MainComponent,
+  },
+  {
+    path: 'main',
+    redirectTo: 'student-trainee',
+    pathMatch: 'full',
   },
 ];

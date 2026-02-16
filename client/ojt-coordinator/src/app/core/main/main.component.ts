@@ -44,6 +44,9 @@ import { RequirementsComponent } from '../../features/requirements/requirements.
 })
 export class MainComponent implements OnInit {
   dateTime: string = '';
+  currentDateTime: string = '';
+  userName: string = 'OJT Coordinator';
+  isUserDropdownOpen: boolean = false;
   activeTab: number = 1; // Default to Class Listing
 
   // Create Class Modal
@@ -85,6 +88,10 @@ export class MainComponent implements OnInit {
     this.loadClassList(); // Load existing classes
     this.applyClassListFilters();
     this.loadInternships(); // Load internship opportunities
+    this.loadUserInfo();
+    this.startClock();
+    
+    // Keep old dateTime for backward compatibility
     setInterval(() => {
       const now = new Date();
 
@@ -103,6 +110,58 @@ export class MainComponent implements OnInit {
 
       this.dateTime = `${date}, ${time}`;
     }, 1000);
+  }
+
+  startClock(): void {
+    // Update time immediately
+    this.updateDateTime();
+    
+    // Update every second
+    setInterval(() => {
+      this.updateDateTime();
+    }, 1000);
+  }
+
+  updateDateTime(): void {
+    const now = new Date();
+    
+    // Format time (12-hour format with AM/PM)
+    const time = now.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    // Format date
+    const date = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+
+    this.currentDateTime = `${time} - ${date}`;
+  }
+
+  loadUserInfo(): void {
+    const userEmail = sessionStorage.getItem('user_email') || '';
+
+    // Extract name from email (before @)
+    if (userEmail) {
+      const emailName = userEmail.split('@')[0];
+      this.userName =
+        emailName
+          .split('.')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ') || 'OJT Coordinator';
+    } else {
+      this.userName = 'OJT Coordinator';
+    }
+  }
+
+  toggleUserDropdown() {
+    this.isUserDropdownOpen = !this.isUserDropdownOpen;
   }
 
   loadProgramsByDepartment(): void {
@@ -154,6 +213,7 @@ export class MainComponent implements OnInit {
       semester: ['', Validators.required],
       program: ['', Validators.required],
       section: ['', Validators.required],
+      requiredHours: ['', [Validators.required, Validators.min(1)]],
       csvRequired: [false, Validators.requiredTrue],
     });
   }
@@ -297,6 +357,7 @@ export class MainComponent implements OnInit {
     formData.append('program', formValue.program);
     formData.append('section', formValue.section);
     formData.append('class_section', classSection);
+    formData.append('required_hours', formValue.requiredHours.toString());
     formData.append('students_csv', this.csvFile);
 
     const token = sessionStorage.getItem('auth_token');
@@ -315,7 +376,7 @@ export class MainComponent implements OnInit {
             title: 'Class Created',
             text:
               response.message ||
-              `Class ${classSection} has been created successfully!`,
+              `Class ${classSection} has been created successfully with ${formValue.requiredHours} required OJT hours!`,
           }).then(() => {
             this.showCreateClassModal = false;
             this.createClassForm.reset();
@@ -406,8 +467,7 @@ export class MainComponent implements OnInit {
   }
 
   logout() {
-    sessionStorage.removeItem('auth_token');
-    sessionStorage.removeItem('user_id');
+    this.isUserDropdownOpen = false;
     sessionStorage.clear();
     this.router.navigate(['/login']);
   }

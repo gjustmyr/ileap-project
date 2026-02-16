@@ -36,6 +36,8 @@ export class JobPlacementComponent implements OnInit {
   showDialog: boolean = false;
   isEditMode: boolean = false;
   selectedUserId: string | number = '';
+  isLoading: boolean = false;
+  isSubmitting: boolean = false;
 
   jpoForm!: FormGroup;
 
@@ -46,7 +48,6 @@ export class JobPlacementComponent implements OnInit {
   ) {
     this.jpoForm = this.fb.group({
       email_address: ['', [Validators.required, Validators.email]],
-      password: [''],
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
       contact_number: ['', [Validators.pattern(/^09\d{9}$/)]],
@@ -93,12 +94,11 @@ export class JobPlacementComponent implements OnInit {
     this.isEditMode = false;
     this.selectedUserId = '';
     this.jpoForm.reset({ status: 'active' });
-    this.jpoForm.get('password')?.setValidators([Validators.required]);
-    this.jpoForm.get('password')?.updateValueAndValidity();
     this.showDialog = true;
   }
 
   getAllJobPlacementOfficers(): void {
+    this.isLoading = true;
     this.jpoService.getAll(this.pageNo, this.pageSize, this.keyword).subscribe({
       next: (res) => {
         if (res && Array.isArray(res.data)) {
@@ -108,11 +108,13 @@ export class JobPlacementComponent implements OnInit {
           this.jpoList = [];
           this.totalRecords = 0;
         }
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading JPO:', err);
         this.jpoList = [];
         this.totalRecords = 0;
+        this.isLoading = false;
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -139,8 +141,6 @@ export class JobPlacementComponent implements OnInit {
             position_title: data.position_title,
             campus_id: data.campus_id,
           });
-          this.jpoForm.get('password')?.clearValidators();
-          this.jpoForm.get('password')?.updateValueAndValidity();
           this.showDialog = true;
         }
       },
@@ -174,15 +174,12 @@ export class JobPlacementComponent implements OnInit {
     }
 
     const formData = { ...this.jpoForm.value };
+    this.isSubmitting = true;
     
     if (this.isEditMode && this.selectedUserId) {
-      // Remove password if empty during update
-      if (!formData.password) {
-        delete formData.password;
-      }
-      
       this.jpoService.updateJPO(this.selectedUserId as string, formData).subscribe({
         next: (res) => {
+          this.isSubmitting = false;
           Swal.fire({
             icon: 'success',
             title: 'Success',
@@ -193,6 +190,7 @@ export class JobPlacementComponent implements OnInit {
           this.getAllJobPlacementOfficers();
         },
         error: (err) => {
+          this.isSubmitting = false;
           console.error('Failed to update JPO:', err);
           Swal.fire({
             icon: 'error',
@@ -203,14 +201,15 @@ export class JobPlacementComponent implements OnInit {
         },
       });
     } else {
-      // Create new JPO
+      // Create new JPO - password will be auto-generated on backend
       this.jpoService.registerJPO(formData).subscribe({
         next: (res) => {
+          this.isSubmitting = false;
           if (res?.status === 'SUCCESS') {
             Swal.fire({
               icon: 'success',
               title: 'Success',
-              text: 'JPO registered successfully!',
+              text: 'JPO registered successfully! A temporary password has been sent to their email.',
               confirmButtonColor: '#10b981'
             });
             this.closeDialog();
@@ -225,6 +224,7 @@ export class JobPlacementComponent implements OnInit {
           }
         },
         error: (err) => {
+          this.isSubmitting = false;
           console.error('Error creating JPO:', err);
           Swal.fire({
             icon: 'error',

@@ -1,22 +1,63 @@
 <div class="flex px-20 bg-gray-100 h-full">
   <div class="flex flex-col flex-1">
     <app-header></app-header>
-    <!-- Header Extras: Clock + Logout -->
+    <!-- Header Extras: Clock + User Dropdown -->
     <div
-      class="flex justify-end items-center gap-6 p-4 bg-white border-b border-gray-200"
+      class="flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200"
     >
       <!-- Real-time Clock -->
-      <div class="text-sm text-gray-600 poppins-medium">
-        {{ dateTime }}
+      <div class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+        <i class="pi pi-clock text-blue-500"></i>
+        <span>{{ dateTime }}</span>
       </div>
 
-      <!-- Logout Button -->
-      <button
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
-        (click)="logout()"
-      >
-        Logout
-      </button>
+      <!-- User Dropdown -->
+      <div class="relative">
+        <!-- User Dropdown Trigger -->
+        <button
+          (click)="toggleUserDropdown()"
+          class="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+        >
+          <i class="pi pi-user text-red-500"></i>
+          <span class="text-sm text-gray-700 poppins-medium">{{ profileData?.first_name || 'Student' }}</span>
+          <i class="pi pi-chevron-down text-xs text-gray-600"></i>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          *ngIf="isUserDropdownOpen"
+          class="absolute right-0 top-10 bg-white rounded shadow-lg border border-gray-200 w-64 z-50"
+        >
+          <!-- User Info -->
+          <div class="px-4 py-3 border-b border-gray-200">
+            <div class="text-xs text-gray-500 poppins-regular">Logged in as</div>
+            <div class="text-sm text-gray-700 poppins-medium mt-1">
+              {{ profileData?.first_name }} {{ profileData?.last_name }}
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              {{ profileData?.email }}
+            </div>
+          </div>
+
+          <!-- Menu Items -->
+          <div class="py-1">
+            <button
+              (click)="openEditProfile(); toggleUserDropdown()"
+              class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 poppins-regular flex items-center gap-2 cursor-pointer"
+            >
+              <i class="pi pi-user-edit"></i>
+              <span>Edit Profile</span>
+            </button>
+            <button
+              (click)="logout()"
+              class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 poppins-regular flex items-center gap-2 cursor-pointer"
+            >
+              <i class="pi pi-sign-out"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="flex-1 bg-white p-4">
@@ -87,7 +128,9 @@
           <!-- Left Column: Profile Image + Edit Button -->
           <div class="flex flex-col items-center gap-4">
             <img
-              [src]="profileData?.profile_picture || 'assets/img/default-avatar.jpg'"
+              [src]="
+                profileData?.profile_picture || 'assets/img/default-avatar.jpg'
+              "
               alt="Profile Image"
               class="w-36 h-36 rounded-full object-cover ring-2 ring-green-400 ring-offset-2 transition hover:grayscale"
             />
@@ -224,42 +267,69 @@
                 <p class="text-sm text-gray-700">{{ profileData.email }}</p>
               </div>
 
-              <hr class="my-3" *ngIf="profileData.contact_number || profileData.tel_no_present" />
+              <hr
+                class="my-3"
+                *ngIf="profileData.contact_number || profileData.tel_no_present"
+              />
 
               <div class="mb-4" *ngIf="profileData.contact_number">
                 <p class="uppercase tracking-wide text-[10px] text-gray-500">
                   Mobile Number
                 </p>
-                <p class="text-sm text-gray-700">{{ profileData.contact_number }}</p>
+                <p class="text-sm text-gray-700">
+                  {{ profileData.contact_number }}
+                </p>
               </div>
 
               <div class="mb-4" *ngIf="profileData.tel_no_present">
                 <p class="uppercase tracking-wide text-[10px] text-gray-500">
                   Telephone (Present)
                 </p>
-                <p class="text-sm text-gray-700">{{ profileData.tel_no_present }}</p>
+                <p class="text-sm text-gray-700">
+                  {{ profileData.tel_no_present }}
+                </p>
               </div>
 
               <div class="mb-4" *ngIf="profileData.present_address">
                 <p class="uppercase tracking-wide text-[10px] text-gray-500">
                   Address
                 </p>
-                <p class="text-sm text-gray-700">{{ profileData.present_address }}</p>
+                <p class="text-sm text-gray-700">
+                  {{ profileData.present_address }}
+                </p>
               </div>
 
-              <hr class="my-3" *ngIf="profileData.birthdate || profileData.age || profileData.sex" />
+              <hr
+                class="my-3"
+                *ngIf="
+                  profileData.birthdate || profileData.age || profileData.sex
+                "
+              />
 
-              <div class="grid grid-cols-3 gap-4 mb-4" *ngIf="profileData.birthdate || profileData.age || profileData.sex">
+              <div
+                class="grid grid-cols-3 gap-4 mb-4"
+                *ngIf="
+                  profileData.birthdate || profileData.age || profileData.sex
+                "
+              >
                 <div *ngIf="profileData.birthdate">
-                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Birthdate</p>
-                  <p class="text-sm text-gray-700">{{ profileData.birthdate }}</p>
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                    Birthdate
+                  </p>
+                  <p class="text-sm text-gray-700">
+                    {{ profileData.birthdate }}
+                  </p>
                 </div>
                 <div *ngIf="profileData.age">
-                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Age</p>
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                    Age
+                  </p>
                   <p class="text-sm text-gray-700">{{ profileData.age }}</p>
                 </div>
                 <div *ngIf="profileData.sex">
-                  <p class="uppercase tracking-wide text-[10px] text-gray-500">Gender</p>
+                  <p class="uppercase tracking-wide text-[10px] text-gray-500">
+                    Gender
+                  </p>
                   <p class="text-sm text-gray-700">{{ profileData.sex }}</p>
                 </div>
               </div>
@@ -334,7 +404,7 @@
                 <tr class="text-sm">
                   <td>{{ job.companyName }}</td>
                   <td>{{ job.position }}</td>
-                  <td>{{ job.dateApplied | date : "MMM dd, yyyy" }}</td>
+                  <td>{{ job.dateApplied | date: "MMM dd, yyyy" }}</td>
                   <td>
                     <span
                       class="px-2 py-1 text-sm rounded-full text-white"
@@ -342,7 +412,7 @@
                         'bg-yellow-500':
                           job.status === 'Pending' || job.status === 'Reviewed',
                         'bg-green-500': job.status === 'Accepted',
-                        'bg-red-500': job.status === 'Rejected'
+                        'bg-red-500': job.status === 'Rejected',
                       }"
                     >
                       {{ job.status }}

@@ -30,13 +30,69 @@ def get_requirements_submissions(
     }
 
 
+@router.get("/student/{student_id}/class/{class_id}")
+def get_student_requirements_by_class(
+    student_id: int,
+    class_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all requirements for a specific student in a specific class"""
+    
+    # Verify access permissions
+    if current_user['role'] == 'student':
+        # Students can only view their own requirements
+        # First check if this student_id belongs to them
+        student = db.query(Student).filter(
+            Student.student_id == student_id,
+            Student.user_id == current_user['user_id']
+        ).first()
+        if not student:
+            raise HTTPException(status_code=403, detail="You can only view your own requirements")
+    elif current_user['role'] != 'ojt_coordinator':
+        raise HTTPException(status_code=403, detail="Unauthorized to view requirements")
+    
+    try:
+        # Query using ORM with class_id filter
+        submissions = db.query(RequirementSubmission).filter(
+            RequirementSubmission.student_id == student_id,
+            RequirementSubmission.class_id == class_id
+        ).order_by(RequirementSubmission.requirement_id).all()
+        
+        # Convert to list of dicts
+        requirements = []
+        for submission in submissions:
+            requirements.append({
+                "requirement_id": submission.requirement_id,
+                "class_id": submission.class_id,
+                "file_url": submission.file_url,
+                "status": submission.status,
+                "validated": submission.validated,
+                "returned": submission.returned,
+                "remarks": submission.remarks,
+                "submitted_at": submission.submitted_at.isoformat() if submission.submitted_at else None,
+                "validated_at": submission.validated_at.isoformat() if submission.validated_at else None
+            })
+        
+        return {
+            "status": "success",
+            "requirements": requirements
+        }
+    except Exception as e:
+        print(f"Error fetching requirements: {e}")
+        return {
+            "status": "success",
+            "requirements": []
+        }
+
+
 @router.get("/student/{student_id}")
 def get_student_requirements(
     student_id: int,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all requirements for a specific student"""
+    """Get all requirements for a specific student (legacy endpoint - returns all classes)"""
     
     # Verify access permissions
     if current_user['role'] == 'student':
@@ -62,6 +118,7 @@ def get_student_requirements(
         for submission in submissions:
             requirements.append({
                 "requirement_id": submission.requirement_id,
+                "class_id": submission.class_id,
                 "file_url": submission.file_url,
                 "status": submission.status,
                 "validated": submission.validated,
@@ -87,10 +144,11 @@ def get_student_requirements(
 async def upload_requirement(
     file: UploadFile = File(...),
     requirement_id: int = Form(...),
+    class_id: int = Form(...),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload a requirement file for a student"""
+    """Upload a requirement file for a student in a specific class"""
     
     if current_user['role'] != 'student':
         raise HTTPException(status_code=403, detail="Only students can upload requirements")
@@ -99,6 +157,37 @@ async def upload_requirement(
     student = db.query(Student).filter(Student.user_id == current_user['user_id']).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student record not found")
+    
+    # Verify student is enrolled in the specified class
+    from models import ClassEnrollment
+    enrollment = db.query(ClassEnrollment).filter(
+        ClassEnrollment.student_id == student.student_id,
+        ClassEnrollment.class_id == class_id,
+        ClassEnrollment.status == "active"
+    ).first()
+    
+    if not enrollment:
+        raise HTTPException(
+            status_code=403, 
+            detail="You are not enrolled in this class or enrollment is not active"
+        )
+    
+    # Verify the requirement is assigned to this class
+    from models import ClassRequirementTemplate, RequirementTemplate
+    class_requirement = db.query(ClassRequirementTemplate).join(
+        RequirementTemplate,
+        ClassRequirementTemplate.requirement_template_id == RequirementTemplate.template_id
+    ).filter(
+        ClassRequirementTemplate.class_id == class_id,
+        RequirementTemplate.requirement_id == requirement_id,
+        ClassRequirementTemplate.is_active == True
+    ).first()
+    
+    if not class_requirement:
+        raise HTTPException(
+            status_code=404, 
+            detail="This requirement is not assigned to your class"
+        )
     
     # Validate file type
     allowed_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
@@ -137,10 +226,11 @@ async def upload_requirement(
     try:
         print(f"📝 Attempting to save requirement {requirement_id} for student {student.student_id}")
         
-        # Check if submission already exists
+        # Check if submission already exists for this class
         existing = db.query(RequirementSubmission).filter(
             RequirementSubmission.student_id == student.student_id,
-            RequirementSubmission.requirement_id == requirement_id
+            RequirementSubmission.requirement_id == requirement_id,
+            RequirementSubmission.class_id == class_id
         ).first()
         
         if existing:
@@ -158,6 +248,7 @@ async def upload_requirement(
             print(f"➕ Creating new submission")
             new_submission = RequirementSubmission(
                 student_id=student.student_id,
+                class_id=class_id,
                 requirement_id=requirement_id,
                 file_url=file_url,
                 status='submitted',
