@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Table, Date, Numeric, Time
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Table, Date, Numeric, Time, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
+from utils.datetime_helper import utcnow as philippine_utcnow
 
 from database import Base
 
@@ -57,7 +58,43 @@ class User(Base):
 	force_password_change = Column(Boolean, default=False)
 
 
-class Campus(Base):
+class SuperAdminProfile(Base):
+	__tablename__ = "superadmin_profiles"
+
+	superadmin_id = Column(Integer, primary_key=True, index=True)
+	user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, unique=True)
+	first_name = Column(String(100), nullable=False)
+	last_name = Column(String(100), nullable=False)
+	contact_number = Column(String(20), nullable=True)
+	position_title = Column(String(100), nullable=True)
+	status = Column(String(8), default="active")
+	created_at = Column(DateTime, default=datetime.utcnow)
+	updated_at = Column(DateTime, default=datetime.utcnow)
+
+	# Relationship
+	user = relationship("User", backref="superadmin_profile")
+
+
+class JobPlacementOfficer(Base):
+	__tablename__ = "job_placement_officers"
+
+	jpo_id = Column(Integer, primary_key=True, index=True)
+	user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, unique=True)
+	campus_id = Column(Integer, ForeignKey("campuses.campus_id"), nullable=True)
+	first_name = Column(String(100), nullable=False)
+	last_name = Column(String(100), nullable=False)
+	contact_number = Column(String(20), nullable=True)
+	position_title = Column(String(100), nullable=True)
+	status = Column(String(8), default="active")
+	created_at = Column(DateTime, default=datetime.utcnow)
+	updated_at = Column(DateTime, default=datetime.utcnow)
+
+	# Relationships
+	user = relationship("User", backref="job_placement_officer")
+	campus = relationship("Campus", backref="job_placement_officers")
+
+
+class 	Campus(Base):
 	__tablename__ = "campuses"
 
 	campus_id = Column(Integer, primary_key=True, index=True)
@@ -209,23 +246,7 @@ class Program(Base):
 	updated_at = Column(DateTime, default=datetime.utcnow)
 
 	department = relationship("Department", back_populates="programs")
-	majors = relationship("Major", back_populates="program")
 	sections = relationship("Section", back_populates="program")
-
-
-class Major(Base):
-	__tablename__ = "majors"
-
-	major_id = Column(Integer, primary_key=True, index=True)
-	program_id = Column(Integer, ForeignKey("programs.program_id"), nullable=False)
-	major_name = Column(String(150), nullable=False)
-	abbrev = Column(String(20), nullable=True)
-	status = Column(String(8), default="active")
-	created_at = Column(DateTime, default=datetime.utcnow)
-	updated_at = Column(DateTime, default=datetime.utcnow)
-
-	program = relationship("Program", back_populates="majors")
-	sections = relationship("Section", back_populates="major")
 
 
 class Section(Base):
@@ -233,7 +254,6 @@ class Section(Base):
 
 	section_id = Column(Integer, primary_key=True, index=True)
 	program_id = Column(Integer, ForeignKey("programs.program_id"), nullable=False)
-	major_id = Column(Integer, ForeignKey("majors.major_id"), nullable=True)
 	year_level = Column(Integer, nullable=False)
 	section_name = Column(String(50), nullable=False)
 	status = Column(String(8), default="active")
@@ -241,7 +261,6 @@ class Section(Base):
 	updated_at = Column(DateTime, default=datetime.utcnow)
 
 	program = relationship("Program", back_populates="sections")
-	major = relationship("Major", back_populates="sections")
 
 
 class OJTHead(Base):
@@ -343,7 +362,7 @@ class Student(Base):
 	
 	# School Information
 	program = Column(String(255), nullable=True)
-	major = Column(String(255), nullable=True)
+	major = Column(String(255), nullable=True)  # Student's major/specialization
 	department = Column(String(255), nullable=True)
 	year_level = Column(String(20), nullable=True)
 	length_of_program = Column(String(50), nullable=True)
@@ -454,6 +473,7 @@ class RequirementSubmission(Base):
 
 	id = Column(Integer, primary_key=True, index=True)
 	student_id = Column(Integer, ForeignKey("students.student_id", ondelete="CASCADE"), nullable=False)
+	class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"), nullable=False)
 	requirement_id = Column(Integer, nullable=False)
 	file_url = Column(String(500), nullable=False)
 	status = Column(String(50), default="submitted")
@@ -465,8 +485,14 @@ class RequirementSubmission(Base):
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-	# Relationship
+	# Relationships
 	student = relationship("Student", backref="requirement_submissions")
+	class_enrolled = relationship("Class", backref="requirement_submissions")
+
+	# Unique constraint for student, requirement, and class combination
+	__table_args__ = (
+		UniqueConstraint('student_id', 'requirement_id', 'class_id', name='unique_student_requirement_class'),
+	)
 
 
 class RequirementTemplate(Base):
@@ -482,8 +508,33 @@ class RequirementTemplate(Base):
 	is_required = Column(Boolean, default=True)
 	order_index = Column(Integer, nullable=False)  # For sorting
 	accessible_to = Column(String(100), default="student,coordinator")  # Who can access this requirement
+	class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"), nullable=True)  # NULL for global templates
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+	# Relationships
+	class_assigned = relationship("Class", backref="requirement_templates")
+
+
+class ClassRequirementTemplate(Base):
+	"""Junction table for assigning requirement templates to specific classes"""
+	__tablename__ = "class_requirement_templates"
+
+	id = Column(Integer, primary_key=True, index=True)
+	class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"), nullable=False)
+	requirement_template_id = Column(Integer, ForeignKey("requirement_templates.template_id", ondelete="CASCADE"), nullable=False)
+	is_active = Column(Boolean, default=True)
+	created_at = Column(DateTime, default=datetime.utcnow)
+	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+	# Relationships
+	class_assigned = relationship("Class", backref="class_requirement_assignments")
+	requirement_template = relationship("RequirementTemplate", backref="class_assignments")
+
+	# Unique constraint to prevent duplicate assignments
+	__table_args__ = (
+		UniqueConstraint('class_id', 'requirement_template_id', name='unique_class_requirement_template'),
+	)
 
 
 class DailyTimeLog(Base):
@@ -493,14 +544,14 @@ class DailyTimeLog(Base):
 	log_id = Column(Integer, primary_key=True, index=True)
 	student_id = Column(Integer, ForeignKey("students.student_id", ondelete="CASCADE"), nullable=False)
 	application_id = Column(Integer, ForeignKey("internship_applications.application_id", ondelete="CASCADE"), nullable=False)
-	log_date = Column(Date, nullable=False, default=datetime.utcnow)
+	log_date = Column(Date, nullable=False, default=philippine_utcnow)
 	time_in = Column(DateTime, nullable=True)
 	time_out = Column(DateTime, nullable=True)
 	total_hours = Column(Numeric(5, 2), nullable=True)
 	status = Column(String(20), default="incomplete")  # 'incomplete', 'complete'
 	modified_after_date = Column(Boolean, default=False)  # True if edited after log_date has passed
-	created_at = Column(DateTime, default=datetime.utcnow)
-	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+	created_at = Column(DateTime, default=philippine_utcnow)
+	updated_at = Column(DateTime, default=philippine_utcnow, onupdate=philippine_utcnow)
 
 	# Relationships
 	student = relationship("Student", backref="daily_time_logs")
@@ -537,6 +588,9 @@ class DailyAccomplishment(Base):
 	log_date = Column(Date, nullable=False, default=datetime.utcnow)
 	tasks = Column(Text, nullable=True)
 	accomplishments = Column(Text, nullable=True)
+	edited_by_supervisor = Column(Boolean, default=False)  # Track if supervisor edited
+	supervisor_edited_at = Column(DateTime, nullable=True)  # When supervisor edited
+	edited_by_supervisor_id = Column(Integer, ForeignKey("trainee_supervisors.supervisor_id"), nullable=True)  # Which supervisor edited
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -14,7 +14,7 @@ export class CampusesService {
   getAllCampuses(
     pageNo: number,
     pageSize: number,
-    keyword: string
+    keyword: string,
   ): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
 
@@ -30,12 +30,13 @@ export class CampusesService {
       catchError((error: Error) => {
         console.error('Error fetching campuses:', error);
         return of(null);
-      })
+      }),
     );
   }
 
   addCampus(payload: {
     campus_name: string;
+    address?: string;
     is_extension: boolean;
     parent_campus_id?: number;
   }): Observable<any> {
@@ -52,7 +53,7 @@ export class CampusesService {
         catchError((error: Error) => {
           console.error('Error adding campus:', error);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -69,7 +70,7 @@ export class CampusesService {
         catchError((error: Error) => {
           console.error('Error fetching main campuses:', error);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -87,7 +88,7 @@ export class CampusesService {
         catchError((error: Error) => {
           console.error('Error fetching campus by ID:', error);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -96,10 +97,11 @@ export class CampusesService {
     campusId: string,
     payload: {
       campus_name: string;
+      address?: string;
       is_extension: boolean;
       parent_campus_id?: number;
       status: string;
-    }
+    },
   ): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
     const headers = new HttpHeaders({
@@ -113,7 +115,7 @@ export class CampusesService {
         catchError((error: Error) => {
           console.error('Error updating campus:', error);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -127,14 +129,14 @@ export class CampusesService {
       .put(
         `${this.baseURL}/campuses/${campusId}/toggle-status`,
         {},
-        { headers }
+        { headers },
       )
       .pipe(
         map((response: any) => response),
         catchError((error: Error) => {
           console.error('Error toggling campus status:', error);
           return of(null);
-        })
+        }),
       );
   }
 }

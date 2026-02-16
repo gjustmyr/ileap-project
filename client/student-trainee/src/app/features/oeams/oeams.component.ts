@@ -33,7 +33,7 @@ export class OeamsComponent implements OnInit {
     });
 
     this.http
-      .get(`${environment.apiUrl}/students/hiring-status`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/hiring-status`, { headers })
       .subscribe({
         next: (response: any) => {
           this.hasOJTStarted = response.has_ojt_started || false;

@@ -14,17 +14,13 @@ import { EmployerComponent } from './features/employer/employer.component';
 import { IndustriesComponent } from './features/industries/industries.component';
 import { StudentTraineesComponent } from './features/student-trainees/student-trainees.component';
 import { AlumniComponent } from './features/alumni/alumni.component';
+import { SettingsComponent } from './features/settings/settings.component';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'login',
-    pathMatch: 'full',
-  },
-  {
-    path: 'school-information',
-    redirectTo: 'school-information/campuses',
     pathMatch: 'full',
   },
   {
@@ -47,44 +43,34 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
   },
   {
-    path: 'reset-password',
-    component: ResetPasswordComponent,
-  },
-  {
-    path: '',
+    path: 'superadmin',
     component: MainComponent,
     canActivate: [authGuard],
     children: [
       {
         path: '',
-        redirectTo: 'school-information/campuses',
+        redirectTo: 'school-information',
         pathMatch: 'full',
       },
       {
         path: 'school-information',
+        component: CampusesComponent,
         data: { title: 'School Information' },
-        children: [
-          {
-            path: 'campuses',
-            component: CampusesComponent,
-            data: { title: 'Campuses' },
-          },
-          {
-            path: 'departments',
-            component: DepartmentsComponent,
-            data: { title: 'Departments' },
-          },
-          {
-            path: 'programs',
-            component: ProgramsComponent,
-            data: { title: 'Programs' },
-          },
-        ],
+      },
+      {
+        path: 'departments',
+        component: DepartmentsComponent,
+        data: { title: 'Departments' },
+      },
+      {
+        path: 'programs',
+        component: ProgramsComponent,
+        data: { title: 'Programs' },
       },
       {
         path: 'job-placement',
         component: JobPlacementComponent,
-        data: { title: 'Job Placement' },
+        data: { title: 'Job Placement Office' },
       },
       {
         path: 'ojt-head',
@@ -116,6 +102,15 @@ export const routes: Routes = [
         component: AlumniComponent,
         data: { title: 'Alumni' },
       },
+      {
+        path: 'settings',
+        component: SettingsComponent,
+        data: { title: 'Settings' },
+      },
     ],
+  },
+  {
+    path: '**',
+    redirectTo: 'login',
   },
 ];

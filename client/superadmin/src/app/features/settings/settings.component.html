@@ -1,0 +1,106 @@
+<div class="h-full flex flex-col">
+  <!-- Settings Header -->
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h1 class="text-2xl poppins-semibold text-gray-800">Settings</h1>
+    <p class="text-sm text-gray-600 mt-1 poppins-regular">
+      Manage school information and system directories
+    </p>
+  </div>
+
+  <!-- Settings Tabs -->
+  <div class="border-b border-gray-200 bg-gray-50">
+    <nav class="flex px-6">
+      <button
+        (click)="activeTab = 'school-info'; schoolInfoView = 'campuses'"
+        [class.border-b-2]="activeTab === 'school-info'"
+        [class.border-green-500]="activeTab === 'school-info'"
+        [class.text-green-600]="activeTab === 'school-info'"
+        [class.bg-white]="activeTab === 'school-info'"
+        class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+      >
+        <i class="pi pi-building"></i>
+        School Information
+      </button>
+      <button
+        (click)="activeTab = 'industries'"
+        [class.border-b-2]="activeTab === 'industries'"
+        [class.border-green-500]="activeTab === 'industries'"
+        [class.text-green-600]="activeTab === 'industries'"
+        [class.bg-white]="activeTab === 'industries'"
+        class="px-4 py-3 text-sm poppins-medium hover:text-green-600 transition-colors flex items-center gap-2 cursor-pointer"
+      >
+        <i class="pi pi-sitemap"></i>
+        Industries
+      </button>
+    </nav>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="flex-1 overflow-auto">
+    <!-- School Information Tab -->
+    <div *ngIf="activeTab === 'school-info'" class="h-full">
+      <!-- Breadcrumb for School Info -->
+      <div *ngIf="schoolInfoView !== 'campuses'" class="px-6 pt-4">
+        <nav class="mb-2">
+          <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+            <li>
+              <button
+                (click)="schoolInfoView = 'campuses'"
+                class="hover:text-green-600 cursor-pointer"
+              >
+                Campuses
+              </button>
+            </li>
+            <li *ngIf="schoolInfoView === 'departments'">
+              <i class="pi pi-angle-right text-xs"></i>
+            </li>
+            <li *ngIf="schoolInfoView === 'departments'" class="text-gray-800 font-medium">
+              Departments - {{ selectedCampusName }}
+            </li>
+            <li *ngIf="schoolInfoView === 'programs'">
+              <i class="pi pi-angle-right text-xs"></i>
+            </li>
+            <li *ngIf="schoolInfoView === 'programs'">
+              <button
+                (click)="schoolInfoView = 'departments'"
+                class="hover:text-green-600 cursor-pointer"
+              >
+                {{ selectedCampusName }}
+              </button>
+            </li>
+            <li *ngIf="schoolInfoView === 'programs'">
+              <i class="pi pi-angle-right text-xs"></i>
+            </li>
+            <li *ngIf="schoolInfoView === 'programs'" class="text-gray-800 font-medium">
+              Programs - {{ selectedDepartmentName }}
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <!-- School Info Views -->
+      <app-campuses
+        *ngIf="schoolInfoView === 'campuses'"
+        (viewDepartmentsEvent)="onViewDepartments($event)"
+      ></app-campuses>
+      <app-departments
+        *ngIf="schoolInfoView === 'departments'"
+        [campusId]="selectedCampusId"
+        [campusName]="selectedCampusName"
+        (viewProgramsEvent)="onViewPrograms($event)"
+      ></app-departments>
+      <app-programs
+        *ngIf="schoolInfoView === 'programs'"
+        [campusId]="selectedCampusId"
+        [campusName]="selectedCampusName"
+        [departmentId]="selectedDepartmentId"
+        [departmentName]="selectedDepartmentName"
+      ></app-programs>
+    </div>
+
+    <!-- Industries Tab -->
+    <div *ngIf="activeTab === 'industries'" class="h-full">
+      <app-industries></app-industries>
+    </div>
+  </div>
+</div>

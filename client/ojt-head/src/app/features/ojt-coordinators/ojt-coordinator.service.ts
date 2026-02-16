@@ -34,7 +34,7 @@ export class OjtCoordinatorService {
     }
 
     return this.http
-      .get(`${this.baseUrl}/ojt-coordinators`, { headers, params })
+      .get(`${this.baseUrl}/ojt-head/ojt-coordinators`, { headers, params })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -49,7 +49,7 @@ export class OjtCoordinatorService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .get(`${this.baseUrl}/ojt-coordinators/${user_id}`, { headers })
+      .get(`${this.baseUrl}/ojt-head/ojt-coordinators/${user_id}`, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -64,7 +64,7 @@ export class OjtCoordinatorService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .post(`${this.baseUrl}/ojt-coordinators/register`, payload, { headers })
+      .post(`${this.baseUrl}/ojt-head/ojt-coordinators/register`, payload, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -79,7 +79,7 @@ export class OjtCoordinatorService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .patch(`${this.baseUrl}/ojt-coordinators/${userId}`, data, { headers })
+      .patch(`${this.baseUrl}/ojt-head/ojt-coordinators/${userId}`, data, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -95,7 +95,7 @@ export class OjtCoordinatorService {
 
     return this.http
       .post(
-        `${this.baseUrl}/ojt-coordinators/${userId}/send-new-password`,
+        `${this.baseUrl}/ojt-head/ojt-coordinators/${userId}/send-new-password`,
         {},
         { headers }
       )

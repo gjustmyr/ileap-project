@@ -1,10 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-view-internship-modal',
-  imports: [CommonModule, DialogModule],
+  imports: [CommonModule],
   templateUrl: './view-internship-modal.component.html',
   styleUrl: './view-internship-modal.component.css',
 })

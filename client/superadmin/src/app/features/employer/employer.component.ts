@@ -52,7 +52,7 @@ export class EmployerComponent implements OnInit {
   constructor(
     private employerService: EmployerService,
     private fb: FormBuilder,
-    private dropdownService: DropdownsService
+    private dropdownService: DropdownsService,
   ) {}
 
   ngOnInit(): void {
@@ -73,7 +73,7 @@ export class EmployerComponent implements OnInit {
         this.pageNo,
         this.pageSize,
         this.keyword,
-        this.selectedIndustryId
+        this.selectedIndustryId,
       )
       .subscribe({
         next: (res) => {
@@ -138,7 +138,7 @@ export class EmployerComponent implements OnInit {
     const chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$';
     const newPass = Array.from({ length: 10 }, () =>
-      chars.charAt(Math.floor(Math.random() * chars.length))
+      chars.charAt(Math.floor(Math.random() * chars.length)),
     ).join('');
     this.employerForm.get('password')?.setValue(newPass);
   }

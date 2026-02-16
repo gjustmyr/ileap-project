@@ -109,3 +109,13 @@
   font-weight: 900;
   font-style: italic;
 }
+
+/* Modal Styles */
+.modal-overlay {
+  background-color: transparent !important;
+}
+
+.modal-body-scrollable {
+  max-height: 24rem; /* 384px */
+  overflow-y: auto;
+}

@@ -30,3 +30,21 @@ def to_philippine_time(dt):
         # Assume UTC if no timezone info
         dt = pytz.utc.localize(dt)
     return dt.astimezone(PHILIPPINE_TZ)
+
+def format_datetime_for_api(dt):
+    """
+    Format datetime for API response
+    Ensures timezone-aware datetime is properly formatted
+    Returns ISO format string with timezone offset
+    """
+    if dt is None:
+        return None
+    
+    # If datetime is naive, assume it's in Philippine timezone
+    if dt.tzinfo is None:
+        dt = PHILIPPINE_TZ.localize(dt)
+    else:
+        # Convert to Philippine timezone if it's in a different timezone
+        dt = dt.astimezone(PHILIPPINE_TZ)
+    
+    return dt.isoformat()

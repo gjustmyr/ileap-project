@@ -4,25 +4,19 @@
     <nav class="mb-4">
       <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
         <li>
-          <a routerLink="/dashboard" class="hover:text-green-600">Home</a>
-        </li>
-        <li><i class="pi pi-angle-right text-xs"></i></li>
-        <li>
           <a
-            routerLink="/school-information/campuses"
+            routerLink="/superadmin/school-information"
             class="hover:text-green-600"
             >Campuses</a
           >
         </li>
         <li><i class="pi pi-angle-right text-xs"></i></li>
-        <li class="text-green-600 font-semibold">
-          {{ currentCampusName || "Departments" }}
-        </li>
+        <li class="text-gray-800 font-medium">Departments</li>
       </ol>
     </nav>
 
     <!-- Title -->
-    <div class="mb-6">
+    <div class="mb-4">
       <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
         Departments<span *ngIf="currentCampusName">
           - {{ currentCampusName }}</span
@@ -35,37 +29,42 @@
       </p>
     </div>
 
-    <!-- Controls -->
-    <div class="controls mb-4 flex justify-between items-center gap-3">
-      <div class="flex gap-3 flex-1">
-        <div class="w-[300px]">
-          <p-inputgroup>
-            <input
-              pInputText
-              placeholder="Search departments..."
-              [(ngModel)]="keyword"
-              (keyup.enter)="handleSearch()"
-            />
-            <p-inputgroup-addon>
-              <button
-                pButton
-                icon="pi pi-search"
-                severity="secondary"
-                variant="text"
-                (click)="handleSearch()"
-                class="cursor-pointer"
-              ></button>
-            </p-inputgroup-addon>
-          </p-inputgroup>
+    <!-- Search and Actions -->
+    <div class="mb-6">
+      <div class="flex items-center gap-3">
+        <!-- Search Box -->
+        <div class="w-[400px]">
+          <input
+            type="text"
+            [(ngModel)]="keyword"
+            placeholder="Search departments..."
+            class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+          />
         </div>
+
+        <!-- Action Buttons -->
+        <button
+          (click)="handleSearch()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow cursor-pointer"
+        >
+          <i class="pi pi-search mr-1"></i>
+          Search
+        </button>
+        <button
+          (click)="keyword = ''; handleSearch()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow cursor-pointer"
+        >
+          <i class="pi pi-refresh mr-1"></i>
+          Reset
+        </button>
+        <button
+          (click)="handleAddDialog()"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded transition-colors shadow-sm hover:shadow flex items-center gap-2 ml-auto cursor-pointer"
+        >
+          <i class="pi pi-plus"></i>
+          Add Department
+        </button>
       </div>
-      <button
-        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2 cursor-pointer"
-        (click)="handleAddDialog()"
-      >
-        <i class="pi pi-plus"></i>
-        Add Department
-      </button>
     </div>
 
     <div class="card poppins-regular text-sm">
@@ -126,10 +125,9 @@
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                <span
-                  class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium"
-                  >{{ dept.abbrev || "N/A" }}</span
-                >
+                <span class="poppins-regular text-blue-600">{{
+                  dept.abbrev || "N/A"
+                }}</span>
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
@@ -157,9 +155,9 @@
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 <span
-                  class="px-2 py-1 rounded text-white"
+                  class="poppins-regular"
                   [ngClass]="
-                    dept.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                    dept.status === 'active' ? 'text-green-500' : 'text-red-500'
                   "
                 >
                   {{ dept.status === "active" ? "Active" : "Inactive" }}
@@ -172,12 +170,12 @@
                 <div class="flex items-center gap-2">
                   <button
                     class="bg-purple-500 hover:bg-purple-600 p-2 text-white text-sm rounded cursor-pointer"
-                    [routerLink]="['/school-information/programs']"
+                    [routerLink]="['/superadmin/programs']"
                     [queryParams]="{
                       departmentId: dept.department_id,
                       departmentName: dept.department_name,
                       campusId: currentCampusId,
-                      campusName: currentCampusName
+                      campusName: currentCampusName,
                     }"
                     title="View Programs"
                   >
@@ -194,7 +192,7 @@
                     [ngClass]="{
                       'bg-green-500 hover:bg-green-600':
                         dept.status === 'inactive',
-                      'bg-red-500 hover:bg-red-600': dept.status === 'active'
+                      'bg-red-500 hover:bg-red-600': dept.status === 'active',
                     }"
                     class="p-2 text-white rounded cursor-pointer text-sm"
                     (click)="
@@ -280,7 +278,9 @@
   *ngIf="isAddDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Add Department</h3>
       <button
@@ -336,6 +336,7 @@
                   value="existing"
                   [(ngModel)]="deanSelectionMode"
                   [ngModelOptions]="{ standalone: true }"
+                  (change)="onDeanModeChange()"
                   class="cursor-pointer"
                 />
                 <span class="text-sm">Select Existing Dean</span>
@@ -347,6 +348,7 @@
                   value="new"
                   [(ngModel)]="deanSelectionMode"
                   [ngModelOptions]="{ standalone: true }"
+                  (change)="onDeanModeChange()"
                   class="cursor-pointer"
                 />
                 <span class="text-sm">Add New Dean</span>
@@ -457,7 +459,9 @@
   *ngIf="isUpdateDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold poppins-semibold">Update Department</h3>
       <button

@@ -164,7 +164,7 @@
       </div>
       <button
         (click)="clearSelection()"
-        class="text-white hover:bg-white hover:bg-opacity-20 px-3 py-1.5 rounded transition"
+        class="text-white cursor-pointer hover:bg-gray-100 hover:text-gray-900 hover:bg-opacity-20 px-3 py-1.5 rounded transition"
       >
         <i class="pi pi-times mr-1"></i> Close
       </button>
@@ -321,11 +321,25 @@
               <p class="text-sm text-gray-600 poppins-regular">
                 {{ record.tasks || 'No tasks recorded' }}
               </p>
+              <span
+                *ngIf="record.edited_by_supervisor"
+                class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs poppins-medium bg-blue-100 text-blue-800"
+              >
+                <i class="pi pi-user-edit"></i>
+                Edited by Supervisor
+              </span>
             </td>
             <td class="border border-gray-300 px-4 py-3">
               <p class="text-sm text-gray-600 poppins-regular">
                 {{ record.accomplishments || 'No accomplishments recorded' }}
               </p>
+              <span
+                *ngIf="record.edited_by_supervisor"
+                class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs poppins-medium bg-blue-100 text-blue-800"
+              >
+                <i class="pi pi-user-edit"></i>
+                Edited by Supervisor
+              </span>
             </td>
             <td class="border border-gray-300 px-4 py-3">
               <p class="text-sm text-gray-600 poppins-regular">
@@ -494,7 +508,16 @@
 
       <!-- Tasks -->
       <div class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-4">
-        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Tasks for the Day</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-gray-500 poppins-medium uppercase">Tasks for the Day</p>
+          <span
+            *ngIf="viewingRecord.edited_by_supervisor"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs poppins-medium bg-blue-100 text-blue-800"
+          >
+            <i class="pi pi-user-edit"></i>
+            Edited by Supervisor
+          </span>
+        </div>
         <p class="text-sm text-gray-700 poppins-regular whitespace-pre-wrap">
           {{ viewingRecord.tasks || 'No tasks recorded' }}
         </p>
@@ -502,7 +525,16 @@
 
       <!-- Accomplishments -->
       <div class="border-2 border-gray-300 bg-white p-4 rounded-lg mb-4">
-        <p class="text-xs text-gray-500 poppins-medium uppercase mb-2">Accomplishments</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-gray-500 poppins-medium uppercase">Accomplishments</p>
+          <span
+            *ngIf="viewingRecord.edited_by_supervisor"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs poppins-medium bg-blue-100 text-blue-800"
+          >
+            <i class="pi pi-user-edit"></i>
+            Edited by Supervisor
+          </span>
+        </div>
         <p class="text-sm text-gray-700 poppins-regular whitespace-pre-wrap">
           {{ viewingRecord.accomplishments || 'No accomplishments recorded' }}
         </p>

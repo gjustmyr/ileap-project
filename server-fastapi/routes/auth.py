@@ -73,12 +73,7 @@ async def validate_token(token_data: dict = Depends(verify_token)):
     """
     return {
         "success": True,
-        "message": "Token is valid",
-        "data": {
-            "user_id": token_data.get("user_id"),
-            "email": token_data.get("email"),
-            "role": token_data.get("role")
-        }
+        "message": "Token is valid"
     }
 
 
@@ -107,6 +102,105 @@ async def check_auth(token_data: dict = Depends(optional_verify_token)):
             "message": "User is not authenticated",
             "data": None
         }
+
+
+@router.get("/profile")
+async def get_user_profile(token_data: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    """
+    Get current user's profile information including name.
+    Works for all user types (superadmin, student, employer, etc.)
+    """
+    user_id = token_data.get("user_id")
+    role = token_data.get("role")
+    
+    # Get basic user info
+    from models import User, SuperAdminProfile, Student, Employer, OJTHead, OJTCoordinator, TraineeSupervisor
+    
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    profile_data = {
+        "user_id": user.user_id,
+        "email": user.email_address,
+        "role": user.role,
+        "first_name": None,
+        "last_name": None,
+        "full_name": None,
+        "contact_number": None,
+        "position_title": None
+    }
+    
+    # Get role-specific profile information
+    if role == "superadmin":
+        profile = db.query(SuperAdminProfile).filter(SuperAdminProfile.user_id == user_id).first()
+        if profile:
+            profile_data.update({
+                "first_name": profile.first_name,
+                "last_name": profile.last_name,
+                "full_name": f"{profile.first_name} {profile.last_name}",
+                "contact_number": profile.contact_number,
+                "position_title": profile.position_title
+            })
+    
+    elif role == "student":
+        student = db.query(Student).filter(Student.user_id == user_id).first()
+        if student:
+            profile_data.update({
+                "first_name": student.first_name,
+                "last_name": student.last_name,
+                "full_name": f"{student.first_name} {student.last_name}",
+                "contact_number": student.contact_number
+            })
+    
+    elif role == "employer":
+        employer = db.query(Employer).filter(Employer.user_id == user_id).first()
+        if employer:
+            profile_data.update({
+                "first_name": employer.representative_name,
+                "full_name": employer.representative_name,
+                "contact_number": employer.phone_number,
+                "company_name": employer.company_name
+            })
+    
+    elif role == "ojt_head":
+        ojt_head = db.query(OJTHead).filter(OJTHead.user_id == user_id).first()
+        if ojt_head:
+            profile_data.update({
+                "first_name": ojt_head.first_name,
+                "last_name": ojt_head.last_name,
+                "full_name": f"{ojt_head.first_name} {ojt_head.last_name}",
+                "contact_number": ojt_head.contact_number,
+                "position_title": ojt_head.position_title
+            })
+    
+    elif role == "ojt_coordinator":
+        coordinator = db.query(OJTCoordinator).filter(OJTCoordinator.user_id == user_id).first()
+        if coordinator:
+            profile_data.update({
+                "first_name": coordinator.first_name,
+                "last_name": coordinator.last_name,
+                "full_name": f"{coordinator.first_name} {coordinator.last_name}",
+                "contact_number": coordinator.contact_number,
+                "position_title": coordinator.position_title
+            })
+    
+    elif role == "trainee_supervisor":
+        supervisor = db.query(TraineeSupervisor).filter(TraineeSupervisor.user_id == user_id).first()
+        if supervisor:
+            profile_data.update({
+                "first_name": supervisor.first_name,
+                "last_name": supervisor.last_name,
+                "full_name": f"{supervisor.first_name} {supervisor.last_name}",
+                "contact_number": supervisor.contact_number,
+                "position_title": supervisor.position_title
+            })
+    
+    return {
+        "success": True,
+        "message": "Profile retrieved successfully",
+        "data": profile_data
+    }
 
 
 @router.post("/forgot-password")

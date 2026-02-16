@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import os
 from datetime import datetime, date, time as datetime_time
-from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow, format_datetime_for_api
 
 from database import get_db
 from controllers.supervisor_controller import (
@@ -14,7 +14,7 @@ from controllers.supervisor_controller import (
 	update_supervisor,
 	delete_supervisor
 )
-from models import Employer, TraineeSupervisor, StudentSupervisorAssignment, Student, DailyTimeLog, DailyAccomplishment, InternshipApplication
+from models import Employer, TraineeSupervisor, StudentSupervisorAssignment, Student, DailyTimeLog, DailyAccomplishment, InternshipApplication, ClassEnrollment, Program
 from schemas.supervisor import SupervisorCreate, SupervisorUpdate, SupervisorResponse
 from middleware.auth import get_current_user
 from sqlalchemy.orm import joinedload
@@ -281,6 +281,22 @@ def get_assigned_students(
 		if not student:
 			continue
 		
+		# Get program name from student's class enrollment
+		program_name = student.program  # Try student's direct program field first
+		if not program_name:
+			# If student.program is null, get it from class enrollment
+			enrollment = db.query(ClassEnrollment).filter(
+				ClassEnrollment.student_id == student.student_id,
+				ClassEnrollment.status == "active"
+			).first()
+			
+			if enrollment and enrollment.class_enrolled:
+				program = db.query(Program).filter(
+					Program.program_id == enrollment.class_enrolled.program_id
+				).first()
+				if program:
+					program_name = program.program_name
+		
 		# Get application and internship details if available
 		internship_title = None
 		ojt_status = "Not Started"
@@ -293,8 +309,14 @@ def get_assigned_students(
 			if application:
 				# Determine OJT status based on application status and start date
 				if application.status == "accepted" and application.ojt_start_date:
-					from datetime import datetime
-					if application.ojt_start_date <= philippine_utcnow():
+					# Handle both date and datetime objects
+					current_date = philippine_now().date()
+					ojt_start = application.ojt_start_date
+					# Convert to date if it's a datetime object
+					if hasattr(ojt_start, 'date'):
+						ojt_start = ojt_start.date()
+					
+					if ojt_start <= current_date:
 						ojt_status = "In Progress"
 					else:
 						ojt_status = "Starting Soon"
@@ -317,8 +339,7 @@ def get_assigned_students(
 			"first_name": student.first_name,
 			"last_name": student.last_name,
 			"email": student.email,
-			"program": student.program,
-			"major": student.major,
+			"program": program_name,
 			"internship_title": internship_title,
 			"ojt_status": ojt_status,
 			"assigned_at": assignment.assigned_at.isoformat() if assignment.assigned_at else None,
@@ -388,17 +409,19 @@ def get_student_ojt_records(
 			"log_id": log.log_id,
 			"student_id": log.student_id,
 			"date": log.log_date.isoformat() if log.log_date else None,
-			"time_in": log.time_in.isoformat() if log.time_in else None,
-			"time_out": log.time_out.isoformat() if log.time_out else None,
+			"time_in": format_datetime_for_api(log.time_in),
+			"time_out": format_datetime_for_api(log.time_out),
 			"total_hours": float(log.total_hours) if log.total_hours else 0,
 			"tasks": accomplishment.tasks if accomplishment else None,
 			"accomplishments": accomplishment.accomplishments if accomplishment else None,
 			"supervisor_remarks": None,  # Can add this field later if needed
 			"validation_status": log.status,
 			"status": log.status,
-			"submitted_at": log.created_at.isoformat() if log.created_at else None,
-			"validated_at": log.updated_at.isoformat() if log.updated_at else None,
-			"modified_after_date": log.modified_after_date if hasattr(log, 'modified_after_date') else False
+			"submitted_at": format_datetime_for_api(log.created_at),
+			"validated_at": format_datetime_for_api(log.updated_at),
+			"modified_after_date": log.modified_after_date if hasattr(log, 'modified_after_date') else False,
+			"edited_by_supervisor": accomplishment.edited_by_supervisor if accomplishment else False,
+			"supervisor_edited_at": format_datetime_for_api(accomplishment.supervisor_edited_at) if accomplishment and accomplishment.supervisor_edited_at else None
 		})
 	
 	return {
@@ -535,15 +558,31 @@ def update_ojt_record(
 	
 	print(f"DEBUG: Found accomplishment: {accomplishment}")
 	
+	# Track if supervisor is editing tasks/accomplishments
+	supervisor_edited_content = False
+	
 	if accomplishment:
 		# Update existing accomplishment
 		print(f"DEBUG: Updating existing accomplishment {accomplishment.accomplishment_id}")
 		if tasks is not None:
+			# Check if tasks were actually changed
+			if accomplishment.tasks != tasks:
+				supervisor_edited_content = True
 			accomplishment.tasks = tasks
 			print(f"DEBUG: Set tasks to: {tasks}")
 		if accomplishments is not None:
+			# Check if accomplishments were actually changed
+			if accomplishment.accomplishments != accomplishments:
+				supervisor_edited_content = True
 			accomplishment.accomplishments = accomplishments
 			print(f"DEBUG: Set accomplishments to: {accomplishments}")
+		
+		# Mark as edited by supervisor if content changed
+		if supervisor_edited_content:
+			accomplishment.edited_by_supervisor = True
+			accomplishment.supervisor_edited_at = philippine_utcnow()
+			accomplishment.edited_by_supervisor_id = supervisor.supervisor_id
+		
 		accomplishment.updated_at = philippine_utcnow()
 	elif tasks is not None or accomplishments is not None:
 		# Create new accomplishment if it doesn't exist and data is provided
@@ -554,6 +593,9 @@ def update_ojt_record(
 			log_date=time_log.log_date,
 			tasks=tasks,
 			accomplishments=accomplishments,
+			edited_by_supervisor=True,  # Mark as edited since supervisor is creating it
+			supervisor_edited_at=philippine_utcnow(),
+			edited_by_supervisor_id=supervisor.supervisor_id,
 			created_at=philippine_utcnow(),
 			updated_at=philippine_utcnow()
 		)
@@ -592,12 +634,14 @@ def update_ojt_record(
 		"data": {
 			"record_id": time_log.log_id,
 			"log_id": time_log.log_id,
-			"time_in": time_log.time_in.isoformat() if time_log.time_in else None,
-			"time_out": time_log.time_out.isoformat() if time_log.time_out else None,
+			"time_in": format_datetime_for_api(time_log.time_in),
+			"time_out": format_datetime_for_api(time_log.time_out),
 			"total_hours": float(time_log.total_hours) if time_log.total_hours else 0,
 			"tasks": accomplishment.tasks if accomplishment else None,
 			"accomplishments": accomplishment.accomplishments if accomplishment else None,
-			"modified_after_date": time_log.modified_after_date
+			"modified_after_date": time_log.modified_after_date,
+			"edited_by_supervisor": accomplishment.edited_by_supervisor if accomplishment else False,
+			"supervisor_edited_at": format_datetime_for_api(accomplishment.supervisor_edited_at) if accomplishment and accomplishment.supervisor_edited_at else None
 		}
 	}
 

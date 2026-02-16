@@ -3,6 +3,7 @@ from sqlalchemy import or_
 from models import TraineeSupervisor, User, Employer
 from schemas.supervisor import SupervisorCreate, SupervisorUpdate
 from datetime import datetime
+from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 import secrets
 import string
 from controllers.employer_controller import hash_password, send_email
@@ -149,7 +150,7 @@ def update_supervisor(db: Session, supervisor_id: int, employer_id: int, payload
 	supervisor.position = payload.position
 	supervisor.department = payload.department
 	supervisor.status = payload.status
-	supervisor.updated_at = datetime.utcnow()
+	supervisor.updated_at = philippine_utcnow()
 
 	db.commit()
 	db.refresh(supervisor)

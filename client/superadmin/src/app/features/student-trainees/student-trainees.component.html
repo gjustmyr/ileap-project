@@ -11,25 +11,26 @@
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="flex gap-4 mb-2">
       <!-- Campus Filter -->
       <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Campus
         </label>
         <select
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
           [(ngModel)]="selectedCampusId"
         >
           <option value="">All Campuses</option>
           <option *ngFor="let campus of campuses" [value]="campus.campus_id">
-            {{ campus.campus_name }}{{ campus.is_extension ? " (Extension)" : "" }}
+            {{ campus.campus_name
+            }}{{ campus.is_extension ? " (Extension)" : "" }}
           </option>
         </select>
       </div>
 
       <!-- Search Box -->
-      <div class="lg:col-span-3">
+      <div>
         <label class="block text-sm text-gray-600 mb-1 poppins-medium">
           Search
         </label>
@@ -37,7 +38,7 @@
           type="text"
           [(ngModel)]="keyword"
           placeholder="Search by name, SR code, or email"
-          class="w-full px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
         />
       </div>
     </div>
@@ -46,13 +47,13 @@
     <div class="flex gap-3 mb-6">
       <button
         (click)="applyFilters()"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Apply Filters
       </button>
       <button
         (click)="resetFilters()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         Reset
       </button>
@@ -61,25 +62,37 @@
     <div class="card poppins-regular text-sm">
       <!-- Table -->
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse border border-gray-300">
+        <table class="w-full border-collapse border border-gray-300 text-xs">
           <thead>
             <tr class="bg-white text-sm poppins-medium">
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 SR Code
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Name
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Email
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[20%] text-sm"
+              >
                 Campus
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[15%] text-sm"
+              >
                 Program
               </td>
-              <td class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm">
+              <td
+                class="border border-gray-300 px-4 py-2 text-left w-[10%] text-sm"
+              >
                 Actions
               </td>
             </tr>
@@ -111,21 +124,23 @@
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ student.campus_name || 'N/A' }}
+                {{ student.campus_name || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                {{ student.program_name || 'N/A' }}
+                {{ student.program_name || "N/A" }}
               </td>
               <td
                 class="border border-gray-300 px-4 py-2"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
                 <button
-                  class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-sm rounded cursor-pointer"
-                  (click)="handleSendNewPassword(student.user_id, student.email)"
+                  class="bg-orange-500 hover:bg-orange-600 p-2 text-white text-xs rounded cursor-pointer"
+                  (click)="
+                    handleSendNewPassword(student.user_id, student.email)
+                  "
                   title="Send New Password"
                 >
                   <i class="pi pi-key"></i>

@@ -29,7 +29,7 @@ export class OjtHeadService {
       params = params.set('campus_id', campusId.toString());
     }
 
-    return this.http.get(`${this.baseURL}/ojt-heads`, { headers, params }).pipe(
+    return this.http.get(`${this.baseURL}/superadmin/ojt-heads`, { headers, params }).pipe(
       map((res: any) => res),
       catchError((err: Error) => {
         console.error('Error fetching OJT Heads:', err);
@@ -43,7 +43,7 @@ export class OjtHeadService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .get(`${this.baseURL}/ojt-heads/${user_id}`, { headers })
+      .get(`${this.baseURL}/superadmin/ojt-heads/${user_id}`, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -58,7 +58,7 @@ export class OjtHeadService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .post(`${this.baseURL}/ojt-heads/register`, payload, { headers })
+      .post(`${this.baseURL}/superadmin/ojt-heads/register`, payload, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -73,7 +73,7 @@ export class OjtHeadService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .patch(`${this.baseURL}/ojt-heads/${userId}`, data, { headers })
+      .patch(`${this.baseURL}/superadmin/ojt-heads/${userId}`, data, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -88,7 +88,7 @@ export class OjtHeadService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     return this.http
-      .post(`${this.baseURL}/ojt-heads/${userId}/send-new-password`, {}, { headers })
+      .post(`${this.baseURL}/superadmin/ojt-heads/${userId}/send-new-password`, {}, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {

@@ -63,7 +63,7 @@
           </div>
           <button
             type="button"
-            class="bg-green-500 text-sm text-white px-4 py-2 rounded poppins-medium"
+            class="bg-green-500 text-sm text-white px-4 py-2 rounded poppins-medium hover:bg-green-600"
             (click)="openAddDialog()"
             [disabled]="!canAccessTab(activeTab)"
           >
@@ -72,47 +72,65 @@
           </button>
         </div>
       </div>
-      <div class="card poppins-regular text-xs">
-        <p-table
-          [value]="internships"
-          showGridlines
-          [tableStyle]="{ 'min-width': '60rem' }"
-          [paginator]="true"
-          [rows]="pageSize"
-          [totalRecords]="totalRecords"
-          [lazy]="true"
-          [rowsPerPageOptions]="[5, 10, 20, 30]"
-          (onLazyLoad)="onPageChange($event)"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th class="w-[20%]" pSortableColumn="title">
-                Title <p-sortIcon field="title" />
-              </th>
-              <th class="w-[30%]">Description</th>
-              <th class="w-[18%]">Skills</th>
-              <th class="w-[10%]" pSortableColumn="status">
-                Status <p-sortIcon field="status" />
-              </th>
-              <th class="w-[10%]">Posted</th>
-              <th class="w-[12%]">Actions</th>
-            </tr>
-          </ng-template>
 
-          <ng-template pTemplate="body" let-internship let-rowIndex="rowIndex">
-            <tr class="transition-colors duration-200 hover:bg-gray-200">
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+      <!-- Table -->
+      <div class="bg-white rounded overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-white text-sm poppins-medium">
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[5%]">
+                #
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[20%]">
+                Title
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[25%]">
+                Description
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-left text-sm w-[18%]">
+                Skills
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center text-sm w-[10%]">
+                Status
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center text-sm w-[10%]">
+                Posted
+              </td>
+              <td class="border border-gray-300 px-4 py-2 text-center text-sm w-[12%]">
+                Actions
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let internship of getPaginatedInternships(); let i = index; let rowIndex = index"
+              class="transition-colors duration-200 hover:bg-gray-200"
+            >
+              <td
+                class="border border-gray-300 px-4 py-2 text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                {{ (pageNo) * pageSize + i + 1 }}
+              </td>
+              <td
+                class="border border-gray-300 px-4 py-2 text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
                 {{ internship.title }}
               </td>
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+              <td
+                class="border border-gray-300 px-4 py-2 text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
                 <div
                   class="line-clamp-2 text-sm"
                   [innerHTML]="internship.full_description || '-'"
                 ></div>
               </td>
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+              <td
+                class="border border-gray-300 px-4 py-2 text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
                 <div class="flex flex-wrap gap-1">
                   <span
                     *ngFor="let skill of internship.skills?.slice(0, 3)"
@@ -134,7 +152,10 @@
                   </span>
                 </div>
               </td>
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+              <td
+                class="border border-gray-300 px-4 py-2 text-center text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
                 <span
                   [class]="getStatusClass(internship.status)"
                   class="px-2 py-1 rounded text-xs font-medium poppins-medium"
@@ -142,32 +163,85 @@
                   {{ internship.status || "Draft" }}
                 </span>
               </td>
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
+              <td
+                class="border border-gray-300 px-4 py-2 text-center text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
                 {{ internship.created_at | date : "mediumDate" }}
               </td>
-              <td [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'">
-                <div class="flex gap-2">
+              <td
+                class="border border-gray-300 px-4 py-2 text-center text-sm"
+                [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
+              >
+                <div class="flex gap-2 justify-center">
                   <button
                     (click)="viewInternship(internship)"
-                    class="text-green-600 hover:text-green-800 text-xs poppins-medium"
+                    class="action-btn action-btn-primary"
+                    title="View Details"
                   >
-                    View
+                    <i class="pi pi-eye text-base"></i>
                   </button>
                   <button
                     *ngIf="
                       internship.status === 'draft' ||
-                      internship.status === 'rejected'
+                      internship.status === 'rejected' ||
+                      internship.status === 'pending'
                     "
-                    (click)="editInternship(internship)"
-                    class="text-blue-600 hover:text-blue-800 text-xs poppins-medium"
+                    (click)="confirmEdit(internship)"
+                    class="action-btn action-btn-secondary"
+                    title="Edit"
                   >
-                    Edit
+                    <i class="pi pi-pencil text-base"></i>
+                  </button>
+                  <button
+                    *ngIf="internship.status === 'draft'"
+                    (click)="deleteInternship(internship)"
+                    class="action-btn action-btn-danger"
+                    title="Delete"
+                  >
+                    <i class="pi pi-trash text-base"></i>
                   </button>
                 </div>
               </td>
             </tr>
-          </ng-template>
-        </p-table>
+            <tr *ngIf="internships.length === 0">
+              <td
+                colspan="7"
+                class="border border-gray-300 px-4 py-8 text-center text-gray-500 poppins-regular"
+              >
+                No internships found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div
+          class="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-300"
+        >
+          <div class="text-sm text-gray-600 poppins-regular">
+            Showing {{ getShowingStart() }} to {{ getShowingEnd() }} of {{ totalRecords }} entries
+          </div>
+          <div class="flex gap-2">
+            <button
+              (click)="previousPage()"
+              [disabled]="pageNo === 0"
+              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+            >
+              Previous
+            </button>
+            <span class="px-3 py-1 text-sm poppins-regular">
+              Page {{ pageNo + 1 }} of {{ getTotalPages() }}
+            </span>
+            <button
+              (click)="nextPage()"
+              [disabled]="pageNo >= getTotalPages() - 1"
+              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed poppins-medium"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -487,93 +561,28 @@
             </div>
           </div>
 
-          <!-- Status with Dropdown -->
+          <!-- Status -->
           <div class="flex flex-col">
             <label class="text-sm font-medium mb-1 poppins-medium">
               Status
             </label>
-            <select
-              [(ngModel)]="selectedInternship.status"
-              (change)="changeStatus(selectedInternship.status)"
-              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 outline-none focus:border-green-500"
-              [disabled]="selectedInternship.status === 'pending'"
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm bg-gray-50"
+              [ngClass]="{
+                'text-yellow-700 bg-yellow-50': selectedInternship.status === 'draft',
+                'text-blue-700 bg-blue-50': selectedInternship.status === 'pending',
+                'text-green-700 bg-green-50': selectedInternship.status === 'open' || selectedInternship.status === 'approved',
+                'text-gray-700 bg-gray-50': selectedInternship.status === 'closed',
+                'text-red-700 bg-red-50': selectedInternship.status === 'rejected'
+              }"
             >
-              <!-- Draft: can submit for approval -->
-              <option
-                value="draft"
-                *ngIf="selectedInternship.status === 'draft'"
-              >
-                Draft
-              </option>
-              <option
-                value="pending"
-                *ngIf="selectedInternship.status === 'draft'"
-              >
-                Submit for Approval
-              </option>
-
-              <!-- Pending: waiting for OJT Head approval (read-only) -->
-              <option
-                value="pending"
-                *ngIf="selectedInternship.status === 'pending'"
-              >
-                Pending Approval
-              </option>
-
-              <!-- Approved/Open: can close -->
-              <option
-                value="open"
-                *ngIf="
-                  selectedInternship.status === 'approved' ||
-                  selectedInternship.status === 'open'
-                "
-              >
-                Open
-              </option>
-              <option
-                value="closed"
-                *ngIf="
-                  selectedInternship.status === 'approved' ||
-                  selectedInternship.status === 'open'
-                "
-              >
-                Close
-              </option>
-
-              <!-- Closed: can reopen -->
-              <option
-                value="closed"
-                *ngIf="selectedInternship.status === 'closed'"
-              >
-                Closed
-              </option>
-              <option
-                value="open"
-                *ngIf="selectedInternship.status === 'closed'"
-              >
-                Reopen
-              </option>
-
-              <!-- Rejected: can edit and resubmit -->
-              <option
-                value="rejected"
-                *ngIf="selectedInternship.status === 'rejected'"
-              >
-                Rejected
-              </option>
-              <option
-                value="pending"
-                *ngIf="selectedInternship.status === 'rejected'"
-              >
-                Resubmit for Approval
-              </option>
-            </select>
-            <span
-              *ngIf="selectedInternship.status === 'pending'"
-              class="text-xs text-gray-500 italic mt-1"
-            >
-              Waiting for OJT Head approval
-            </span>
+              <span class="font-medium">
+                {{ selectedInternship.status === 'approved' ? 'Open' : (selectedInternship.status | titlecase) }}
+              </span>
+              <span *ngIf="selectedInternship.status === 'pending'" class="text-xs block mt-1">
+                Under OJT Head review - You can still edit if needed
+              </span>
+            </p>
           </div>
 
           <!-- Dates -->
@@ -606,27 +615,94 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex justify-end gap-2 pt-4">
+          <div class="flex justify-between gap-2 pt-4 border-t border-gray-200">
+            <!-- Left side: Delete for drafts -->
             <button
+              *ngIf="selectedInternship.status === 'draft'"
               type="button"
-              (click)="showViewDialog = false"
-              class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 poppins-medium"
+              (click)="deleteInternship(selectedInternship)"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 poppins-medium"
             >
-              Close
+              Delete Draft
             </button>
-            <button
-              *ngIf="
-                selectedInternship.status === 'draft' ||
-                selectedInternship.status === 'rejected'
-              "
-              type="button"
-              (click)="
-                showViewDialog = false; editInternship(selectedInternship)
-              "
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
-            >
-              Edit
-            </button>
+
+            <!-- Right side: Main actions -->
+            <div class="flex gap-2 ml-auto">
+              <!-- Close button -->
+              <button
+                type="button"
+                (click)="showViewDialog = false"
+                class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 poppins-medium"
+              >
+                Close
+              </button>
+
+              <!-- Draft: Edit and Submit buttons -->
+              <button
+                *ngIf="selectedInternship.status === 'draft'"
+                type="button"
+                (click)="confirmEdit(selectedInternship)"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
+              >
+                Edit
+              </button>
+              <button
+                *ngIf="selectedInternship.status === 'draft'"
+                type="button"
+                (click)="submitForApproval(selectedInternship)"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium"
+              >
+                Submit for Approval
+              </button>
+
+              <!-- Pending: Edit button (can still edit while under review) -->
+              <button
+                *ngIf="selectedInternship.status === 'pending'"
+                type="button"
+                (click)="confirmEdit(selectedInternship)"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
+              >
+                Edit
+              </button>
+
+              <!-- Rejected: Edit and Resubmit buttons -->
+              <button
+                *ngIf="selectedInternship.status === 'rejected'"
+                type="button"
+                (click)="confirmEdit(selectedInternship)"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 poppins-medium"
+              >
+                Edit
+              </button>
+              <button
+                *ngIf="selectedInternship.status === 'rejected'"
+                type="button"
+                (click)="submitForApproval(selectedInternship)"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium"
+              >
+                Resubmit for Approval
+              </button>
+
+              <!-- Open: Close button -->
+              <button
+                *ngIf="selectedInternship.status === 'open' || selectedInternship.status === 'approved'"
+                type="button"
+                (click)="closeInternship(selectedInternship)"
+                class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 poppins-medium"
+              >
+                Close Posting
+              </button>
+
+              <!-- Closed: Reopen button -->
+              <button
+                *ngIf="selectedInternship.status === 'closed'"
+                type="button"
+                (click)="reopenInternship(selectedInternship)"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium"
+              >
+                Reopen Posting
+              </button>
+            </div>
           </div>
         </div>
       </div>

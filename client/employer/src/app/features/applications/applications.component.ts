@@ -247,7 +247,7 @@ export class ApplicationsComponent implements OnInit {
   downloadResume(resumePath: string): void {
     if (!resumePath) return;
     // Construct the full URL to download the resume
-    const apiUrl = 'http://localhost:8000'; // Update with your API URL
+    const apiUrl = 'http://localhost:3000'; // Update with your API URL
     window.open(`${apiUrl}/${resumePath}`, '_blank');
   }
 }

@@ -1,101 +1,217 @@
 <!-- View Details Dialog -->
-<p-dialog
-  header="Internship Details"
-  [(visible)]="isVisible"
-  [modal]="true"
-  [style]="{ width: '50vw' }"
-  [draggable]="false"
-  [resizable]="false"
-  styleClass="pointer-events-none"
-  (onHide)="handleClose()"
+<div
+  *ngIf="isVisible && internship"
+  class="fixed inset-0 z-50 overflow-y-auto"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
 >
-  <div class="pointer-events-auto" *ngIf="internship">
-    <div class="grid grid-cols-2 gap-4">
-      <div class="col-span-2">
-        <h3 class="font-semibold text-lg mb-2">
-          {{ internship.title }}
-        </h3>
-        <p class="text-gray-600">{{ internship.company_name }}</p>
-      </div>
-
-      <div>
-        <label class="font-semibold text-sm">Duration</label>
-        <p>{{ internship.duration_months }} months</p>
-      </div>
-
-      <div>
-        <label class="font-semibold text-sm">Mode</label>
-        <p>{{ internship.mode }}</p>
-      </div>
-
-      <div>
-        <label class="font-semibold text-sm">Allowance</label>
-        <p>{{ internship.allowance || "Not specified" }}</p>
-      </div>
-
-      <div>
-        <label class="font-semibold text-sm">Status</label>
-        <p>
-          <span
-            class="px-2 py-1 text-xs rounded"
-            [ngClass]="{
-              'bg-green-100 text-green-800': internship.status === 'open',
-              'bg-yellow-100 text-yellow-800': internship.status === 'pending',
-              'bg-gray-100 text-gray-800': internship.status === 'draft',
-              'bg-red-100 text-red-800': internship.status === 'closed'
-            }"
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Header -->
+      <div
+        class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10"
+      >
+        <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+          View Internship
+        </h2>
+        <button
+          type="button"
+          (click)="handleClose()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            {{ internship.status }}
-          </span>
-        </p>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
       </div>
 
-      <div class="col-span-2">
-        <label class="font-semibold text-sm">Job Description</label>
-        <p class="whitespace-pre-line">
-          {{ internship.job_description }}
-        </p>
-      </div>
-
-      <div class="col-span-2">
-        <label class="font-semibold text-sm">Qualifications</label>
-        <p class="whitespace-pre-line">
-          {{ internship.qualifications }}
-        </p>
-      </div>
-
-      <div class="col-span-2" *ngIf="internship.skills?.length > 0">
-        <label class="font-semibold text-sm">Required Skills</label>
-        <div class="flex flex-wrap gap-2 mt-2">
-          <span
-            *ngFor="let skill of internship.skills"
-            class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800"
-            >{{ skill }}</span
+      <!-- Body -->
+      <div class="p-6 bg-white text-sm space-y-4">
+        <!-- Title -->
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Title
+          </label>
+          <p
+            class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
           >
+            {{ internship.title }}
+          </p>
+        </div>
+
+        <!-- Company Name -->
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Company
+          </label>
+          <div class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50 flex items-center gap-2">
+            <i class="pi pi-building text-green-600"></i>
+            <span>{{ internship.company_name || 'N/A' }}</span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Status
+          </label>
+          <div class="border py-2 px-3 poppins-regular rounded-sm text-sm bg-gray-50">
+            <span
+              class="inline-block px-3 py-1 rounded text-sm font-medium poppins-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-800': internship.status === 'open',
+                'bg-yellow-100 text-yellow-800': internship.status === 'pending',
+                'bg-gray-100 text-gray-800': internship.status === 'draft',
+                'bg-red-100 text-red-800': internship.status === 'closed' || internship.status === 'rejected'
+              }"
+            >
+              {{ internship.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Key Information Grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Duration
+            </label>
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+            >
+              {{ internship.duration_months || 'N/A' }} months
+            </p>
+          </div>
+
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Posting Type
+            </label>
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+            >
+              {{ internship.posting_type | titlecase }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Full Description -->
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Full Description
+          </label>
+          <div
+            class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50 min-h-[200px]"
+            [innerHTML]="internship.full_description || internship.description || 'No description provided'"
+          ></div>
+        </div>
+
+        <!-- Skills -->
+        <div class="flex flex-col">
+          <label class="text-sm font-medium mb-1 poppins-medium">
+            Required Skills
+          </label>
+          <div
+            class="border py-2 px-3 poppins-regular rounded-sm text-sm bg-gray-50 min-h-[50px]"
+          >
+            <div
+              class="flex flex-wrap gap-2"
+              *ngIf="internship.skills && internship.skills.length > 0"
+            >
+              <span
+                *ngFor="let skill of internship.skills"
+                class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
+              >
+                {{ skill.skill_name || skill }}
+              </span>
+            </div>
+            <span
+              *ngIf="!internship.skills || internship.skills.length === 0"
+              class="text-gray-400"
+            >
+              No skills specified
+            </span>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Posted On
+            </label>
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+            >
+              {{ internship.created_at | date : "mediumDate" }}
+            </p>
+          </div>
+          <div
+            class="flex flex-col"
+            *ngIf="internship.updated_at !== internship.created_at"
+          >
+            <label class="text-sm font-medium mb-1 poppins-medium">
+              Last Updated
+            </label>
+            <p
+              class="border py-2 px-3 poppins-regular rounded-sm text-sm text-gray-700 bg-gray-50"
+            >
+              {{ internship.updated_at | date : "mediumDate" }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between gap-2 pt-4 border-t border-gray-200">
+          <!-- Left side: Empty or additional actions -->
+          <div></div>
+
+          <!-- Right side: Main actions -->
+          <div class="flex gap-2 ml-auto">
+            <!-- Close button -->
+            <button
+              type="button"
+              (click)="handleClose()"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 poppins-medium"
+            >
+              Close
+            </button>
+
+            <!-- Approve/Reject buttons for pending status -->
+            <button
+              *ngIf="canApproveOrReject()"
+              type="button"
+              (click)="handleReject()"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 poppins-medium"
+            >
+              Reject
+            </button>
+            <button
+              *ngIf="canApproveOrReject()"
+              type="button"
+              (click)="handleApprove()"
+              [disabled]="isApproving"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 poppins-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="isApproving">Approving...</span>
+              <span *ngIf="!isApproving">Approve</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="flex justify-end gap-2 mt-6" *ngIf="canApproveOrReject()">
-      <button
-        (click)="handleReject()"
-        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm poppins-medium rounded"
-      >
-        <i class="pi pi-times mr-2"></i>
-        Reject
-      </button>
-      <button
-        (click)="handleApprove()"
-        [disabled]="isApproving"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-      >
-        <span
-          *ngIf="isApproving"
-          class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"
-        ></span>
-        <i *ngIf="!isApproving" class="pi pi-check"></i>
-        <span>{{ isApproving ? "Approving..." : "Approve" }}</span>
-      </button>
-    </div>
   </div>
-</p-dialog>
+</div>

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 import { ProgramsService } from '../school-info/programs/programs.service';
+import { AlumniService } from './alumni.service';
 
 @Component({
   selector: 'app-alumni',
@@ -33,7 +33,7 @@ export class AlumniComponent implements OnInit {
   selectedProgramId: string | number = '';
   
   constructor(
-    private http: HttpClient,
+    private alumniService: AlumniService,
     private fb: FormBuilder,
     private programService: ProgramsService
   ) {
@@ -70,22 +70,7 @@ export class AlumniComponent implements OnInit {
   }
   
   loadAlumni(): void {
-    const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({
-      Authorization: token as string
-    });
-    
-    const params: any = {
-      pageNo: this.pageNo.toString(),
-      pageSize: this.pageSize.toString(),
-      keyword: this.keyword.trim()
-    };
-    
-    if (this.selectedProgramId) {
-      params.program_id = this.selectedProgramId.toString();
-    }
-    
-    this.http.get(`${environment.apiUrl}/superadmin/alumni`, { headers, params })
+    this.alumniService.getAll(this.pageNo, this.pageSize, this.keyword, this.selectedProgramId)
       .subscribe({
         next: (res: any) => {
           if (res && Array.isArray(res.data)) {
@@ -188,11 +173,6 @@ export class AlumniComponent implements OnInit {
       return;
     }
     
-    const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({
-      Authorization: token as string
-    });
-    
     const formData = { ...this.alumniForm.value };
     
     // Convert empty strings to null for optional fields
@@ -203,11 +183,7 @@ export class AlumniComponent implements OnInit {
     
     if (this.isEditMode && this.currentAlumniId) {
       // Update
-      this.http.put(
-        `${environment.apiUrl}/superadmin/alumni/${this.currentAlumniId}`,
-        formData,
-        { headers }
-      ).subscribe({
+      this.alumniService.update(this.currentAlumniId, formData).subscribe({
         next: (res: any) => {
           Swal.fire({
             icon: 'success',
@@ -230,11 +206,7 @@ export class AlumniComponent implements OnInit {
       });
     } else {
       // Create
-      this.http.post(
-        `${environment.apiUrl}/superadmin/alumni`,
-        formData,
-        { headers }
-      ).subscribe({
+      this.alumniService.create(formData).subscribe({
         next: (res: any) => {
           Swal.fire({
             icon: 'success',
@@ -270,15 +242,7 @@ export class AlumniComponent implements OnInit {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        const token = sessionStorage.getItem('auth_token');
-        const headers = new HttpHeaders({
-          Authorization: token as string
-        });
-        
-        this.http.delete(
-          `${environment.apiUrl}/superadmin/alumni/${alumniId}`,
-          { headers }
-        ).subscribe({
+        this.alumniService.delete(alumniId).subscribe({
           next: (res: any) => {
             Swal.fire({
               icon: 'success',

@@ -302,7 +302,7 @@ export class RequirementsComponent implements OnInit {
     });
 
     this.http
-      .get(`${environment.apiUrl}/students/hiring-status`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/hiring-status`, { headers })
       .subscribe({
         next: (response: any) => {
           this.isHired = response.is_hired;
@@ -326,7 +326,7 @@ export class RequirementsComponent implements OnInit {
 
     // First get the student_id from profile
     this.http
-      .get(`${environment.apiUrl}/students/profile`, { headers })
+      .get(`${environment.apiUrl}/student-trainee/profile`, { headers })
       .subscribe({
         next: (profileResponse: any) => {
           const studentId = profileResponse.data?.student_id;
@@ -338,7 +338,7 @@ export class RequirementsComponent implements OnInit {
 
           // Now fetch the requirements using student_id
           this.http
-            .get(`${environment.apiUrl}/requirements/student/${studentId}`, {
+            .get(`${environment.apiUrl}/student-trainee/requirements/student/${studentId}`, {
               headers,
             })
             .subscribe({
@@ -438,7 +438,7 @@ export class RequirementsComponent implements OnInit {
     });
 
     this.http
-      .post(`${environment.apiUrl}/requirements/upload`, formData, { headers })
+      .post(`${environment.apiUrl}/student-trainee/requirements/upload`, formData, { headers })
       .subscribe({
         next: (response: any) => {
           requirement.status = 'submitted';

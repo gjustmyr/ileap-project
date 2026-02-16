@@ -71,4 +71,15 @@ export class AuthService {
     });
     return this.http.post(`${this.baseURL}/auth/logout`, {}, { headers });
   }
+
+  getUserProfile(): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+    const headers = new HttpHeaders({
+      Authorization: token,
+    });
+    return this.http.get(`${this.baseURL}/auth/profile`, { headers });
+  }
 }

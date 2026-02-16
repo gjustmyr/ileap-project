@@ -24,7 +24,7 @@ export class JobPlacementService {
       .set('keyword', keyword);
 
     return this.http
-      .get(`${this.baseURL}/jp-officers`, { headers, params })
+      .get(`${this.baseURL}/superadmin/jp-officers`, { headers, params })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -39,7 +39,7 @@ export class JobPlacementService {
     const headers = new HttpHeaders({ Authorization: token as string });
 
     return this.http
-      .get(`${this.baseURL}/jp-officers/${user_id}`, { headers })
+      .get(`${this.baseURL}/superadmin/jp-officers/${user_id}`, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -53,7 +53,7 @@ export class JobPlacementService {
     const headers = new HttpHeaders({ Authorization: token as string });
 
     return this.http
-      .post(`${this.baseURL}/jp-officers/register`, payload, { headers })
+      .post(`${this.baseURL}/superadmin/jp-officers/register`, payload, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
@@ -69,7 +69,7 @@ export class JobPlacementService {
     const headers = new HttpHeaders({ Authorization: token as string });
 
     return this.http
-      .patch(`${this.baseURL}/jp-officers/${userId}`, data, { headers })
+      .patch(`${this.baseURL}/superadmin/jp-officers/${userId}`, data, { headers })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {

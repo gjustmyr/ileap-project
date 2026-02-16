@@ -44,13 +44,14 @@ export class MainComponent implements OnInit {
   profileData: any = null;
   isLoadingProfile: boolean = false;
   isLoadingApplications: boolean = false;
+  isUserDropdownOpen: boolean = false;
 
   constructor(
     private studentService: StudentService,
     private internshipsService: InternshipsService,
     private router: Router,
     private http: HttpClient,
-    private pdfService: PersonalHistoryPdfService
+    private pdfService: PersonalHistoryPdfService,
   ) {}
 
   openEditProfile() {
@@ -73,8 +74,13 @@ export class MainComponent implements OnInit {
       next: (response) => {
         this.profileData = response.data;
         // Fix profile picture URL if it's a relative path
-        if (this.profileData.profile_picture && this.profileData.profile_picture.startsWith('/uploads/')) {
-          this.profileData.profile_picture = environment.apiUrl.replace('/api', '') + this.profileData.profile_picture;
+        if (
+          this.profileData.profile_picture &&
+          this.profileData.profile_picture.startsWith('/uploads/')
+        ) {
+          this.profileData.profile_picture =
+            environment.apiUrl.replace('/api', '') +
+            this.profileData.profile_picture;
         }
         this.isLoadingProfile = false;
       },
@@ -115,6 +121,11 @@ export class MainComponent implements OnInit {
     // Redirect to login
     this.router.navigate(['/login']);
   }
+
+  toggleUserDropdown() {
+    this.isUserDropdownOpen = !this.isUserDropdownOpen;
+  }
+
   searchText = '';
 
   appliedJobs: any[] = [];
@@ -290,10 +301,14 @@ export class MainComponent implements OnInit {
   async downloadPersonalHistoryStatement(): Promise<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
 
-    this.http.get<{status: string, data: any}>(`${environment.apiUrl}/students/personal-history-statement-data`, { headers })
+    this.http
+      .get<{
+        status: string;
+        data: any;
+      }>(`${environment.apiUrl}/students/personal-history-statement-data`, { headers })
       .subscribe({
         next: async (response) => {
           const studentData = response.data;
@@ -303,14 +318,14 @@ export class MainComponent implements OnInit {
               icon: 'success',
               title: 'Success!',
               text: 'Your Personal History Statement has been downloaded successfully.',
-              timer: 2000
+              timer: 2000,
             });
           } catch (error) {
             console.error('Error generating PDF:', error);
             Swal.fire({
               icon: 'error',
               title: 'Error',
-              text: 'Failed to generate PDF. Please try again.'
+              text: 'Failed to generate PDF. Please try again.',
             });
           }
         },
@@ -319,9 +334,9 @@ export class MainComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Failed to load student data. Please try again later.'
+            text: 'Failed to load student data. Please try again later.',
           });
-        }
+        },
       });
   }
 

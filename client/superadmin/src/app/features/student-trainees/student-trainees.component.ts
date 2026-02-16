@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 import { CampusesService } from '../school-info/campuses/campuses.service';
+import { StudentTraineesService } from './student-trainees.service';
 
 @Component({
   selector: 'app-student-trainees',
@@ -29,7 +29,7 @@ export class StudentTraineesComponent implements OnInit {
   selectedProgramId: string | number = '';
   
   constructor(
-    private http: HttpClient,
+    private studentService: StudentTraineesService,
     private campusService: CampusesService
   ) {}
   
@@ -55,48 +55,34 @@ export class StudentTraineesComponent implements OnInit {
   }
   
   loadStudents(): void {
-    const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({
-      Authorization: token as string
-    });
-    
-    const params: any = {
-      pageNo: this.pageNo.toString(),
-      pageSize: this.pageSize.toString(),
-      keyword: this.keyword.trim()
-    };
-    
-    if (this.selectedCampusId) {
-      params.campus_id = this.selectedCampusId.toString();
-    }
-    
-    if (this.selectedProgramId) {
-      params.program_id = this.selectedProgramId.toString();
-    }
-    
-    this.http.get(`${environment.apiUrl}/superadmin/student-trainees`, { headers, params })
-      .subscribe({
-        next: (res: any) => {
-          if (res && Array.isArray(res.data)) {
-            this.students = res.data;
-            this.totalRecords = res.pagination?.total_records || 0;
-          } else {
-            this.students = [];
-            this.totalRecords = 0;
-          }
-        },
-        error: (err) => {
-          console.error('Error loading students:', err);
+    this.studentService.getAll(
+      this.pageNo,
+      this.pageSize,
+      this.keyword,
+      this.selectedCampusId,
+      this.selectedProgramId
+    ).subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.data)) {
+          this.students = res.data;
+          this.totalRecords = res.pagination?.total_records || 0;
+        } else {
           this.students = [];
           this.totalRecords = 0;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to load student trainees',
-            confirmButtonColor: '#ef4444'
-          });
         }
-      });
+      },
+      error: (err) => {
+        console.error('Error loading students:', err);
+        this.students = [];
+        this.totalRecords = 0;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load student trainees',
+          confirmButtonColor: '#ef4444'
+        });
+      }
+    });
   }
   
   applyFilters(): void {
@@ -124,16 +110,7 @@ export class StudentTraineesComponent implements OnInit {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        const token = sessionStorage.getItem('auth_token');
-        const headers = new HttpHeaders({
-          Authorization: token as string
-        });
-        
-        this.http.post(
-          `${environment.apiUrl}/superadmin/student-trainees/${userId}/send-new-password`,
-          {},
-          { headers }
-        ).subscribe({
+        this.studentService.sendNewPassword(userId).subscribe({
           next: () => {
             Swal.fire({
               icon: 'success',

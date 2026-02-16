@@ -7,18 +7,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class InternshipsService {
-  getCompanies(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/companies`, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  getIndustries(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/industries`, {
-      headers: this.getHeaders(),
-    });
-  }
-  private apiUrl = `${environment.apiUrl}/internships`;
+  private apiUrl = `${environment.apiUrl}/student-trainee/internships`;
 
   constructor(private http: HttpClient) {}
 
@@ -35,6 +24,18 @@ export class InternshipsService {
     // Don't set Content-Type for file uploads - browser will set it automatically with boundary
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
+    });
+  }
+
+  getCompanies(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/student-trainee/companies`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  getIndustries(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/student-trainee/industries`, {
+      headers: this.getHeaders(),
     });
   }
 

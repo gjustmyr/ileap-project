@@ -10,32 +10,41 @@
       </p>
     </div>
 
-    <!-- Controls -->
-    <div class="controls mb-4 flex justify-between items-center gap-3">
-      <div class="flex gap-3 flex-1">
-        <div class="w-[300px]">
-          <div
-            class="flex border border-gray-300 rounded overflow-hidden bg-white"
-          >
-            <input
-              type="text"
-              placeholder="Search industries..."
-              [(ngModel)]="keyword"
-              (keyup.enter)="handleSearch()"
-              class="flex-1 px-3 py-2 text-sm poppins-regular outline-none"
-            />
-            <button
-              (click)="handleSearch()"
-              class="px-3 py-2 bg-gray-100 hover:bg-gray-200 border-l border-gray-300"
-            >
-              <i class="pi pi-search text-gray-600"></i>
-            </button>
-          </div>
-        </div>
+    <!-- Filters -->
+    <div class="flex gap-4 mb-2">
+      <!-- Search Box -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1 poppins-medium">
+          Search
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          placeholder="Search industries..."
+          class="w-64 px-3 py-2 border border-gray-300 rounded text-sm poppins-regular outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Filter Action Buttons -->
+    <div class="flex gap-3 mb-6 justify-between">
+      <div class="flex gap-3">
+        <button
+          (click)="handleSearch()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
+        >
+          Apply Filters
+        </button>
+        <button
+          (click)="keyword = ''; handleSearch()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
+        >
+          Reset
+        </button>
       </div>
       <button
-        class="bg-green-500 hover:bg-green-600 poppins-medium text-sm text-white px-4 py-2 rounded-xs flex items-center gap-2"
         (click)="handleAddDialog()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer"
       >
         <i class="pi pi-plus"></i>
         Add Industry
@@ -108,21 +117,21 @@
               >
                 <div class="flex gap-1">
                   <button
-                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-sm rounded cursor-pointer"
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
                     (click)="handleUpdateDialog(row.industry_id)"
                     title="Edit Industry"
                   >
                     <i class="pi pi-pencil"></i>
                   </button>
                   <button
-                    class="bg-yellow-500 hover:bg-yellow-600 p-2 text-white text-sm rounded cursor-pointer"
+                    class="bg-yellow-500 hover:bg-yellow-600 p-2 text-white text-xs rounded cursor-pointer"
                     (click)="handleStatusDialog(row)"
                     title="Change Status"
                   >
                     <i class="pi pi-ban"></i>
                   </button>
                   <button
-                    class="bg-red-500 hover:bg-red-600 p-2 text-white text-sm rounded cursor-pointer"
+                    class="bg-red-500 hover:bg-red-600 p-2 text-white text-xs rounded cursor-pointer"
                     (click)="handleDelete(row.industry_id, row.industry_name)"
                     title="Delete Industry"
                   >
@@ -180,7 +189,9 @@
   *ngIf="isAddDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Add Industry</h3>
       <button
@@ -193,7 +204,7 @@
     </div>
 
     <form [formGroup]="industryForm" (ngSubmit)="submitIndustryForm()">
-      <div class="p-6">
+      <div class="p-6 max-h-96 overflow-y-auto">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1">
             Industry Name <span class="text-red-500">*</span>
@@ -241,7 +252,9 @@
   *ngIf="isUpdateDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Update Industry</h3>
       <button
@@ -254,7 +267,7 @@
     </div>
 
     <form [formGroup]="industryUpdateForm" (ngSubmit)="submitUpdateForm()">
-      <div class="p-6">
+      <div class="p-6 max-h-96 overflow-y-auto">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1">
             Industry Name <span class="text-red-500">*</span>
@@ -302,7 +315,9 @@
   *ngIf="isStatusDialogVisible"
   class="fixed inset-0 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10">
+  <div
+    class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 relative z-10"
+  >
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="text-lg font-semibold">Change Industry Status</h3>
       <button

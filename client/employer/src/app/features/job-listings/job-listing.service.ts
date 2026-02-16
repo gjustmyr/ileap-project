@@ -94,23 +94,16 @@ export class JobListingService {
     });
   }
 
-  // // Get a single internship by ID
-  // getInternshipById(id: number): Observable<any> {
-  //   return this.http.get<any>(`${this.baseUrl}/${id}`);
-  // }
+  // Delete an internship (only drafts)
+  deleteInternship(id: number): Observable<any> {
+    const token = sessionStorage.getItem('auth_token') || '';
 
-  // // Create a new internship
-  // createInternship(data: any): Observable<any> {
-  //   return this.http.post<any>(this.baseUrl, data);
-  // }
+    const headers = new HttpHeaders({
+      Authorization: token,
+    });
 
-  // // Update an internship
-  // updateInternship(id: number, data: any): Observable<any> {
-  //   return this.http.patch<any>(`${this.baseUrl}/${id}`, data);
-  // }
-
-  // // Delete an internship
-  // deleteInternship(id: number): Observable<any> {
-  //   return this.http.delete<any>(`${this.baseUrl}/${id}`);
-  // }
+    return this.http.delete<any>(`${this.baseUrl}/internships/${id}`, {
+      headers,
+    });
+  }
 }

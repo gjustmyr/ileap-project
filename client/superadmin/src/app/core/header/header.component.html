@@ -1,23 +1,41 @@
-<header class="h-full flex items-center bg-red-600 text-white">
-  <div class="h-full w-full flex items-center justify-between px-4">
-    <div class="flex items-center gap-x-4">
-      <button
-        class="hover:bg-white hover:text-red-500 py-3 px-3 rounded transition duration-300 delay-150"
-        (click)="onToggleSidebar()"
-      >
-        <i class="pi pi-bars"></i>
-      </button>
-      <h1 class="text-2xl uppercase poppins-semibold">
-        {{ pageTitle }}
-      </h1>
+<header
+  class="relative h-full py-10 bg-white bg-bottom bg-cover"
+  style="background-image: url(&quot;/assets/img/login-cover.jpg&quot;)"
+>
+  <!-- White transparent overlay -->
+  <div class="absolute inset-0 bg-white opacity-80"></div>
+
+  <!-- Content container -->
+  <div
+    class="relative z-10 container mx-auto flex flex-col items-center justify-center gap-4"
+  >
+    <div class="flex items-center gap-4">
+      <img
+        src="/assets/img/logo.png"
+        alt="logo.png"
+        class="w-16 h-16 object-contain"
+      />
+      <div class="text-center">
+        <h1
+          class="text-xl uppercase font-bold"
+          style="font-family: &quot;Times New Roman&quot;, serif"
+        >
+          Batangas State University
+        </h1>
+        <h2 class="text-sm text-red-500" style="font-family: Arial, sans-serif">
+          The National Engineering University
+        </h2>
+      </div>
     </div>
-    <button
-      class="hover:bg-white hover:text-red-500 py-2 px-4 rounded transition duration-300 delay-150 flex items-center gap-2"
-      (click)="logout()"
-      title="Logout"
-    >
-      <i class="pi pi-sign-out"></i>
-      <span class="text-sm poppins-medium">Logout</span>
-    </button>
+
+    <!-- Portal Title -->
+    <div class="mt-2 text-center">
+      <h3
+        class="text-4xl uppercase font-black"
+        style="font-family: Arial, sans-serif"
+      >
+        SUPER ADMIN PORTAL
+      </h3>
+    </div>
   </div>
 </header>

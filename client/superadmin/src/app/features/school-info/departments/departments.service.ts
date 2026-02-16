@@ -38,11 +38,16 @@ export class DepartmentsService {
     const headers = new HttpHeaders({
       Authorization: token as string,
     });
-    const params = new HttpParams()
+    
+    let params = new HttpParams()
       .set('pageNo', pageNo.toString())
       .set('pageSize', pageSize.toString())
-      .set('keyword', keyword)
-      .set('campus_id', campusId ? campusId.toString() : '');
+      .set('keyword', keyword);
+    
+    // Only add campus_id if it's provided and not empty
+    if (campusId && campusId.toString() !== '') {
+      params = params.set('campus_id', campusId.toString());
+    }
 
     return this.http
       .get(`${this.baseURL}/departments`, { headers, params })

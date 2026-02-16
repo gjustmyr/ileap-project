@@ -163,11 +163,11 @@
                       >
                         <span class="flex items-center gap-1">
                           <i class="pi pi-map-marker text-xs"></i>
-                          Batangas City
+                          {{ internship.address || 'Batangas City' }}
                         </span>
                         <span class="flex items-center gap-1">
-                          <i class="pi pi-clock text-xs"></i>
-                          {{ internship.duration_months }} months
+                          <i class="pi pi-briefcase text-xs"></i>
+                          {{ internship.posting_type || 'Internship' }}
                         </span>
                         <span class="flex items-center gap-1">
                           <i class="pi pi-calendar text-xs"></i>
@@ -183,7 +183,7 @@
                           *ngFor="let skill of internship.skills.slice(0, 4)"
                           class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full"
                         >
-                          {{ skill }}
+                          {{ skill.skill_name || skill }}
                         </span>
                         <span
                           *ngIf="internship.skills.length > 4"
@@ -288,11 +288,11 @@
                       <div class="flex flex-wrap gap-3 text-sm text-gray-600">
                         <span class="flex items-center gap-1">
                           <i class="pi pi-map-marker"></i>
-                          Batangas City
+                          {{ selectedInternship.address || 'Batangas City' }}
                         </span>
                         <span class="flex items-center gap-1">
-                          <i class="pi pi-clock"></i>
-                          {{ selectedInternship.duration_months }} months
+                          <i class="pi pi-briefcase"></i>
+                          {{ selectedInternship.posting_type || 'Internship' }}
                         </span>
                       </div>
                     </div>
@@ -409,7 +409,7 @@
                         *ngFor="let skill of selectedInternship.skills"
                         class="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200"
                       >
-                        {{ skill }}
+                        {{ skill.skill_name || skill }}
                       </span>
                     </div>
                   </div>
