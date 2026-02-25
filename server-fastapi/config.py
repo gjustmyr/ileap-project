@@ -52,8 +52,7 @@ CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGI
     "http://localhost:4202",  # OJT Coordinator
     "http://localhost:4203",  # OJT Head
     "http://localhost:4204",  # Student Trainee
-    "http://localhost:4205",  # Supervisor
-    "http://localhost:4700",  # Supervisor (alternate)
+    "http://localhost:4700",  # Supervisor
 ]
 
 # File upload configuration

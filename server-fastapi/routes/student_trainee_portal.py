@@ -206,7 +206,7 @@ def student_get_phs_data(
     token_data: dict = Depends(verify_student_trainee)
 ):
     """Get personal history statement data"""
-    from models import Student, Class, Department, Campus, OJTCoordinator, OJTHead, Program, ClassEnrollment
+    from models import Student, Class, Department, Campus, OJTCoordinator, OJTHead, Program, ClassEnrollment, InternshipApplication, Internship, Employer, TraineeSupervisor
     
     # Get student record
     student = db.query(Student).filter(Student.user_id == token_data["user_id"]).first()
@@ -253,6 +253,91 @@ def student_get_phs_data(
                     OJTCoordinator.ojt_coordinator_id == student_class.ojt_coordinator_id
                 ).first()
     
+    # Get internship/hiring information through application
+    application = db.query(InternshipApplication).filter(
+        InternshipApplication.student_id == student.student_id,
+        InternshipApplication.status == "accepted"
+    ).first()
+    
+    employer = None
+    supervisor = None
+    company_name = None
+    company_address = None
+    company_department = None
+    company_representative = None
+    supervisor_name = None
+    training_schedule = None
+    ojt_start_date = None
+    ojt_end_date = None
+    
+    if application:
+        internship = db.query(Internship).filter(
+            Internship.internship_id == application.internship_id
+        ).first()
+        
+        if internship:
+            employer = db.query(Employer).filter(
+                Employer.employer_id == internship.employer_id
+            ).first()
+            
+            if employer:
+                company_name = employer.company_name
+                company_address = employer.address
+                company_representative = employer.representative_name
+                
+                # Parse work_schedule JSON to format training schedule
+                if employer.work_schedule:
+                    try:
+                        import json
+                        schedule = json.loads(employer.work_schedule)
+                        # Format: "Monday-Friday, 8:00 AM - 5:00 PM"
+                        days = []
+                        times = []
+                        for day, hours in schedule.items():
+                            if hours and isinstance(hours, dict):
+                                days.append(day)
+                                if 'start' in hours and 'end' in hours:
+                                    times.append(f"{hours['start']} - {hours['end']}")
+                        
+                        if days and times:
+                            # Group consecutive days
+                            if len(days) >= 5 and all(d in days for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']):
+                                day_range = "Monday-Friday"
+                            else:
+                                day_range = ", ".join(days)
+                            
+                            # Use first time range (assuming consistent hours)
+                            training_schedule = f"{day_range}, {times[0]}" if times else day_range
+                    except:
+                        training_schedule = None
+        
+        # Get assigned supervisor from student_supervisor_assignments
+        from models import StudentSupervisorAssignment
+        assignment = db.query(StudentSupervisorAssignment).filter(
+            StudentSupervisorAssignment.student_id == student.student_id,
+            StudentSupervisorAssignment.internship_application_id == application.application_id,
+            StudentSupervisorAssignment.status == "active"
+        ).first()
+        
+        if assignment:
+            supervisor = db.query(TraineeSupervisor).filter(
+                TraineeSupervisor.supervisor_id == assignment.supervisor_id
+            ).first()
+            
+            if supervisor:
+                supervisor_name = f"{supervisor.first_name} {supervisor.last_name}"
+                # Get supervisor's department as company department
+                if supervisor.department:
+                    company_department = supervisor.department
+        
+        ojt_start_date = application.ojt_start_date
+        
+        # Calculate end date based on required hours (assuming 8 hours per day)
+        if ojt_start_date and student.required_hours:
+            from datetime import timedelta
+            days_needed = student.required_hours / 8
+            ojt_end_date = ojt_start_date + timedelta(days=int(days_needed))
+    
     return {
         "status": "success",
         "data": {
@@ -270,6 +355,7 @@ def student_get_phs_data(
             "citizenship": student.citizenship,
             "civil_status": student.civil_status,
             "present_address": student.present_address,
+            "contact_number": student.contact_number,
             "tel_no_present": student.tel_no_present or "",
             "provincial_address": student.provincial_address or "",
             "tel_no_provincial": student.tel_no_provincial or "",
@@ -282,17 +368,35 @@ def student_get_phs_data(
             "guardian_name": student.guardian_name or "",
             "guardian_tel_no": student.guardian_tel_no or "",
             "program": program.program_name if program else (student.program or ""),
+            "major": student.major or "",
             "department": department.department_name if department else (student.department or ""),
             "year_level": student.year_level or "",
+            "program_length": student.length_of_program or "",
             "length_of_program": student.length_of_program or "",
             "school_address": campus.campus_address if campus else (student.school_address or ""),
             "campus_name": campus.campus_name if campus else "",
+            "campus": campus.campus_name if campus else "",
+            "college": department.department_name if department else "",
             "ojt_coordinator": f"{ojt_coordinator.first_name} {ojt_coordinator.last_name}" if ojt_coordinator else (student.ojt_coordinator or ""),
             "ojt_coordinator_tel": ojt_coordinator.contact_number if ojt_coordinator else (student.ojt_coordinator_tel or ""),
             "ojt_head": f"{ojt_head.first_name} {ojt_head.last_name}" if ojt_head else (student.ojt_head or ""),
             "ojt_head_tel": ojt_head.contact_number if ojt_head else (student.ojt_head_tel or ""),
+            "dean": department.dean_name if department else (student.dean or ""),
+            "dean_tel": department.dean_contact if department else (student.dean_tel or ""),
+            "emergency_contact_name": student.emergency_contact_name or "",
+            "emergency_contact_relationship": student.emergency_contact_relationship or "",
             "emergency_contact_address": student.emergency_contact_address or "",
-            "emergency_contact_tel": student.emergency_contact_tel or ""
+            "emergency_contact_tel": student.emergency_contact_tel or "",
+            "profile_picture": student.profile_picture or "",
+            "required_hours": student.required_hours or 486,
+            "company_name": company_name or "",
+            "company_address": company_address or "",
+            "company_department": company_department or "",
+            "company_representative": company_representative or "",
+            "supervisor_name": supervisor_name or "",
+            "training_schedule": training_schedule or "",
+            "ojt_start_date": str(ojt_start_date) if ojt_start_date else "",
+            "ojt_end_date": str(ojt_end_date) if ojt_end_date else ""
         }
     }
 

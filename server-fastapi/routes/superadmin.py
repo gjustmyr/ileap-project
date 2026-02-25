@@ -789,6 +789,9 @@ async def get_all_jp_officers(
             search_filter = or_(
                 JobPlacementOfficer.first_name.ilike(f"%{keyword}%"),
                 JobPlacementOfficer.last_name.ilike(f"%{keyword}%"),
+                JobPlacementOfficer.contact_number.ilike(f"%{keyword}%"),
+                JobPlacementOfficer.position_title.ilike(f"%{keyword}%"),
+                Campus.campus_name.ilike(f"%{keyword}%"),
                 User.email_address.ilike(f"%{keyword}%")
             )
             query = query.filter(search_filter)

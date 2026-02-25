@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from database import get_db
 from middleware.auth import verify_token
+from config import get_upload_path, get_upload_url
 from controllers import (
     dashboard_controller,
     employer_controller,
@@ -475,27 +476,51 @@ async def get_requirement_templates(
 
 @router.post("/requirement-templates")
 async def create_requirement_template(
-    requirement_id: int,
-    title: str,
-    description: Optional[str] = None,
-    type: str = "pre",
-    is_required: bool = True,
-    order_index: int = 1,
-    accessible_to: str = "student,coordinator",
+    title: str = Form(...),
+    description: Optional[str] = Form(None),
+    type: str = Form("pre"),
+    is_required: str = Form("true"),
+    accessible_to: str = Form("student,coordinator"),
+    template_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_ojt_head_role)
 ):
     """Create new requirement template"""
     from fastapi import HTTPException
     from models import RequirementTemplate
+    import uuid
+    import os
     
-    # Check if requirement_id already exists
-    existing = db.query(RequirementTemplate).filter(
-        RequirementTemplate.requirement_id == requirement_id
-    ).first()
+    # Convert is_required string to boolean
+    is_required_bool = is_required.lower() in ('true', '1', 'yes')
     
-    if existing:
-        raise HTTPException(status_code=400, detail="Requirement ID already exists")
+    # Auto-generate requirement_id (get max + 1)
+    max_req = db.query(RequirementTemplate).order_by(RequirementTemplate.requirement_id.desc()).first()
+    requirement_id = (max_req.requirement_id + 1) if max_req else 1
+    
+    # Auto-generate order_index (get max + 1)
+    max_order = db.query(RequirementTemplate).order_by(RequirementTemplate.order_index.desc()).first()
+    order_index = (max_order.order_index + 1) if max_order else 1
+    
+    # Handle file upload if provided
+    template_url = None
+    if template_file:
+        # Create upload directory if it doesn't exist
+        upload_dir = get_upload_path("requirement_templates")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = os.path.splitext(template_file.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await template_file.read()
+            buffer.write(content)
+        
+        # Generate URL
+        template_url = get_upload_url("requirement_templates", unique_filename)
     
     # Create template
     new_template = RequirementTemplate(
@@ -503,8 +528,8 @@ async def create_requirement_template(
         title=title,
         description=description,
         type=type,
-        template_url=None,
-        is_required=is_required,
+        template_url=template_url,
+        is_required=is_required_bool,
         order_index=order_index,
         accessible_to=accessible_to
     )
@@ -519,7 +544,8 @@ async def create_requirement_template(
         "data": {
             "template_id": new_template.template_id,
             "requirement_id": new_template.requirement_id,
-            "title": new_template.title
+            "title": new_template.title,
+            "template_url": new_template.template_url
         }
     }
 
@@ -527,12 +553,13 @@ async def create_requirement_template(
 @router.put("/requirement-templates/{template_id}")
 async def update_requirement_template(
     template_id: int,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    type: Optional[str] = None,
-    is_required: Optional[bool] = None,
-    order_index: Optional[int] = None,
-    accessible_to: Optional[str] = None,
+    title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    type: Optional[str] = Form(None),
+    is_required: Optional[str] = Form(None),
+    order_index: Optional[str] = Form(None),
+    accessible_to: Optional[str] = Form(None),
+    template_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_ojt_head_role)
 ):
@@ -540,6 +567,8 @@ async def update_requirement_template(
     from fastapi import HTTPException
     from models import RequirementTemplate
     from datetime import datetime
+    import uuid
+    import os
     
     template = db.query(RequirementTemplate).filter(
         RequirementTemplate.template_id == template_id
@@ -547,6 +576,33 @@ async def update_requirement_template(
     
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Handle file upload if provided
+    if template_file:
+        # Delete old file if exists
+        if template.template_url:
+            # Extract filename from URL
+            old_filename = template.template_url.split('/')[-1]
+            old_file_path = get_upload_path("requirement_templates") / old_filename
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+        
+        # Create upload directory if it doesn't exist
+        upload_dir = get_upload_path("requirement_templates")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = os.path.splitext(template_file.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await template_file.read()
+            buffer.write(content)
+        
+        # Update URL
+        template.template_url = get_upload_url("requirement_templates", unique_filename)
     
     # Update fields
     if title is not None:
@@ -556,9 +612,11 @@ async def update_requirement_template(
     if type is not None:
         template.type = type
     if is_required is not None:
-        template.is_required = is_required
+        # Convert string to boolean
+        template.is_required = is_required.lower() in ('true', '1', 'yes')
     if order_index is not None:
-        template.order_index = order_index
+        # Convert string to int
+        template.order_index = int(order_index)
     if accessible_to is not None:
         template.accessible_to = accessible_to
     
@@ -571,7 +629,8 @@ async def update_requirement_template(
         "message": "Requirement template updated successfully",
         "data": {
             "template_id": template.template_id,
-            "title": template.title
+            "title": template.title,
+            "template_url": template.template_url
         }
     }
 

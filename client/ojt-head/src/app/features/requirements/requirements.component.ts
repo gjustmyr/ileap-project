@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { FilePreviewModalComponent } from '../../shared/components/file-preview-modal/file-preview-modal.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-requirements',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FilePreviewModalComponent],
   templateUrl: './requirements.component.html',
   styleUrls: ['./requirements.component.css'],
 })
@@ -23,7 +24,10 @@ export class RequirementsComponent implements OnInit {
   // Modal states
   showAddModal: boolean = false;
   showEditModal: boolean = false;
+  showPreviewModal: boolean = false;
   selectedRequirement: any = null;
+  previewFileUrl: string = '';
+  previewFileName: string = '';
 
   // Accessible roles options
   availableRoles = [
@@ -35,12 +39,10 @@ export class RequirementsComponent implements OnInit {
 
   // Form data
   formData: any = {
-    requirement_id: null,
     title: '',
     description: '',
     type: 'pre',
     is_required: true,
-    order_index: 1,
     accessible_to: 'student,coordinator',
   };
   templateFile: File | null = null;
@@ -94,12 +96,10 @@ export class RequirementsComponent implements OnInit {
 
   openAddModal(): void {
     this.formData = {
-      requirement_id: this.getNextRequirementId(),
       title: '',
       description: '',
       type: 'pre',
       is_required: true,
-      order_index: this.requirements.length + 1,
       accessible_to: 'student,coordinator',
     };
     this.selectedRoles = ['student', 'coordinator'];
@@ -119,12 +119,6 @@ export class RequirementsComponent implements OnInit {
 
   onFileSelected(event: any): void {
     this.templateFile = event.target.files[0];
-  }
-
-  getNextRequirementId(): number {
-    if (this.requirements.length === 0) return 1;
-    const maxId = Math.max(...this.requirements.map((r) => r.requirement_id));
-    return maxId + 1;
   }
 
   toggleRole(role: string): void {
@@ -233,13 +227,23 @@ export class RequirementsComponent implements OnInit {
     this.templateFile = null;
     this.selectedRoles = [];
     this.formData = {
-      requirement_id: this.getNextRequirementId(),
       title: '',
       description: '',
       type: 'pre',
       is_required: true,
-      order_index: this.requirements.length + 1,
       accessible_to: 'student,coordinator',
     };
+  }
+
+  previewTemplate(requirement: any): void {
+    this.previewFileUrl = requirement.template_url;
+    this.previewFileName = requirement.title;
+    this.showPreviewModal = true;
+  }
+
+  closePreviewModal(): void {
+    this.showPreviewModal = false;
+    this.previewFileUrl = '';
+    this.previewFileName = '';
   }
 }

@@ -47,7 +47,7 @@ export class ChangePasswordComponent {
             icon: 'success',
             confirmButtonColor: '#16a34a'
           }).then(() => {
-            this.router.navigate(['/student-trainee']);
+            this.router.navigate(['/main']);
           });
         },
         error: (err) => {
@@ -64,6 +64,6 @@ export class ChangePasswordComponent {
   }
 
   cancel() {
-    this.router.navigate(['/student-trainee']);
+    this.router.navigate(['/main']);
   }
 }

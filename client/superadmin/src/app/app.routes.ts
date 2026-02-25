@@ -14,7 +14,6 @@ import { EmployerComponent } from './features/employer/employer.component';
 import { IndustriesComponent } from './features/industries/industries.component';
 import { StudentTraineesComponent } from './features/student-trainees/student-trainees.component';
 import { AlumniComponent } from './features/alumni/alumni.component';
-import { SettingsComponent } from './features/settings/settings.component';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -101,11 +100,6 @@ export const routes: Routes = [
         path: 'alumni',
         component: AlumniComponent,
         data: { title: 'Alumni' },
-      },
-      {
-        path: 'settings',
-        component: SettingsComponent,
-        data: { title: 'Settings' },
       },
     ],
   },

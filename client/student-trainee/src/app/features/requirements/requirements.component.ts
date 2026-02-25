@@ -280,12 +280,14 @@ export class RequirementsComponent implements OnInit {
   }
 
   previewTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const templateUrl = `${baseUrl}${template.template_url}`;
     window.open(templateUrl, '_blank');
   }
 
   downloadTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const templateUrl = `${baseUrl}${template.template_url}`;
     const link = document.createElement('a');
     link.href = templateUrl;
     link.download = template.title || 'template';
@@ -474,7 +476,10 @@ export class RequirementsComponent implements OnInit {
   }
 
   viewFile(url: string): void {
-    window.open(url, '_blank');
+    // Construct full URL with backend base (without /api for static files)
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}/${url}`;
+    window.open(fullUrl, '_blank');
   }
 
   getStatusSeverity(status: string): string {

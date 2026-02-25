@@ -11,9 +11,9 @@ import { InternshipsComponent } from '../../features/internships/internships.com
 import { RequirementsComponent } from '../../features/requirements/requirements.component';
 import { OjtTrackerComponent } from '../../features/ojt-tracker/ojt-tracker.component';
 import { OeamsComponent } from '../../features/oeams/oeams.component';
+import { DocumentsComponent } from '../../features/documents/documents.component';
 import { StudentService } from '../../shared/services/student.service';
 import { InternshipsService } from '../../features/internships/internships.service';
-import { PersonalHistoryPdfService } from '../../shared/services/personal-history-pdf.service';
 import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -32,6 +32,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
     RequirementsComponent,
     OjtTrackerComponent,
     OeamsComponent,
+    DocumentsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',
@@ -51,7 +52,6 @@ export class MainComponent implements OnInit {
     private internshipsService: InternshipsService,
     private router: Router,
     private http: HttpClient,
-    private pdfService: PersonalHistoryPdfService,
   ) {}
 
   openEditProfile() {
@@ -297,48 +297,6 @@ export class MainComponent implements OnInit {
     { label: 'Hybrid', value: 'Hybrid' },
     { label: 'Skeletal Workforce', value: 'Skeletal Workforce' },
   ];
-
-  async downloadPersonalHistoryStatement(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    this.http
-      .get<{
-        status: string;
-        data: any;
-      }>(`${environment.apiUrl}/students/personal-history-statement-data`, { headers })
-      .subscribe({
-        next: async (response) => {
-          const studentData = response.data;
-          try {
-            await this.pdfService.generatePDF(studentData);
-            Swal.fire({
-              icon: 'success',
-              title: 'Success!',
-              text: 'Your Personal History Statement has been downloaded successfully.',
-              timer: 2000,
-            });
-          } catch (error) {
-            console.error('Error generating PDF:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'Failed to generate PDF. Please try again.',
-            });
-          }
-        },
-        error: (error) => {
-          console.error('Error loading student data:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to load student data. Please try again later.',
-          });
-        },
-      });
-  }
 
   saveLogs() {
     console.log('Task:', this.taskForTheDay);

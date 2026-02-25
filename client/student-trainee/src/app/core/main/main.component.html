@@ -117,6 +117,15 @@
           >
             OEAMS
           </button>
+          <button
+            (click)="activeTab = 6"
+            [class.border-b-2]="activeTab === 6"
+            [class.border-green-500]="activeTab === 6"
+            [class.text-green-600]="activeTab === 6"
+            class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+          >
+            Generate Forms
+          </button>
         </nav>
       </div>
 
@@ -141,14 +150,6 @@
             >
               <i class="pi pi-pencil text-sm"></i>
               Edit Profile
-            </button>
-            <button
-              (click)="downloadPersonalHistoryStatement()"
-              class="flex items-center gap-2 px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md text-sm poppins-medium transition"
-              title="Download Personal History Statement"
-            >
-              <i class="pi pi-download text-sm"></i>
-              Download PHS
             </button>
           </div>
 
@@ -453,6 +454,10 @@
       </div>
 
       <div [hidden]="activeTab !== 6">
+        <app-documents></app-documents>
+      </div>
+
+      <div [hidden]="activeTab !== 7">
         <div class="flex h-screen bg-gray-100 text-sm font-sans">
           <!-- Sidebar Filters -->
           <aside

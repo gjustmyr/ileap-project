@@ -1,0 +1,52 @@
+/* Documents Component Styles */
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #document-content,
+  #document-content * {
+    visibility: visible;
+  }
+  #document-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  
+  /* Hide buttons and navigation when printing */
+  button,
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Ensure document content is properly styled */
+#document-content {
+  background: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100%;
+}
+
+/* Document wrapper should maintain proper sizing */
+#document-content > * {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
