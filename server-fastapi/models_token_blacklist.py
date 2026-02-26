@@ -34,3 +34,4 @@ class TokenBlacklist:
 
 # Global instance
 token_blacklist = TokenBlacklist()
+
