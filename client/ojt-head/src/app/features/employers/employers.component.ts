@@ -49,7 +49,7 @@ export class EmployersComponent implements OnInit {
   constructor(
     private employerService: EmployerService,
     private dropdownService: DropdownsService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {}
 
   ngOnInit(): void {
@@ -166,7 +166,7 @@ export class EmployersComponent implements OnInit {
   submitAddSimpleEmployer(): void {
     if (this.employerSimpleForm.invalid) {
       Object.keys(this.employerSimpleForm.controls).forEach((key) =>
-        this.employerSimpleForm.get(key)?.markAsTouched()
+        this.employerSimpleForm.get(key)?.markAsTouched(),
       );
       Swal.fire({
         icon: 'warning',
@@ -244,14 +244,22 @@ export class EmployersComponent implements OnInit {
 
   previewMOA(): void {
     if (this.selectedEmployer?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.selectedEmployer.moa_file}`;
+      // moa_file is a relative path, construct full URL
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const moaUrl = this.selectedEmployer.moa_file.startsWith('http')
+        ? this.selectedEmployer.moa_file
+        : `${baseUrl}/${this.selectedEmployer.moa_file}`;
       window.open(moaUrl, '_blank');
     }
   }
 
   downloadMOA(): void {
     if (this.selectedEmployer?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.selectedEmployer.moa_file}`;
+      // moa_file is a relative path, construct full URL
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const moaUrl = this.selectedEmployer.moa_file.startsWith('http')
+        ? this.selectedEmployer.moa_file
+        : `${baseUrl}/${this.selectedEmployer.moa_file}`;
       const link = document.createElement('a');
       link.href = moaUrl;
       link.download = `MOA_${this.selectedEmployer.company_name}.pdf`;

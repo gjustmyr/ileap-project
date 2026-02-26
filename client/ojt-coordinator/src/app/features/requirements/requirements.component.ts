@@ -123,14 +123,14 @@ export class RequirementsComponent implements OnInit {
   }
 
   previewTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
-    window.open(templateUrl, '_blank');
+    // template_url is already a full URL from backend
+    window.open(template.template_url, '_blank');
   }
 
   downloadTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
+    // template_url is already a full URL from backend
     const link = document.createElement('a');
-    link.href = templateUrl;
+    link.href = template.template_url;
     link.download = template.title || 'template';
     link.target = '_blank';
     document.body.appendChild(link);

@@ -16,10 +16,10 @@ import { InternshipAgreementComponent } from './templates/internship-agreement.c
     CommonModule,
     PersonalHistoryStatementComponent,
     AcceptanceFormComponent,
-    InternshipAgreementComponent
+    InternshipAgreementComponent,
   ],
   templateUrl: './documents.component.html',
-  styleUrl: './documents.component.css'
+  styleUrl: './documents.component.css',
 })
 export class DocumentsComponent implements OnInit, OnDestroy {
   studentData: any = null;
@@ -48,7 +48,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   reloadData(): void {
     this.resetComponent();
     this.loadStudentData();
-    
+
     Swal.fire({
       icon: 'success',
       title: 'Refreshed',
@@ -56,29 +56,85 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       timer: 1500,
       showConfirmButton: false,
       toast: true,
-      position: 'top-end'
+      position: 'top-end',
     });
   }
 
   loadStudentData() {
     this.isLoading = true;
-    console.log('Loading student data from:', `${environment.apiUrl}/student-trainee/personal-history-statement-data`);
-    
-    this.http.get(`${environment.apiUrl}/student-trainee/personal-history-statement-data`).subscribe({
-      next: (response: any) => {
-        console.log('Student data response:', response);
-        if (response.status === 'success') {
-          this.studentData = response.data;
-          console.log('Student data loaded:', this.studentData);
+    console.log(
+      'Loading student data from:',
+      `${environment.apiUrl}/student-trainee/personal-history-statement-data`,
+    );
+
+    this.http
+      .get(
+        `${environment.apiUrl}/student-trainee/personal-history-statement-data`,
+      )
+      .subscribe({
+        next: (response: any) => {
+          console.log('Student data response:', response);
+          if (response.status === 'success') {
+            this.studentData = this.cleanDataFields(response.data);
+            console.log('Student data loaded:', this.studentData);
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading student data:', error);
+          this.isLoading = false;
+          this.studentData = {};
+        },
+      });
+  }
+
+  stripHtmlTags(text: string): string {
+    if (!text || typeof text !== 'string') {
+      return text;
+    }
+
+    // Remove HTML tags
+    let cleaned = text.replace(/<[^>]*>/g, '');
+
+    // Replace HTML entities
+    cleaned = cleaned.replace(/&nbsp;/g, ' ');
+    cleaned = cleaned.replace(/&amp;/g, '&');
+    cleaned = cleaned.replace(/&lt;/g, '<');
+    cleaned = cleaned.replace(/&gt;/g, '>');
+    cleaned = cleaned.replace(/&quot;/g, '"');
+    cleaned = cleaned.replace(/&#39;/g, "'");
+
+    // Trim extra whitespace
+    cleaned = cleaned.trim();
+
+    return cleaned;
+  }
+
+  cleanDataFields(data: any): any {
+    if (!data || typeof data !== 'object') {
+      return data;
+    }
+
+    const cleaned: any = {};
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const value = data[key];
+
+        if (typeof value === 'string') {
+          // Strip HTML from string fields
+          cleaned[key] = this.stripHtmlTags(value);
+        } else if (typeof value === 'object' && value !== null) {
+          // Recursively clean nested objects
+          cleaned[key] = this.cleanDataFields(value);
+        } else {
+          // Keep other types as-is (numbers, booleans, null, etc.)
+          cleaned[key] = value;
         }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading student data:', error);
-        this.isLoading = false;
-        this.studentData = {};
       }
-    });
+    }
+
+    return cleaned;
   }
 
   generatePersonalHistoryStatement() {
@@ -86,7 +142,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       Swal.fire({
         icon: 'warning',
         title: 'No Data',
-        text: 'Please complete your profile first'
+        text: 'Please complete your profile first',
       });
       return;
     }
@@ -98,7 +154,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       Swal.fire({
         icon: 'warning',
         title: 'No Data',
-        text: 'Please complete your profile first'
+        text: 'Please complete your profile first',
       });
       return;
     }
@@ -110,7 +166,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       Swal.fire({
         icon: 'warning',
         title: 'No Data',
-        text: 'Please complete your profile first'
+        text: 'Please complete your profile first',
       });
       return;
     }
@@ -129,7 +185,9 @@ export class DocumentsComponent implements OnInit, OnDestroy {
 
     try {
       // Get the actual document wrapper element
-      const docWrapper = element.querySelector('.document-wrapper') as HTMLElement;
+      const docWrapper = element.querySelector(
+        '.document-wrapper',
+      ) as HTMLElement;
       if (!docWrapper) {
         throw new Error('Document wrapper not found');
       }
@@ -142,7 +200,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         allowEscapeKey: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
       // Capture at higher scale for better quality
@@ -152,25 +210,25 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         logging: false,
         backgroundColor: '#ffffff',
         width: docWrapper.scrollWidth,
-        height: docWrapper.scrollHeight
+        height: docWrapper.scrollHeight,
       });
 
       // Determine page size based on document type
       let pageWidth = 215.9; // 8.5 inches in mm
       let pageHeight = 330.2; // 13 inches in mm (Long Bond)
-      
+
       if (this.selectedDocument === 'agreement') {
         pageHeight = 304.8; // 12 inches in mm
       }
 
       const pdf = new jsPDF('p', 'mm', [pageWidth, pageHeight]);
-      
+
       // Calculate dimensions to fit the page
       const imgWidth = pageWidth;
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
-      
+
       const imgData = canvas.toDataURL('image/png', 1.0);
-      
+
       // If content fits on one page
       if (imgHeight <= pageHeight) {
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
@@ -178,7 +236,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         // Content spans multiple pages
         let heightLeft = imgHeight;
         let position = 0;
-        
+
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
@@ -198,14 +256,14 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         title: 'Downloaded!',
         text: 'Document has been downloaded successfully',
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Failed to generate PDF'
+        text: 'Failed to generate PDF',
       });
     } finally {
       this.isGenerating = false;
@@ -215,7 +273,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   getDocumentFileName(): string {
     const date = new Date().toISOString().split('T')[0];
     const name = this.studentData?.last_name || 'document';
-    
+
     switch (this.selectedDocument) {
       case 'phs':
         return `Personal_History_Statement_${name}_${date}.pdf`;

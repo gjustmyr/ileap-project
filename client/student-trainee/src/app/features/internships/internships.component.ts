@@ -86,7 +86,7 @@ export class InternshipsComponent implements OnInit {
           (i: any) => ({
             ...i,
             selected: false,
-          })
+          }),
         );
       },
       error: (err) => {
@@ -257,7 +257,7 @@ export class InternshipsComponent implements OnInit {
     // Save to localStorage
     localStorage.setItem(
       'bookmarkedInternships',
-      JSON.stringify(this.bookmarkedInternships)
+      JSON.stringify(this.bookmarkedInternships),
     );
   }
 
@@ -268,7 +268,7 @@ export class InternshipsComponent implements OnInit {
   getDisplayedInternships(): any[] {
     if (this.showBookmarksOnly) {
       return this.internships.filter((int) =>
-        this.isBookmarked(int.internship_id)
+        this.isBookmarked(int.internship_id),
       );
     }
     return this.internships;
@@ -280,14 +280,22 @@ export class InternshipsComponent implements OnInit {
 
   previewInternshipMOA(): void {
     if (this.selectedInternship?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.selectedInternship.moa_file}`;
+      // moa_file is a relative path, construct full URL
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const moaUrl = this.selectedInternship.moa_file.startsWith('http')
+        ? this.selectedInternship.moa_file
+        : `${baseUrl}/${this.selectedInternship.moa_file}`;
       window.open(moaUrl, '_blank');
     }
   }
 
   downloadInternshipMOA(): void {
     if (this.selectedInternship?.moa_file) {
-      const moaUrl = `${environment.apiUrl}${this.selectedInternship.moa_file}`;
+      // moa_file is a relative path, construct full URL
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const moaUrl = this.selectedInternship.moa_file.startsWith('http')
+        ? this.selectedInternship.moa_file
+        : `${baseUrl}/${this.selectedInternship.moa_file}`;
       const link = document.createElement('a');
       link.href = moaUrl;
       link.download = `MOA_${this.selectedInternship.company_name}.pdf`;

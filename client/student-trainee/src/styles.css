@@ -113,16 +113,17 @@
 /* Print styles for OJT Tracker - only show the accomplishment report */
 @media print {
   /* Hide everything first */
-  body, body * {
+  body,
+  body * {
     visibility: hidden !important;
   }
-  
+
   /* Show only the printable report */
   #printable-report,
   #printable-report * {
     visibility: visible !important;
   }
-  
+
   /* Position the report at top of page */
   #printable-report {
     position: absolute !important;
@@ -132,31 +133,31 @@
     margin: 0 !important;
     padding: 0 !important;
   }
-  
+
   /* Hide elements with no-print class */
   .no-print,
   .no-print * {
     display: none !important;
     visibility: hidden !important;
   }
-  
+
   /* Set page size to long bond paper (legal size: 8.5" x 13") */
   @page {
     size: 8.5in 13in;
     margin: 0.5cm;
   }
-  
+
   /* Ensure table borders print correctly */
   table {
     border-collapse: collapse !important;
   }
-  
+
   /* Force black text and borders for printing */
   * {
     color: black !important;
     border-color: black !important;
   }
-  
+
   /* Ensure backgrounds print for table headers (orange) */
   .bg-orange-500 {
     background-color: #f97316 !important;
@@ -165,9 +166,15 @@
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
-  
+
   /* Ensure table borders are visible */
-  td, th {
+  td,
+  th {
     border: 2px solid black !important;
   }
+}
+
+/* Button cursor pointer */
+button {
+  cursor: pointer;
 }

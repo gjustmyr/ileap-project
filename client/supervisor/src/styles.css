@@ -173,3 +173,8 @@
     border: 2px solid black !important;
   }
 }
+
+/* Button cursor pointer */
+button {
+  cursor: pointer;
+}

@@ -289,25 +289,49 @@ def student_get_phs_data(
                 if employer.work_schedule:
                     try:
                         import json
+                        from datetime import datetime
                         schedule = json.loads(employer.work_schedule)
-                        # Format: "Monday-Friday, 8:00 AM - 5:00 PM"
-                        days = []
-                        times = []
-                        for day, hours in schedule.items():
-                            if hours and isinstance(hours, dict):
-                                days.append(day)
-                                if 'start' in hours and 'end' in hours:
-                                    times.append(f"{hours['start']} - {hours['end']}")
                         
-                        if days and times:
-                            # Group consecutive days
-                            if len(days) >= 5 and all(d in days for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']):
-                                day_range = "Monday-Friday"
-                            else:
-                                day_range = ", ".join(days)
+                        # Helper function to convert 24-hour to 12-hour format
+                        def format_time(time_str):
+                            try:
+                                time_obj = datetime.strptime(time_str, "%H:%M")
+                                return time_obj.strftime("%I:%M %p").lstrip('0')
+                            except:
+                                return time_str
+                        
+                        # Collect days and times
+                        day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                        working_days = []
+                        time_ranges = {}
+                        
+                        for day in day_order:
+                            if day in schedule and schedule[day] and isinstance(schedule[day], dict):
+                                hours = schedule[day]
+                                if 'start' in hours and 'end' in hours:
+                                    working_days.append(day)
+                                    time_key = f"{hours['start']}-{hours['end']}"
+                                    if time_key not in time_ranges:
+                                        time_ranges[time_key] = []
+                                    time_ranges[time_key].append(day)
+                        
+                        # Format the schedule string
+                        if working_days:
+                            schedule_parts = []
+                            for time_key, days in time_ranges.items():
+                                start_time, end_time = time_key.split('-')
+                                formatted_start = format_time(start_time)
+                                formatted_end = format_time(end_time)
+                                
+                                # Group consecutive days
+                                if len(days) > 1 and days == day_order[day_order.index(days[0]):day_order.index(days[-1])+1]:
+                                    day_str = f"{days[0]}-{days[-1]}"
+                                else:
+                                    day_str = ", ".join(days)
+                                
+                                schedule_parts.append(f"{day_str}: {formatted_start} - {formatted_end}")
                             
-                            # Use first time range (assuming consistent hours)
-                            training_schedule = f"{day_range}, {times[0]}" if times else day_range
+                            training_schedule = "; ".join(schedule_parts)
                     except:
                         training_schedule = None
         

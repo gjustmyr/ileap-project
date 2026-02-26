@@ -43,6 +43,16 @@
         <i class="pi pi-download mr-2"></i>
         Download Templates
       </button>
+      <button
+        (click)="activeTab = 'generate-forms'"
+        [class.border-b-2]="activeTab === 'generate-forms'"
+        [class.border-green-500]="activeTab === 'generate-forms'"
+        [class.text-green-600]="activeTab === 'generate-forms'"
+        class="px-4 py-2 text-sm poppins-medium hover:text-green-600 transition-colors"
+      >
+        <i class="pi pi-file-pdf mr-2"></i>
+        Generate Forms
+      </button>
     </nav>
   </div>
 
@@ -818,4 +828,10 @@
       </div>
     </div>
   </div>
+</div>
+
+
+<!-- Generate Forms Tab -->
+<div *ngIf="activeTab === 'generate-forms'">
+  <app-documents></app-documents>
 </div>

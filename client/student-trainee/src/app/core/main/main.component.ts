@@ -11,7 +11,6 @@ import { InternshipsComponent } from '../../features/internships/internships.com
 import { RequirementsComponent } from '../../features/requirements/requirements.component';
 import { OjtTrackerComponent } from '../../features/ojt-tracker/ojt-tracker.component';
 import { OeamsComponent } from '../../features/oeams/oeams.component';
-import { DocumentsComponent } from '../../features/documents/documents.component';
 import { StudentService } from '../../shared/services/student.service';
 import { InternshipsService } from '../../features/internships/internships.service';
 import { environment } from '../../../environments/environment';
@@ -32,7 +31,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
     RequirementsComponent,
     OjtTrackerComponent,
     OeamsComponent,
-    DocumentsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',

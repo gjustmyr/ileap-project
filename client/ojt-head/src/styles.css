@@ -109,3 +109,8 @@
   font-weight: 900;
   font-style: italic;
 }
+
+/* Button cursor pointer */
+button {
+  cursor: pointer;
+}

@@ -14,7 +14,7 @@
     top: 0;
     width: 100%;
   }
-  
+
   /* Hide buttons and navigation when printing */
   button,
   .no-print {
@@ -49,4 +49,9 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Icon styling */
+.icon-large {
+  font-size: 2.5rem;
 }

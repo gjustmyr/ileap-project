@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApplicationsService } from './applications.service';
+import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -121,7 +122,7 @@ export class ApplicationsComponent implements OnInit {
       cancelButtonText: 'Cancel',
       preConfirm: () => {
         const dateInput = document.getElementById(
-          'ojt-start-date'
+          'ojt-start-date',
         ) as HTMLInputElement;
         return {
           startDate: dateInput?.value || null,
@@ -170,7 +171,7 @@ export class ApplicationsComponent implements OnInit {
         this.selectedApplication.application_id,
         'accepted',
         'Application accepted by employer',
-        startDate
+        startDate,
       )
       .subscribe({
         next: () => {
@@ -205,7 +206,7 @@ export class ApplicationsComponent implements OnInit {
       .updateApplicationStatus(
         this.selectedApplication.application_id,
         'rejected',
-        this.rejectRemarks
+        this.rejectRemarks,
       )
       .subscribe({
         next: () => {
@@ -247,7 +248,10 @@ export class ApplicationsComponent implements OnInit {
   downloadResume(resumePath: string): void {
     if (!resumePath) return;
     // Construct the full URL to download the resume
-    const apiUrl = 'http://localhost:3000'; // Update with your API URL
-    window.open(`${apiUrl}/${resumePath}`, '_blank');
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const fullUrl = resumePath.startsWith('http')
+      ? resumePath
+      : `${baseUrl}/${resumePath}`;
+    window.open(fullUrl, '_blank');
   }
 }
