@@ -1,0 +1,247 @@
+<div class="p-6 bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <!-- Document Selection View -->
+    <div *ngIf="!selectedDocument">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Generate OJT Forms</h2>
+          <p class="text-gray-600">
+            Create and download your required internship forms
+          </p>
+        </div>
+        <button
+          (click)="reloadData()"
+          [disabled]="isLoading"
+          class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg
+            *ngIf="!isLoading"
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            ></path>
+          </svg>
+          <svg
+            *ngIf="isLoading"
+            class="animate-spin h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          {{ isLoading ? "Refreshing..." : "Refresh Data" }}
+        </button>
+      </div>
+
+      <div
+        *ngIf="isLoading"
+        class="text-center py-12 bg-white rounded-lg shadow"
+      >
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"
+        ></div>
+        <p class="mt-4 text-gray-600">Loading student data...</p>
+      </div>
+
+      <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-6 gap-6">
+        <!-- Personal History Statement Card -->
+        <div
+          class="bg-white rounded-lg border border-gray-300 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+          (click)="generatePersonalHistoryStatement()"
+        >
+          <div class="flex items-center justify-center w-16 h-16 mb-4 mx-auto">
+            <i class="pi pi-user text-green-600 icon-large"></i>
+          </div>
+          <h3 class="text-xs font-semibold text-center poppins-semibold">
+            Personal History Statement
+          </h3>
+        </div>
+
+        <!-- Internship Agreement Card -->
+        <div
+          class="bg-white rounded-lg border border-gray-300 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+          (click)="generateInternshipAgreement()"
+        >
+          <div class="flex items-center justify-center w-16 h-16 mb-4 mx-auto">
+            <i class="pi pi-file-edit text-green-600 icon-large"></i>
+          </div>
+          <h3 class="text-xs font-semibold text-center poppins-semibold">
+            Internship Agreement
+          </h3>
+        </div>
+
+        <!-- Acceptance Form Card -->
+        <div
+          class="bg-white rounded-lg border border-gray-300 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+          (click)="generateAcceptanceForm()"
+        >
+          <div class="flex items-center justify-center w-16 h-16 mb-4 mx-auto">
+            <i class="pi pi-check-circle text-green-600 icon-large"></i>
+          </div>
+          <h3 class="text-xs font-semibold text-center poppins-semibold">
+            Acceptance Form
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document Preview View -->
+    <div *ngIf="selectedDocument" class="bg-white rounded-lg shadow-lg">
+      <!-- Header with Actions -->
+      <div class="flex items-center justify-between p-4 border-b bg-gray-50">
+        <div class="flex items-center gap-3">
+          <button
+            (click)="closePreview()"
+            class="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+          </button>
+          <h3 class="text-xl font-semibold text-gray-800">
+            {{ getDocumentTitle() }}
+          </h3>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="reloadData()"
+            [disabled]="isLoading"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              *ngIf="!isLoading"
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              ></path>
+            </svg>
+            <svg
+              *ngIf="isLoading"
+              class="animate-spin h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            {{ isLoading ? "Refreshing..." : "Refresh Data" }}
+          </button>
+          <button
+            (click)="downloadPDF()"
+            class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+            [disabled]="isGenerating"
+          >
+            <svg
+              *ngIf="!isGenerating"
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            <svg
+              *ngIf="isGenerating"
+              class="animate-spin h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            {{ isGenerating ? "Generating..." : "Generate Document" }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Document Content -->
+      <div class="p-4 overflow-auto" style="max-height: calc(100vh - 200px)">
+        <div id="document-content" class="bg-white">
+          <!-- Personal History Statement Template -->
+          <app-personal-history-statement
+            *ngIf="selectedDocument === 'phs'"
+            [data]="studentData"
+          >
+          </app-personal-history-statement>
+
+          <!-- Acceptance Form Template -->
+          <app-acceptance-form
+            *ngIf="selectedDocument === 'acceptance'"
+            [data]="studentData"
+          >
+          </app-acceptance-form>
+
+          <!-- Internship Agreement Template -->
+          <app-internship-agreement
+            *ngIf="selectedDocument === 'agreement'"
+            [data]="studentData"
+          >
+          </app-internship-agreement>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

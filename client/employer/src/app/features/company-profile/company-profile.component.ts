@@ -42,7 +42,7 @@ export class CompanyProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private companyProfileService: CompanyProfileService,
-    private http: HttpClient
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
@@ -180,10 +180,10 @@ export class CompanyProfileComponent implements OnInit {
 
   getLogoUrl(logoPath: string | null | undefined): string {
     if (!logoPath) return 'assets/company-logo.png';
-    
+
     // If logo path starts with http, return as is (already full URL)
     if (logoPath.startsWith('http')) return logoPath;
-    
+
     // If it's a relative path (from backend), prepend the backend URL
     return `${environment.apiUrl.replace('/api', '')}${logoPath}`;
   }
@@ -362,7 +362,11 @@ export class CompanyProfileComponent implements OnInit {
 
   previewMOA(): void {
     if (this.companyProfile?.moa_file) {
-      const moaUrl = `${environment.apiUrl.replace('/api', '')}${this.companyProfile.moa_file}`;
+      // moa_file is a relative path, construct full URL
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const moaUrl = this.companyProfile.moa_file.startsWith('http')
+        ? this.companyProfile.moa_file
+        : `${baseUrl}/${this.companyProfile.moa_file}`;
       window.open(moaUrl, '_blank');
     }
   }

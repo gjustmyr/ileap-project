@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import Swal from 'sweetalert2';
+import { DocumentsComponent } from '../documents/documents.component';
 
 @Component({
   selector: 'app-requirements',
@@ -22,6 +23,7 @@ import Swal from 'sweetalert2';
     FileUploadModule,
     TagModule,
     ToastModule,
+    DocumentsComponent,
   ],
   providers: [MessageService],
   templateUrl: './requirements.component.html',
@@ -247,7 +249,7 @@ export class RequirementsComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -267,10 +269,10 @@ export class RequirementsComponent implements OnInit {
           const allTemplates = response.data || [];
           // Filter templates by type
           this.requirementTemplates = allTemplates.filter(
-            (t: any) => t.type === 'pre'
+            (t: any) => t.type === 'pre',
           );
           this.postOjtTemplates = allTemplates.filter(
-            (t: any) => t.type === 'post'
+            (t: any) => t.type === 'post',
           );
         },
         error: (error) => {
@@ -280,14 +282,14 @@ export class RequirementsComponent implements OnInit {
   }
 
   previewTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
-    window.open(templateUrl, '_blank');
+    // template_url is already a full URL from backend
+    window.open(template.template_url, '_blank');
   }
 
   downloadTemplate(template: any): void {
-    const templateUrl = `${environment.apiUrl}${template.template_url}`;
+    // template_url is already a full URL from backend
     const link = document.createElement('a');
-    link.href = templateUrl;
+    link.href = template.template_url;
     link.download = template.title || 'template';
     link.target = '_blank';
     document.body.appendChild(link);
@@ -338,9 +340,12 @@ export class RequirementsComponent implements OnInit {
 
           // Now fetch the requirements using student_id
           this.http
-            .get(`${environment.apiUrl}/student-trainee/requirements/student/${studentId}`, {
-              headers,
-            })
+            .get(
+              `${environment.apiUrl}/student-trainee/requirements/student/${studentId}`,
+              {
+                headers,
+              },
+            )
             .subscribe({
               next: (response: any) => {
                 if (
@@ -368,7 +373,7 @@ export class RequirementsComponent implements OnInit {
                         };
                       }
                       return req;
-                    }
+                    },
                   );
 
                   // Update postOjtRequirements with actual submission data
@@ -386,7 +391,7 @@ export class RequirementsComponent implements OnInit {
                         };
                       }
                       return req;
-                    }
+                    },
                   );
 
                   // Check if all Pre-OJT requirements are validated
@@ -408,14 +413,14 @@ export class RequirementsComponent implements OnInit {
 
   checkPreOjtValidation(): void {
     this.allPreOjtValidated = this.preOjtRequirements.every(
-      (req) => req.validated
+      (req) => req.validated,
     );
   }
 
   onFileSelect(
     event: any,
     requirement: any,
-    requirementType: string = 'pre-ojt'
+    requirementType: string = 'pre-ojt',
   ): void {
     const file = event.files[0];
     if (file) {
@@ -426,7 +431,7 @@ export class RequirementsComponent implements OnInit {
   uploadFile(
     file: File,
     requirement: any,
-    requirementType: string = 'pre-ojt'
+    requirementType: string = 'pre-ojt',
   ): void {
     const formData = new FormData();
     formData.append('file', file);
@@ -438,7 +443,11 @@ export class RequirementsComponent implements OnInit {
     });
 
     this.http
-      .post(`${environment.apiUrl}/student-trainee/requirements/upload`, formData, { headers })
+      .post(
+        `${environment.apiUrl}/student-trainee/requirements/upload`,
+        formData,
+        { headers },
+      )
       .subscribe({
         next: (response: any) => {
           requirement.status = 'submitted';
@@ -474,7 +483,10 @@ export class RequirementsComponent implements OnInit {
   }
 
   viewFile(url: string): void {
-    window.open(url, '_blank');
+    // Construct full URL with backend base (without /api for static files)
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}/${url}`;
+    window.open(fullUrl, '_blank');
   }
 
   getStatusSeverity(status: string): string {

@@ -37,8 +37,8 @@ export class LoginComponent {
     if (token) {
       this.authService.validateToken().subscribe({
         next: () => {
-          console.log('User already logged in, redirecting to student-trainee...');
-          this.router.navigate(['/student-trainee']);
+          console.log('User already logged in, redirecting to main...');
+          this.router.navigate(['/main']);
         },
         error: () => {
           sessionStorage.clear();
@@ -90,7 +90,7 @@ export class LoginComponent {
               icon: 'success',
               confirmButtonColor: '#16a34a',
             }).then(() => {
-              this.router.navigate(['/student-trainee']);
+              this.router.navigate(['/main']);
             });
           } else {
             Swal.fire({

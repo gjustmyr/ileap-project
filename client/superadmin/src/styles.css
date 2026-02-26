@@ -119,3 +119,8 @@
   max-height: 24rem; /* 384px */
   overflow-y: auto;
 }
+
+/* Button cursor pointer */
+button {
+  cursor: pointer;
+}
