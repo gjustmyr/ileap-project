@@ -321,7 +321,7 @@ export class JobListingsComponent implements OnInit {
     private jobService: JobListingService,
     private dropdownService: DropdownsService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -339,16 +339,31 @@ export class JobListingsComponent implements OnInit {
   }
 
   fetchEmployerEligibility(): void {
+    console.log('🔍 Fetching employer eligibility...');
     this.jobService.getEmployerProfile().subscribe({
       next: (res: any) => {
+        console.log('✅ Employer profile loaded:', res);
         this.employerEligibility = res.data?.eligibility || 'internship';
+        console.log(
+          '📋 Employer eligibility set to:',
+          this.employerEligibility,
+        );
+        console.log(
+          '✓ Can access internship tab:',
+          this.canAccessTab('internship'),
+        );
+        console.log(
+          '✓ Can access job_placement tab:',
+          this.canAccessTab('job_placement'),
+        );
+
         // Set initial active tab based on eligibility
         if (this.employerEligibility === 'job_placement') {
           this.activeTab = 'job_placement';
         }
       },
       error: (err: any) => {
-        console.error('Failed to load employer eligibility', err);
+        console.error('❌ Failed to load employer eligibility', err);
       },
     });
   }
@@ -402,7 +417,7 @@ export class JobListingsComponent implements OnInit {
   removeSkill(skillToRemove: string): void {
     const currentSkills = this.internshipForm.get('skills')?.value || [];
     const updatedSkills = currentSkills.filter(
-      (skill: string) => skill !== skillToRemove
+      (skill: string) => skill !== skillToRemove,
     );
     this.internshipForm.patchValue({ skills: updatedSkills });
   }
@@ -497,7 +512,7 @@ export class JobListingsComponent implements OnInit {
 
     // Extract skill names from the selected skills (they could be objects or strings)
     const skillNames = (formData.skills || []).map((skill: any) =>
-      typeof skill === 'string' ? skill : skill.skill_name
+      typeof skill === 'string' ? skill : skill.skill_name,
     );
 
     const payload = {
@@ -616,11 +631,17 @@ export class JobListingsComponent implements OnInit {
     this.isLoading = true;
 
     this.jobService
-      .getAllInternships(this.pageNo + 1, this.pageSize, this.keyword)
+      .getAllInternships(
+        this.pageNo + 1,
+        this.pageSize,
+        this.keyword,
+        this.activeTab,
+      )
       .subscribe({
         next: (res) => {
           this.internships = res.data || [];
-          this.totalRecords = res.pagination?.totalRecords || res.data?.length || 0;
+          this.totalRecords =
+            res.pagination?.totalRecords || res.data?.length || 0;
           this.isLoading = false;
         },
         error: (err) => {

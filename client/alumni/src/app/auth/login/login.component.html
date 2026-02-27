@@ -73,7 +73,10 @@
             class="mt-3 bg-green-500 hover:bg-green-600 transition-colors duration-300 text-white py-2 rounded-sm w-full poppins-semibold cursor-pointer"
             [disabled]="loginForm.invalid"
           >
-            <span *ngIf="loading" class="loading loading-spinner loading-sm mr-2">
+            <span
+              *ngIf="loading"
+              class="loading loading-spinner loading-sm mr-2"
+            >
               <i class="pi pi-spinner"></i>
             </span>
             <span>{{ loading ? "Logging in..." : "Login" }}</span>
@@ -100,13 +103,26 @@
               </a>
             </div>
           </div>
+
+          <!-- Registration Link -->
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600 poppins-regular">
+              Don't have an account?
+              <a
+                routerLink="/register"
+                class="text-blue-600 hover:text-blue-800 font-medium underline cursor-pointer"
+              >
+                Register as Alumni
+              </a>
+            </p>
+          </div>
         </div>
       </form>
     </div>
 
     <div
       class="login-cover relative h-full w-[60%] bg-cover bg-center bg-no-repeat flex justify-center items-center"
-      style="background-image: url('/assets/img/login-cover.jpg')"
+      style="background-image: url(&quot;/assets/img/login-cover.jpg&quot;)"
     >
       <div class="absolute inset-0 bg-black/50 z-0"></div>
       <img src="/assets/img/logo.png" alt="logo" class="relative z-10 w-80" />

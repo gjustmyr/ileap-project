@@ -235,4 +235,31 @@ export class JobPostingsComponent implements OnInit {
     };
     return statusLabels[status] || status;
   }
+
+  // Pagination helper methods
+  getShowingStart(): number {
+    return this.totalRecords === 0 ? 0 : (this.pageNo - 1) * this.pageSize + 1;
+  }
+
+  getShowingEnd(): number {
+    return Math.min(this.pageNo * this.pageSize, this.totalRecords);
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  previousPage(): void {
+    if (this.pageNo > 1) {
+      this.pageNo--;
+      this.getAllJobPostings();
+    }
+  }
+
+  nextPage(): void {
+    if (this.pageNo < this.getTotalPages()) {
+      this.pageNo++;
+      this.getAllJobPostings();
+    }
+  }
 }

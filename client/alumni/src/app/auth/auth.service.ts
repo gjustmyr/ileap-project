@@ -18,7 +18,7 @@ export class AuthService {
   loginUser(email_address: string, password: string): Observable<any> {
     const encryptedPassword = this.encryption.encryptPassword(password);
     const payload = { email_address, password: encryptedPassword };
-    return this.http.post(`${this.baseURL}/auth/student/login`, payload);
+    return this.http.post(`${this.baseURL}/auth/alumni/login`, payload);
   }
 
   forgotPassword(email: string): Observable<any> {

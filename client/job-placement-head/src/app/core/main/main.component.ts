@@ -104,9 +104,19 @@ export class MainComponent implements OnInit {
     this.isUserDropdownOpen = !this.isUserDropdownOpen;
   }
 
+  navigateToProfile() {
+    this.isUserDropdownOpen = false;
+    // Navigate to profile page (to be created)
+    this.router.navigate(['/job-placement-head/profile']);
+  }
+
+  navigateToChangePassword() {
+    this.isUserDropdownOpen = false;
+    this.router.navigate(['/change-password']);
+  }
+
   logout() {
     this.isUserDropdownOpen = false;
-    sessionStorage.clear();
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

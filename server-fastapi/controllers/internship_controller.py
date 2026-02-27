@@ -42,13 +42,17 @@ def create_internship(employer_id: int, data: InternshipCreate, db: Session):
 	return new_internship
 
 
-def get_internships_by_employer(employer_id: int, page_no: int, page_size: int, keyword: str, db: Session):
+def get_internships_by_employer(employer_id: int, page_no: int, page_size: int, keyword: str, posting_type: str, db: Session):
 	"""Get all internships for a specific employer with pagination"""
 	query = db.query(Internship).options(joinedload(Internship.skills)).filter(Internship.employer_id == employer_id)
 	
 	# Apply keyword search
 	if keyword:
 		query = query.filter(Internship.title.ilike(f"%{keyword}%"))
+	
+	# Filter by posting_type if provided
+	if posting_type:
+		query = query.filter(Internship.posting_type == posting_type)
 	
 	# Get total count
 	total_records = query.count()

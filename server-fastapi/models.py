@@ -576,6 +576,7 @@ class Alumni(Base):
 	current_employment_status = Column(String(20), nullable=True, default="unemployed")  # 'employed', 'unemployed', 'self-employed'
 	current_company = Column(String(255), nullable=True)
 	current_position = Column(String(255), nullable=True)
+	profile_picture = Column(String(255), nullable=True)  # Profile picture file path
 	resume_file = Column(String(255), nullable=True)
 	linkedin_url = Column(String(255), nullable=True)
 	created_at = Column(DateTime, default=datetime.utcnow)

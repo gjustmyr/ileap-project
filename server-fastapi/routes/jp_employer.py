@@ -30,6 +30,137 @@ def verify_jp_officer(token_data: dict = Depends(verify_token)):
 
 
 # ============================================================================
+# DASHBOARD ENDPOINTS
+# ============================================================================
+
+@router.get("/dashboard/statistics", tags=["Job Placement - Dashboard"])
+async def get_dashboard_statistics(
+    industry_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_jp_officer)
+):
+    """Get dashboard statistics for Job Placement Portal"""
+    try:
+        from models import Internship, Employer, Industry, Alumni
+        from sqlalchemy import func, extract
+        
+        print("📊 Fetching Job Placement Dashboard statistics")
+        
+        # Base queries
+        employer_query = db.query(Employer).filter(
+            Employer.eligibility.in_(['job_placement', 'both'])
+        )
+        job_posting_query = db.query(Internship).filter(
+            Internship.posting_type == 'job_placement'
+        )
+        
+        # Apply industry filter if provided
+        if industry_id:
+            employer_query = employer_query.filter(Employer.industry_id == industry_id)
+            job_posting_query = job_posting_query.join(Employer).filter(
+                Employer.industry_id == industry_id
+            )
+        
+        # Summary statistics
+        total_employers = employer_query.count()
+        total_job_postings = job_posting_query.count()
+        active_job_postings = job_posting_query.filter(Internship.status == 'open').count()
+        pending_job_postings = job_posting_query.filter(Internship.status == 'pending').count()
+        
+        # Total alumni (if Alumni table exists)
+        total_alumni = db.query(Alumni).count() if Alumni else 0
+        
+        # Total applications (if applications exist)
+        total_applications = 0  # Placeholder - implement when application tracking is added
+        
+        # Employers by industry
+        employers_by_industry = db.query(
+            Industry.industry_name,
+            func.count(Employer.employer_id).label('count')
+        ).join(Employer, Employer.industry_id == Industry.industry_id)\
+         .filter(Employer.eligibility.in_(['job_placement', 'both']))\
+         .group_by(Industry.industry_name)\
+         .all()
+        
+        # Job postings by status
+        job_postings_by_status = db.query(
+            Internship.status,
+            func.count(Internship.internship_id).label('count')
+        ).filter(Internship.posting_type == 'job_placement')\
+         .group_by(Internship.status)\
+         .all()
+        
+        # Job postings by industry
+        job_postings_by_industry = db.query(
+            Industry.industry_name,
+            func.count(Internship.internship_id).label('count')
+        ).join(Employer, Internship.employer_id == Employer.employer_id)\
+         .join(Industry, Employer.industry_id == Industry.industry_id)\
+         .filter(Internship.posting_type == 'job_placement')\
+         .group_by(Industry.industry_name)\
+         .all()
+        
+        # Monthly job postings (last 12 months)
+        monthly_job_postings = db.query(
+            extract('month', Internship.created_at).label('month'),
+            func.count(Internship.internship_id).label('count')
+        ).filter(Internship.posting_type == 'job_placement')\
+         .group_by(extract('month', Internship.created_at))\
+         .all()
+        
+        # Top employers by job postings
+        top_employers = db.query(
+            Employer.company_name,
+            func.count(Internship.internship_id).label('count')
+        ).join(Internship, Internship.employer_id == Employer.employer_id)\
+         .filter(Internship.posting_type == 'job_placement')\
+         .group_by(Employer.company_name)\
+         .order_by(func.count(Internship.internship_id).desc())\
+         .limit(5)\
+         .all()
+        
+        return {
+            "status": "success",
+            "data": {
+                "summary": {
+                    "total_alumni": total_alumni,
+                    "total_employers": total_employers,
+                    "total_job_postings": total_job_postings,
+                    "active_job_postings": active_job_postings,
+                    "pending_job_postings": pending_job_postings,
+                    "total_applications": total_applications
+                },
+                "employers_by_industry": [
+                    {"industry_name": row.industry_name, "count": row.count}
+                    for row in employers_by_industry
+                ],
+                "job_postings_by_status": [
+                    {"status": row.status, "count": row.count}
+                    for row in job_postings_by_status
+                ],
+                "job_postings_by_industry": [
+                    {"industry_name": row.industry_name, "count": row.count}
+                    for row in job_postings_by_industry
+                ],
+                "monthly_job_postings": [
+                    {"month": int(row.month), "count": row.count}
+                    for row in monthly_job_postings
+                ],
+                "top_employers": [
+                    {"company_name": row.company_name, "count": row.count}
+                    for row in top_employers
+                ]
+            }
+        }
+    except Exception as e:
+        print(f"❌ Error fetching dashboard statistics: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch dashboard statistics: {str(e)}"
+        )
+
+
+# ============================================================================
 # JOB POSTINGS ENDPOINTS
 # ============================================================================
 
@@ -238,6 +369,91 @@ async def update_job_posting_status(
 # ============================================================================
 # EMPLOYERS ENDPOINTS
 # ============================================================================
+
+@router.get("/search", tags=["Job Placement - Employers"])
+async def search_all_employers(
+    page_no: int = 1,
+    page_size: int = 10,
+    keyword: str = "",
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_jp_officer)
+):
+    """Search ALL employers (no eligibility filter) - for checking existing accounts"""
+    try:
+        print(f"🔍 Searching all employers with keyword: {keyword}")
+        
+        # Base query with industry join - NO eligibility filter
+        query = db.query(
+            Employer.employer_id,
+            Employer.email,
+            Employer.company_name,
+            Employer.representative_name,
+            Employer.phone_number,
+            Employer.address,
+            Employer.company_size,
+            Employer.eligibility,
+            Employer.job_placement_validity,
+            Employer.internship_validity,
+            Employer.moa_file,
+            Employer.status,
+            Industry.industry_name,
+            Industry.industry_id
+        ).outerjoin(Industry, Employer.industry_id == Industry.industry_id)
+        
+        # Apply keyword search
+        if keyword:
+            search_filter = or_(
+                Employer.company_name.ilike(f"%{keyword}%"),
+                Employer.email.ilike(f"%{keyword}%"),
+                Employer.representative_name.ilike(f"%{keyword}%")
+            )
+            query = query.filter(search_filter)
+        
+        # Get total count
+        total_records = query.count()
+        
+        # Apply pagination
+        offset = (page_no - 1) * page_size
+        results = query.offset(offset).limit(page_size).all()
+        
+        # Transform results
+        employers = []
+        for result in results:
+            employers.append({
+                "employer_id": result.employer_id,
+                "email_address": result.email,
+                "company_name": result.company_name,
+                "representative_name": result.representative_name,
+                "phone_number": result.phone_number,
+                "address": result.address,
+                "company_size": result.company_size,
+                "eligibility": result.eligibility,
+                "job_placement_validity": result.job_placement_validity,
+                "internship_validity": result.internship_validity,
+                "moa_file": result.moa_file,
+                "status": result.status,
+                "industry_name": result.industry_name,
+                "industry_id": result.industry_id
+            })
+        
+        print(f"✅ Found {len(employers)} employers")
+        
+        return {
+            "status": "success",
+            "data": employers,
+            "pagination": {
+                "page_no": page_no,
+                "page_size": page_size,
+                "total_records": total_records,
+                "total_pages": (total_records + page_size - 1) // page_size
+            }
+        }
+    except Exception as e:
+        print(f"❌ Error searching employers: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to search employers: {str(e)}"
+        )
 
 
 @router.get("")

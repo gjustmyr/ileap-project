@@ -11,21 +11,25 @@ import { DropdownModule } from 'primeng/dropdown';
   selector: 'app-dashboard',
   imports: [CommonModule, FormsModule, UIChart, Card, DropdownModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
   @Output() tabChange = new EventEmitter<number>();
 
+  // Eligibility and tabs
+  employerEligibility: string = 'internship'; // 'internship', 'job_placement', or 'both'
+  activeTab: 'internship' | 'job_placement' = 'internship';
+
   // Filters
   selectedYear: number = new Date().getFullYear();
   selectedStatus: string = 'all';
-  
+
   yearOptions: any[] = [];
   statusOptions = [
     { label: 'All Status', value: 'all' },
     { label: 'Ongoing', value: 'Ongoing' },
     { label: 'Scheduled', value: 'Scheduled' },
-    { label: 'Completed', value: 'Completed' }
+    { label: 'Completed', value: 'Completed' },
   ];
 
   stats = {
@@ -36,7 +40,7 @@ export class DashboardComponent implements OnInit {
     totalSupervisors: 0,
     ongoingTrainees: 0,
     scheduledTrainees: 0,
-    completedTrainees: 0
+    completedTrainees: 0,
   };
 
   recentApplications: any[] = [];
@@ -56,37 +60,82 @@ export class DashboardComponent implements OnInit {
         labels: {
           padding: 10,
           font: {
-            size: 12
-          }
-        }
+            size: 12,
+          },
+        },
       },
       tooltip: {
-        enabled: true
-      }
+        enabled: true,
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          stepSize: 1
-        }
-      }
-    }
+          stepSize: 1,
+        },
+      },
+    },
   };
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    this.fetchEmployerEligibility();
     this.initializeFilters();
     this.initializeCharts();
     this.loadDashboardStats();
     this.loadRecentApplications();
   }
 
+  fetchEmployerEligibility(): void {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({ Authorization: token || '' });
+
+    this.http.get(`${environment.apiUrl}/employers/me`, { headers }).subscribe({
+      next: (res: any) => {
+        this.employerEligibility = res.data?.eligibility || 'internship';
+
+        // Set initial active tab based on eligibility
+        if (this.employerEligibility === 'job_placement') {
+          this.activeTab = 'job_placement';
+        }
+      },
+      error: (err: any) => {
+        console.error('Failed to load employer eligibility', err);
+      },
+    });
+  }
+
+  switchTab(tab: 'internship' | 'job_placement'): void {
+    if (this.canAccessTab(tab)) {
+      this.activeTab = tab;
+      this.loadDashboardStats();
+      this.loadRecentApplications();
+    }
+  }
+
+  canAccessTab(tab: 'internship' | 'job_placement'): boolean {
+    if (this.employerEligibility === 'both') return true;
+    return this.employerEligibility === tab;
+  }
+
+  getDashboardTitle(): string {
+    return this.activeTab === 'internship'
+      ? 'Internship Dashboard'
+      : 'Job Placement Dashboard';
+  }
+
+  getDashboardSubtitle(): string {
+    return this.activeTab === 'internship'
+      ? 'Overview of internship operations and student progress'
+      : 'Overview of job placement operations and alumni applications';
+  }
+
   initializeFilters(): void {
     const currentYear = new Date().getFullYear();
     this.selectedYear = currentYear;
-    
+
     // Generate year options (current year and 2 years back)
     for (let i = 0; i < 3; i++) {
       const year = currentYear - i;
@@ -101,66 +150,96 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardStats(): void {
     const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({ 'Authorization': token || '' });
+    const headers = new HttpHeaders({ Authorization: token || '' });
 
-    // Load job listings count
-    this.http.get(`${environment.apiUrl}/internships`, { headers })
+    // Load job listings count (filtered by posting_type)
+    const postingTypeParam =
+      this.activeTab === 'internship' ? 'internship' : 'job_placement';
+    this.http
+      .get(
+        `${environment.apiUrl}/internships?posting_type=${postingTypeParam}`,
+        { headers },
+      )
       .subscribe({
         next: (response: any) => {
           this.stats.totalJobListings = response.data?.length || 0;
           this.updateApplicationsByPositionChart(response.data || []);
         },
-        error: (error) => console.error('Error loading job listings:', error)
+        error: (error) => console.error('Error loading job listings:', error),
       });
 
     // Load applications count
-    this.http.get(`${environment.apiUrl}/internships/applications`, { headers })
+    this.http
+      .get(`${environment.apiUrl}/internships/applications`, { headers })
       .subscribe({
         next: (response: any) => {
           const applications = response.data || [];
           this.stats.totalApplications = applications.length;
-          this.stats.pendingApplications = applications.filter((app: any) => app.status === 'pending').length;
+          this.stats.pendingApplications = applications.filter(
+            (app: any) => app.status === 'pending',
+          ).length;
           this.updateApplicationStatusChart(applications);
         },
-        error: (error) => console.error('Error loading applications:', error)
+        error: (error) => console.error('Error loading applications:', error),
       });
 
     // Load supervisors count
-    this.http.get(`${environment.apiUrl}/employers/supervisors`, { headers })
+    this.http
+      .get(`${environment.apiUrl}/employers/supervisors`, { headers })
       .subscribe({
         next: (response: any) => {
           this.stats.totalSupervisors = response.data?.length || 0;
         },
-        error: (error) => console.error('Error loading supervisors:', error)
+        error: (error) => console.error('Error loading supervisors:', error),
       });
 
-    // Load OJT monitoring data
-    this.http.get(`${environment.apiUrl}/internships/employer/ongoing-ojts`, { headers })
-      .subscribe({
-        next: (response: any) => {
-          let ojts = response.ongoing_ojts || [];
-          
-          // Apply status filter
-          if (this.selectedStatus !== 'all') {
-            ojts = ojts.filter((ojt: any) => ojt.ojt_status === this.selectedStatus);
-          }
-          
-          this.stats.activeTrainees = ojts.length;
-          this.stats.ongoingTrainees = ojts.filter((ojt: any) => ojt.ojt_status === 'Ongoing').length;
-          this.stats.scheduledTrainees = ojts.filter((ojt: any) => ojt.ojt_status === 'Scheduled').length;
-          this.stats.completedTrainees = ojts.filter((ojt: any) => ojt.ojt_status === 'Completed').length;
-          this.updateOjtStatusChart();
-          this.updateMonthlyProgressChart(response.ongoing_ojts || []);
-        },
-        error: (error) => console.error('Error loading OJT data:', error)
-      });
+    // Load OJT monitoring data (only for internship tab)
+    if (this.activeTab === 'internship') {
+      this.http
+        .get(`${environment.apiUrl}/internships/employer/ongoing-ojts`, {
+          headers,
+        })
+        .subscribe({
+          next: (response: any) => {
+            let ojts = response.ongoing_ojts || [];
+
+            // Apply status filter
+            if (this.selectedStatus !== 'all') {
+              ojts = ojts.filter(
+                (ojt: any) => ojt.ojt_status === this.selectedStatus,
+              );
+            }
+
+            this.stats.activeTrainees = ojts.length;
+            this.stats.ongoingTrainees = ojts.filter(
+              (ojt: any) => ojt.ojt_status === 'Ongoing',
+            ).length;
+            this.stats.scheduledTrainees = ojts.filter(
+              (ojt: any) => ojt.ojt_status === 'Scheduled',
+            ).length;
+            this.stats.completedTrainees = ojts.filter(
+              (ojt: any) => ojt.ojt_status === 'Completed',
+            ).length;
+            this.updateOjtStatusChart();
+            this.updateMonthlyProgressChart(response.ongoing_ojts || []);
+          },
+          error: (error) => console.error('Error loading OJT data:', error),
+        });
+    } else {
+      // For job placement tab, reset OJT-specific stats
+      this.stats.activeTrainees = 0;
+      this.stats.ongoingTrainees = 0;
+      this.stats.scheduledTrainees = 0;
+      this.stats.completedTrainees = 0;
+    }
   }
 
   loadRecentApplications(): void {
     const token = sessionStorage.getItem('auth_token');
-    const headers = new HttpHeaders({ 'Authorization': token || '' });
+    const headers = new HttpHeaders({ Authorization: token || '' });
 
-    this.http.get(`${environment.apiUrl}/internships/applications`, { headers })
+    this.http
+      .get(`${environment.apiUrl}/internships/applications`, { headers })
       .subscribe({
         next: (response: any) => {
           const applications = response.data || [];
@@ -169,12 +248,17 @@ export class DashboardComponent implements OnInit {
             .map((app: any) => ({
               ...app,
               position: app.internship_title,
-              applied_date: app.applied_at
+              applied_date: app.applied_at,
             }))
-            .sort((a: any, b: any) => new Date(b.applied_date).getTime() - new Date(a.applied_date).getTime())
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.applied_date).getTime() -
+                new Date(a.applied_date).getTime(),
+            )
             .slice(0, 10);
         },
-        error: (error) => console.error('Error loading recent applications:', error)
+        error: (error) =>
+          console.error('Error loading recent applications:', error),
       });
   }
 
@@ -182,75 +266,101 @@ export class DashboardComponent implements OnInit {
     // Initialize with default data
     this.ojtStatusChartData = {
       labels: ['Ongoing', 'Scheduled', 'Completed'],
-      datasets: [{
-        data: [0, 0, 0],
-        backgroundColor: ['#3B82F6', '#EAB308', '#10B981'],
-        label: 'OJT Status'
-      }]
+      datasets: [
+        {
+          data: [0, 0, 0],
+          backgroundColor: ['#3B82F6', '#EAB308', '#10B981'],
+          label: 'OJT Status',
+        },
+      ],
     };
 
     this.applicationsByPositionChartData = {
       labels: ['Loading...'],
-      datasets: [{
-        label: 'Applications',
-        data: [0],
-        backgroundColor: '#8B5CF6'
-      }]
+      datasets: [
+        {
+          label: 'Applications',
+          data: [0],
+          backgroundColor: '#8B5CF6',
+        },
+      ],
     };
 
     this.applicationStatusChartData = {
       labels: ['Pending', 'Accepted', 'Rejected'],
-      datasets: [{
-        data: [0, 0, 0],
-        backgroundColor: ['#EAB308', '#10B981', '#EF4444'],
-        label: 'Status'
-      }]
+      datasets: [
+        {
+          data: [0, 0, 0],
+          backgroundColor: ['#EAB308', '#10B981', '#EF4444'],
+          label: 'Status',
+        },
+      ],
     };
 
     this.monthlyProgressChartData = {
       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [{
-        label: 'Active Trainees',
-        data: [0, 0, 0, 0, 0, 0],
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      }]
+      datasets: [
+        {
+          label: 'Active Trainees',
+          data: [0, 0, 0, 0, 0, 0],
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4,
+          fill: true,
+        },
+      ],
     };
   }
 
   updateOjtStatusChart(): void {
     this.ojtStatusChartData = {
       labels: ['Ongoing', 'Scheduled', 'Completed'],
-      datasets: [{
-        data: [
-          this.stats.ongoingTrainees,
-          this.stats.scheduledTrainees,
-          this.stats.completedTrainees
-        ],
-        backgroundColor: ['#3B82F6', '#EAB308', '#10B981']
-      }]
+      datasets: [
+        {
+          data: [
+            this.stats.ongoingTrainees,
+            this.stats.scheduledTrainees,
+            this.stats.completedTrainees,
+          ],
+          backgroundColor: ['#3B82F6', '#EAB308', '#10B981'],
+        },
+      ],
     };
-    
+
     // Force chart update
-    this.ojtStatusChartData = {...this.ojtStatusChartData};
+    this.ojtStatusChartData = { ...this.ojtStatusChartData };
   }
 
   updateMonthlyProgressChart(ojts: any[]): void {
     const now = new Date();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const monthData = new Array(12).fill(0);
 
     // Filter by selected year and status
-    const filteredOjts = ojts.filter(ojt => {
-      const matchesYear = ojt.ojt_start_date && new Date(ojt.ojt_start_date).getFullYear() === this.selectedYear;
-      const matchesStatus = this.selectedStatus === 'all' || ojt.ojt_status === this.selectedStatus;
+    const filteredOjts = ojts.filter((ojt) => {
+      const matchesYear =
+        ojt.ojt_start_date &&
+        new Date(ojt.ojt_start_date).getFullYear() === this.selectedYear;
+      const matchesStatus =
+        this.selectedStatus === 'all' || ojt.ojt_status === this.selectedStatus;
       return matchesYear && matchesStatus && ojt.ojt_status === 'Ongoing';
     });
 
     // Count ongoing trainees per month based on OJT start date
-    filteredOjts.forEach(ojt => {
+    filteredOjts.forEach((ojt) => {
       if (ojt.ojt_start_date) {
         const startDate = new Date(ojt.ojt_start_date);
         const monthIndex = startDate.getMonth();
@@ -262,36 +372,40 @@ export class DashboardComponent implements OnInit {
     const currentMonth = now.getMonth();
     const last6Months = [];
     const last6MonthsData = [];
-    
+
     for (let i = 5; i >= 0; i--) {
       const monthIndex = (currentMonth - i + 12) % 12;
-      const yearForMonth = (currentMonth - i < 0) ? this.selectedYear - 1 : this.selectedYear;
+      const yearForMonth =
+        currentMonth - i < 0 ? this.selectedYear - 1 : this.selectedYear;
       last6Months.push(`${months[monthIndex]} ${yearForMonth}`);
       last6MonthsData.push(monthData[monthIndex]);
     }
 
     this.monthlyProgressChartData = {
       labels: last6Months,
-      datasets: [{
-        label: 'Active Trainees',
-        data: last6MonthsData,
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      }]
+      datasets: [
+        {
+          label: 'Active Trainees',
+          data: last6MonthsData,
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4,
+          fill: true,
+        },
+      ],
     };
 
     // Force chart update
-    this.monthlyProgressChartData = {...this.monthlyProgressChartData};
+    this.monthlyProgressChartData = { ...this.monthlyProgressChartData };
   }
 
   updateApplicationsByPositionChart(internships: any[]): void {
     const positionCounts: { [key: string]: number } = {};
-    
+
     internships.forEach((internship: any) => {
       const position = internship.position || 'Other';
-      positionCounts[position] = (positionCounts[position] || 0) + (internship.application_count || 0);
+      positionCounts[position] =
+        (positionCounts[position] || 0) + (internship.application_count || 0);
     });
 
     const labels = Object.keys(positionCounts);
@@ -299,32 +413,44 @@ export class DashboardComponent implements OnInit {
 
     this.applicationsByPositionChartData = {
       labels: labels.length > 0 ? labels : ['No Data'],
-      datasets: [{
-        label: 'Applications',
-        data: data.length > 0 ? data : [0],
-        backgroundColor: '#8B5CF6'
-      }]
+      datasets: [
+        {
+          label: 'Applications',
+          data: data.length > 0 ? data : [0],
+          backgroundColor: '#8B5CF6',
+        },
+      ],
     };
-    
+
     // Force chart update
-    this.applicationsByPositionChartData = {...this.applicationsByPositionChartData};
+    this.applicationsByPositionChartData = {
+      ...this.applicationsByPositionChartData,
+    };
   }
 
   updateApplicationStatusChart(applications: any[]): void {
-    const pending = applications.filter((app: any) => app.status === 'pending').length;
-    const accepted = applications.filter((app: any) => app.status === 'accepted').length;
-    const rejected = applications.filter((app: any) => app.status === 'rejected').length;
+    const pending = applications.filter(
+      (app: any) => app.status === 'pending',
+    ).length;
+    const accepted = applications.filter(
+      (app: any) => app.status === 'accepted',
+    ).length;
+    const rejected = applications.filter(
+      (app: any) => app.status === 'rejected',
+    ).length;
 
     this.applicationStatusChartData = {
       labels: ['Pending', 'Accepted', 'Rejected'],
-      datasets: [{
-        data: [pending, accepted, rejected],
-        backgroundColor: ['#EAB308', '#10B981', '#EF4444']
-      }]
+      datasets: [
+        {
+          data: [pending, accepted, rejected],
+          backgroundColor: ['#EAB308', '#10B981', '#EF4444'],
+        },
+      ],
     };
-    
+
     // Force chart update
-    this.applicationStatusChartData = {...this.applicationStatusChartData};
+    this.applicationStatusChartData = { ...this.applicationStatusChartData };
   }
 
   navigateToTab(tabIndex: number): void {

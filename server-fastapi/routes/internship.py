@@ -315,6 +315,7 @@ def get_internships_route(
 	pageNo: int = Query(1, ge=1),
 	pageSize: int = Query(10, ge=1, le=100),
 	keyword: str = Query(""),
+	posting_type: str = Query(None, description="Filter by posting type: 'internship' or 'job_placement'"),
 	db: Session = Depends(get_db),
 	current_user: dict = Depends(get_current_user)
 ):
@@ -327,6 +328,10 @@ def get_internships_route(
 		
 		if keyword:
 			query = query.filter(Internship.title.ilike(f"%{keyword}%"))
+		
+		# Filter by posting_type if provided
+		if posting_type:
+			query = query.filter(Internship.posting_type == posting_type)
 		
 		total_records = query.count()
 		offset = (pageNo - 1) * pageSize
@@ -376,7 +381,7 @@ def get_internships_route(
 	if not employer:
 		return {"status": "error", "detail": "Employer profile not found"}, 404
 	
-	result = get_internships_by_employer(employer.employer_id, pageNo, pageSize, keyword, db)
+	result = get_internships_by_employer(employer.employer_id, pageNo, pageSize, keyword, posting_type, db)
 	return {
 		"status": "success",
 		"data": result["data"],

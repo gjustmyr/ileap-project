@@ -15,12 +15,17 @@ export class JobListingService {
   getAllInternships(
     pageNo: number,
     pageSize: number,
-    keyword: string
+    keyword: string,
+    postingType?: string,
   ): Observable<any> {
     let params = new HttpParams()
       .set('pageNo', pageNo)
       .set('pageSize', pageSize)
       .set('keyword', keyword || '');
+
+    if (postingType) {
+      params = params.set('posting_type', postingType);
+    }
 
     const token = sessionStorage.getItem('auth_token') || '';
 
@@ -64,7 +69,7 @@ export class JobListingService {
   // Get all skills for autocomplete
   getAllSkills(keyword: string = ''): Observable<any> {
     const token = sessionStorage.getItem('auth_token') || '';
-    
+
     let params = new HttpParams();
     if (keyword) {
       params = params.set('keyword', keyword);
@@ -74,9 +79,9 @@ export class JobListingService {
       Authorization: token,
     });
 
-    return this.http.get<any>(`${this.baseUrl}/internships/skills`, { 
+    return this.http.get<any>(`${this.baseUrl}/internships/skills`, {
       params,
-      headers 
+      headers,
     });
   }
 

@@ -42,6 +42,12 @@ export class EmployersComponent implements OnInit {
   showViewDialog = false;
   selectedEmployer: any = null;
 
+  // Search existing employer
+  searchEmployerKeyword = '';
+  searchResults: any[] = [];
+  isSearching = false;
+  searchAttempted = false;
+
   constructor(
     private employerService: EmployerService,
     private dropdownService: DropdownsService,
@@ -122,6 +128,9 @@ export class EmployersComponent implements OnInit {
     if (!this.isAddDialogVisible) {
       this.employerSimpleForm.reset();
       this.clearMOASelection();
+      this.searchEmployerKeyword = '';
+      this.searchResults = [];
+      this.searchAttempted = false;
     }
   }
 
@@ -256,5 +265,120 @@ export class EmployersComponent implements OnInit {
       link.download = `MOA_${this.selectedEmployer.company_name}.pdf`;
       link.click();
     }
+  }
+
+  // Search existing employer methods
+  searchExistingEmployer(): void {
+    if (!this.searchEmployerKeyword || this.searchEmployerKeyword.length < 3) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Search Required',
+        text: 'Please enter at least 3 characters to search',
+        confirmButtonColor: '#f59e0b',
+      });
+      return;
+    }
+
+    this.isSearching = true;
+    this.searchAttempted = true;
+
+    // Search all employers (not just job placement ones)
+    const params: any = {
+      page_no: 1,
+      page_size: 10,
+      keyword: this.searchEmployerKeyword,
+    };
+
+    // Use a different endpoint or modify the service to search all employers
+    this.employerService.searchAllEmployers(params).subscribe({
+      next: (res) => {
+        this.isSearching = false;
+        if (res?.status === 'success') {
+          this.searchResults = res.data || [];
+        } else {
+          this.searchResults = [];
+        }
+      },
+      error: () => {
+        this.isSearching = false;
+        this.searchResults = [];
+        Swal.fire({
+          icon: 'error',
+          title: 'Search Error',
+          text: 'Failed to search for existing employers.',
+          confirmButtonColor: '#ef4444',
+        });
+      },
+    });
+  }
+
+  useExistingEmployer(employer: any): void {
+    const internshipValidity = employer.internship_validity
+      ? new Date(employer.internship_validity).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'N/A';
+    const jobPlacementValidity = employer.job_placement_validity
+      ? new Date(employer.job_placement_validity).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'Not set';
+
+    Swal.fire({
+      title: 'Use Existing Employer?',
+      html: `
+        <div class="text-left">
+          <p class="text-gray-700 mb-2">This will update the eligibility of:</p>
+          <p class="font-semibold text-lg">${employer.company_name}</p>
+          <p class="text-sm text-gray-600 mb-3">${employer.email_address}</p>
+          
+          <div class="bg-gray-50 p-3 rounded mb-3">
+            <p class="text-sm font-medium mb-2">Current Status:</p>
+            <p class="text-sm">Eligibility: <span class="font-medium">${employer.eligibility}</span></p>
+            <p class="text-sm">Internship valid until: <span class="font-medium text-yellow-600">${internshipValidity}</span></p>
+            <p class="text-sm">Job Placement valid until: <span class="font-medium text-green-600">${jobPlacementValidity}</span></p>
+          </div>
+          
+          <div class="bg-green-50 p-3 rounded">
+            <p class="text-sm font-medium mb-2">After Update:</p>
+            <p class="text-sm">Eligibility: <span class="font-medium text-green-600">both</span> (internship + job placement)</p>
+            <p class="text-sm text-gray-600 italic">You will set the new Job Placement validity date</p>
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Update Eligibility',
+      cancelButtonText: 'Cancel',
+      width: '600px',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Pre-fill the form with existing employer data
+        this.employerSimpleForm.patchValue({
+          email_address: employer.email_address,
+          company_name: employer.company_name,
+          representative_name: employer.representative_name,
+          phone_number: employer.phone_number,
+          industry_id: employer.industry_id,
+        });
+
+        // Clear search results
+        this.searchResults = [];
+        this.searchEmployerKeyword = '';
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Form Pre-filled',
+          text: 'Please set the Job Placement validity dates and submit to update eligibility.',
+          confirmButtonColor: '#16a34a',
+        });
+      }
+    });
   }
 }

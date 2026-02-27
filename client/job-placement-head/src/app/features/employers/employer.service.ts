@@ -44,4 +44,13 @@ export class EmployerService {
       headers: this.getHeaders(),
     });
   }
+
+  searchAllEmployers(params: any): Observable<any> {
+    // Search across all employers (not filtered by eligibility)
+    const searchUrl = `${environment.apiUrl}/jp-officers/employers/search`;
+    return this.http.get(searchUrl, {
+      headers: this.getHeaders(),
+      params,
+    });
+  }
 }

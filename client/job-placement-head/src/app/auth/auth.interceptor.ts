@@ -8,7 +8,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Add Authorization header if token exists
   const token = sessionStorage.getItem('auth_token');
-  if (token && !req.url.includes('/auth/login')) {
+  if (
+    token &&
+    !req.url.includes('/auth/login') &&
+    !req.url.includes('/auth/register')
+  ) {
     req = req.clone({
       setHeaders: {
         Authorization: token,
@@ -20,8 +24,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error) => {
       // Handle 401 Unauthorized errors (expired or invalid token)
       if (error.status === 401) {
-        console.warn('401 Unauthorized - Token expired or invalid');
-        
+        console.warn(
+          '🔒 401 Unauthorized - Token expired or invalid. Auto-logout triggered.',
+        );
+
         // Clear all authentication data
         sessionStorage.clear();
         localStorage.removeItem('auth_token');
@@ -29,16 +35,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         // Redirect to login with expired session message
         router.navigate(['/login'], {
-          queryParams: { expired: 'true' }
+          queryParams: { expired: 'true' },
         });
       }
 
       // Handle 403 Forbidden errors (insufficient permissions)
       if (error.status === 403) {
-        console.warn('403 Forbidden - Insufficient permissions');
+        console.warn('🚫 403 Forbidden - Insufficient permissions');
+        // Optionally show an error message or redirect to unauthorized page
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };
