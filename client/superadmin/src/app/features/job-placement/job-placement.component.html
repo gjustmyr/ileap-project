@@ -45,35 +45,37 @@
 
     <!-- Filter Action Buttons -->
     <div class="flex gap-3 mb-6 justify-between">
-     <div class="flex gap-3">
-       <button
-        (click)="applyFilters()"
-        [disabled]="isLoading"
-        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Apply Filters
-      </button>
-      <button
-        (click)="resetFilters()"
-        [disabled]="isLoading"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Reset
-      </button>
-     </div>
+      <div class="flex gap-3">
+        <button
+          (click)="applyFilters()"
+          [disabled]="isLoading"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Apply Filters
+        </button>
+        <button
+          (click)="resetFilters()"
+          [disabled]="isLoading"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Reset
+        </button>
+      </div>
       <button
         (click)="handleAddDialog()"
         [disabled]="isLoading"
         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-      <i class="pi pi-plus"></i>
+        <i class="pi pi-plus"></i>
         Add JP Officer
       </button>
     </div>
 
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex justify-center items-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
+      ></div>
     </div>
 
     <div *ngIf="!isLoading" class="card poppins-regular text-sm">
@@ -153,13 +155,28 @@
                 class="border border-gray-300 px-4 py-2 text-xs"
                 [ngClass]="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'"
               >
-                <button
-                  class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
-                  (click)="handleUpdateDialog(jpo.user_id)"
-                  title="Edit Job Placement Officer"
-                >
-                  <i class="pi pi-pencil text-xs"></i>
-                </button>
+                <div class="flex gap-2">
+                  <button
+                    class="bg-blue-500 hover:bg-blue-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="handleUpdateDialog(jpo.user_id)"
+                    title="Edit Job Placement Officer"
+                  >
+                    <i class="pi pi-pencil text-xs"></i>
+                  </button>
+                  <button
+                    class="bg-green-500 hover:bg-green-600 p-2 text-white text-xs rounded cursor-pointer"
+                    (click)="
+                      handleSendNewPassword(
+                        jpo.user_id,
+                        jpo.first_name,
+                        jpo.last_name
+                      )
+                    "
+                    title="Send New Password"
+                  >
+                    <i class="pi pi-key text-xs"></i>
+                  </button>
+                </div>
               </td>
             </tr>
             <tr *ngIf="jpoList.length === 0">
@@ -358,8 +375,11 @@
           [disabled]="jpoForm.invalid || isSubmitting"
           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm poppins-medium rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          <span *ngIf="isSubmitting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-          {{ isSubmitting ? 'Processing...' : (isEditMode ? "Update" : "Add") }}
+          <span
+            *ngIf="isSubmitting"
+            class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+          ></span>
+          {{ isSubmitting ? "Processing..." : isEditMode ? "Update" : "Add" }}
         </button>
       </div>
     </div>

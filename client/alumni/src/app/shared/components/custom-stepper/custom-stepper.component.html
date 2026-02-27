@@ -1,0 +1,25 @@
+<div class="custom-stepper">
+  <!-- Step Headers -->
+  <div class="stepper-header">
+    <div *ngFor="let step of steps; let i = index; let last = last" class="step-header-item">
+      <div 
+        class="step-indicator" 
+        [class]="getStepClass(i)"
+        [class.clickable]="isStepClickable(i)"
+        (click)="isStepClickable(i) && goToStep(i)"
+      >
+        <div class="step-number">
+          <i *ngIf="getStepClass(i) === 'completed'" class="pi pi-check"></i>
+          <span *ngIf="getStepClass(i) !== 'completed'">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">{{ step.label }}</div>
+      </div>
+      <div *ngIf="!last" class="step-connector" [class.active]="i < activeStep"></div>
+    </div>
+  </div>
+
+  <!-- Step Content -->
+  <div class="stepper-content">
+    <ng-content></ng-content>
+  </div>
+</div>

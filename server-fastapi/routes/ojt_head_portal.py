@@ -84,7 +84,12 @@ async def get_all_employers(
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_ojt_head_role)
 ):
-    """Get all employers with pagination and filters"""
+    """Get all employers with pagination and filters - OJT Head sees only internship and both"""
+    # Force eligibility filter for OJT Head to only see internship or both
+    # If user provides eligibility filter, respect it, otherwise default to internship,both
+    if not eligibility:
+        eligibility = "internship,both"
+    
     return employer_controller.get_all_employers(
         db=db,
         page=page,

@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../auth.service';
@@ -10,7 +15,7 @@ import { AuthService } from '../auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './change-password.component.html',
-  styleUrls: ['./change-password.component.css']
+  styleUrls: ['./change-password.component.css'],
 })
 export class ChangePasswordComponent {
   passwordForm: FormGroup;
@@ -19,18 +24,22 @@ export class ChangePasswordComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
+    this.passwordForm = this.fb.group(
+      {
+        currentPassword: ['', Validators.required],
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required],
+      },
+      { validators: this.passwordMatchValidator },
+    );
   }
 
   passwordMatchValidator(g: FormGroup) {
     return g.get('newPassword')?.value === g.get('confirmPassword')?.value
-      ? null : { 'mismatch': true };
+      ? null
+      : { mismatch: true };
   }
 
   changePassword() {
@@ -39,32 +48,34 @@ export class ChangePasswordComponent {
       const { currentPassword, newPassword } = this.passwordForm.value;
       const userId = sessionStorage.getItem('user_id');
 
-      this.authService.changePassword(userId, currentPassword, newPassword).subscribe({
-        next: () => {
-          this.loading = false;
-          Swal.fire({
-            title: 'Success!',
-            text: 'Your password has been changed successfully.',
-            icon: 'success',
-            confirmButtonColor: '#16a34a'
-          }).then(() => {
-            this.router.navigate(['/dashboard']);
-          });
-        },
-        error: (err) => {
-          this.loading = false;
-          Swal.fire({
-            title: 'Error',
-            text: err?.error?.detail || 'Failed to change password.',
-            icon: 'error',
-            confirmButtonColor: '#dc2626'
-          });
-        }
-      });
+      this.authService
+        .changePassword(userId, currentPassword, newPassword)
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            Swal.fire({
+              title: 'Success!',
+              text: 'Your password has been changed successfully.',
+              icon: 'success',
+              confirmButtonColor: '#16a34a',
+            }).then(() => {
+              this.router.navigate(['/ojt-head']);
+            });
+          },
+          error: (err) => {
+            this.loading = false;
+            Swal.fire({
+              title: 'Error',
+              text: err?.error?.detail || 'Failed to change password.',
+              icon: 'error',
+              confirmButtonColor: '#dc2626',
+            });
+          },
+        });
     }
   }
 
   cancel() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/ojt-head']);
   }
 }

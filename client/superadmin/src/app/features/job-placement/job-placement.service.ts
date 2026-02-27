@@ -13,7 +13,7 @@ export class JobPlacementService {
   getAll(
     pageNo: number,
     pageSize: number,
-    keyword: string = ''
+    keyword: string = '',
   ): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
     const headers = new HttpHeaders({ Authorization: token as string });
@@ -30,7 +30,7 @@ export class JobPlacementService {
         catchError((err: Error) => {
           console.error('Error fetching JPOs:', err);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -45,7 +45,7 @@ export class JobPlacementService {
         catchError((err: Error) => {
           console.error('Error fetching JPOs:', err);
           return of(null);
-        })
+        }),
       );
   }
   registerJPO(payload: any): Observable<any> {
@@ -53,13 +53,15 @@ export class JobPlacementService {
     const headers = new HttpHeaders({ Authorization: token as string });
 
     return this.http
-      .post(`${this.baseURL}/superadmin/jp-officers/register`, payload, { headers })
+      .post(`${this.baseURL}/superadmin/jp-officers/register`, payload, {
+        headers,
+      })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
           console.error('Error registering JPO:', err);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -69,13 +71,35 @@ export class JobPlacementService {
     const headers = new HttpHeaders({ Authorization: token as string });
 
     return this.http
-      .patch(`${this.baseURL}/superadmin/jp-officers/${userId}`, data, { headers })
+      .patch(`${this.baseURL}/superadmin/jp-officers/${userId}`, data, {
+        headers,
+      })
       .pipe(
         map((res: any) => res),
         catchError((err: Error) => {
           console.error('Error updating JPO:', err);
           return of(null);
-        })
+        }),
+      );
+  }
+
+  // Send new password to JPO
+  sendNewPassword(userId: string): Observable<any> {
+    const token = sessionStorage.getItem('auth_token');
+    const headers = new HttpHeaders({ Authorization: token as string });
+
+    return this.http
+      .post(
+        `${this.baseURL}/superadmin/jp-officers/${userId}/send-new-password`,
+        {},
+        { headers },
+      )
+      .pipe(
+        map((res: any) => res),
+        catchError((err: Error) => {
+          console.error('Error sending new password:', err);
+          throw err;
+        }),
       );
   }
 }

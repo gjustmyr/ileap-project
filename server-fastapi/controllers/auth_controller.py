@@ -70,16 +70,30 @@ def login_user_by_role(credentials, db: Session, expected_role: str):
 
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
+    # Build user data response
+    user_data = {
+        "user_id": user.user_id,
+        "email": user.email_address,
+        "role": user.role
+    }
+
+    # Fetch profile data based on role
+    if expected_role == "job_placement_officer":
+        from models import JobPlacementOfficer
+        profile = db.query(JobPlacementOfficer).filter(
+            JobPlacementOfficer.user_id == user.user_id
+        ).first()
+        if profile:
+            user_data["first_name"] = profile.first_name
+            user_data["last_name"] = profile.last_name
+            user_data["position_title"] = profile.position_title
+
     return {
         "status": "success",
         "message": "Login successful",
         "data": {
             "token": token,
-            "user": {
-                "user_id": user.user_id,
-                "email": user.email_address,
-                "role": user.role
-            },
+            "user": user_data,
             "force_password_change": user.force_password_change
         }
     }

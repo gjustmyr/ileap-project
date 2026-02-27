@@ -1086,6 +1086,96 @@ async def update_jp_officer(
         )
 
 
+@router.post("/jp-officers/{user_id}/send-new-password")
+async def send_new_password_jp_officer(
+    user_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Send new password to job placement officer (superadmin only)"""
+    from models import User, JobPlacementOfficer
+    import bcrypt
+    import secrets
+    import string
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    # Get user and profile
+    user = db.query(User).filter(
+        User.user_id == user_id,
+        User.role == "job_placement_officer"
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Job placement officer not found")
+    
+    jpo_profile = db.query(JobPlacementOfficer).filter(
+        JobPlacementOfficer.user_id == user_id
+    ).first()
+    
+    if not jpo_profile:
+        raise HTTPException(status_code=404, detail="Job placement officer profile not found")
+    
+    try:
+        # Generate new password
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        new_password = ''.join(secrets.choice(characters) for _ in range(12))
+        new_password = new_password[:72]  # BCrypt limit
+        
+        # Hash password
+        hashed_password = bcrypt.hashpw(
+            new_password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        
+        # Update password
+        user.password = hashed_password
+        db.commit()
+        db.refresh(user)
+        
+        # Send email with new password
+        email_body = f"""Hello {jpo_profile.first_name} {jpo_profile.last_name},
+
+Your password has been reset by the System Administrator.
+
+Email: {user.email_address}
+New Password: {new_password}
+
+Please login and change your password immediately for security.
+
+Best regards,
+ILEAP System"""
+        
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = os.getenv("EMAIL_USER")
+            msg['To'] = user.email_address
+            msg['Subject'] = "Password Reset - ILEAP System"
+            msg.attach(MIMEText(email_body, 'plain'))
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+            server.send_message(msg)
+            server.quit()
+        except Exception as email_error:
+            print(f"Failed to send email: {email_error}")
+        
+        return {
+            "status": "SUCCESS",
+            "data": [],
+            "message": "New password generated and sent to email successfully."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to reset password: {str(e)}"
+        )
+
+
 # ============= OJT HEAD =============
 @router.get("/ojt-heads")
 async def get_all_ojt_heads(

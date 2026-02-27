@@ -15,7 +15,7 @@ from database import engine
 from models import Base
 #sa
 # Import routes
-from routes import auth, campus, department, program, section, ojt_head, ojt_head_portal, ojt_coordinator, employer, industry, class_routes, internship, supervisor, student, student_trainee_portal, requirements, ojt_assignments, ojt_daily_records, oeams, dashboard, dropdown, requirement_templates, superadmin
+from routes import auth, campus, department, program, section, ojt_head, ojt_head_portal, ojt_coordinator, employer, industry, class_routes, internship, supervisor, student, student_trainee_portal, requirements, ojt_assignments, ojt_daily_records, oeams, dashboard, dropdown, requirement_templates, superadmin, jp_employer
 
 load_dotenv()
     
@@ -51,6 +51,7 @@ app.include_router(ojt_coordinator.router)
 
 from routes import company
 app.include_router(employer.router)
+app.include_router(jp_employer.router)
 app.include_router(industry.router)
 app.include_router(class_routes.router)
 app.include_router(internship.router)

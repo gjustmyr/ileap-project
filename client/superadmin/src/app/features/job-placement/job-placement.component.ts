@@ -14,13 +14,9 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-job-placement',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './job-placement.component.html',
-  styleUrl: './job-placement.component.css'
+  styleUrl: './job-placement.component.css',
 })
 export class JobPlacementComponent implements OnInit {
   campuses: any[] = [];
@@ -44,7 +40,7 @@ export class JobPlacementComponent implements OnInit {
   constructor(
     private jpoService: JobPlacementService,
     private campusService: CampusesService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {
     this.jpoForm = this.fb.group({
       email_address: ['', [Validators.required, Validators.email]],
@@ -53,7 +49,7 @@ export class JobPlacementComponent implements OnInit {
       contact_number: ['', [Validators.pattern(/^09\d{9}$/)]],
       position_title: [''],
       campus_id: ['', Validators.required],
-      status: ['active', Validators.required]
+      status: ['active', Validators.required],
     });
   }
 
@@ -74,7 +70,7 @@ export class JobPlacementComponent implements OnInit {
       error: (err) => {
         console.error('Error fetching campuses:', err);
         this.campuses = [];
-      }
+      },
     });
   }
 
@@ -119,7 +115,7 @@ export class JobPlacementComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'Failed to load job placement officers',
-          confirmButtonColor: '#ef4444'
+          confirmButtonColor: '#ef4444',
         });
       },
     });
@@ -150,7 +146,7 @@ export class JobPlacementComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'Failed to load JPO details',
-          confirmButtonColor: '#ef4444'
+          confirmButtonColor: '#ef4444',
         });
       },
     });
@@ -168,38 +164,40 @@ export class JobPlacementComponent implements OnInit {
         icon: 'error',
         title: 'Validation Error',
         text: 'Please fill all required fields correctly',
-        confirmButtonColor: '#ef4444'
+        confirmButtonColor: '#ef4444',
       });
       return;
     }
 
     const formData = { ...this.jpoForm.value };
     this.isSubmitting = true;
-    
+
     if (this.isEditMode && this.selectedUserId) {
-      this.jpoService.updateJPO(this.selectedUserId as string, formData).subscribe({
-        next: (res) => {
-          this.isSubmitting = false;
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'JPO updated successfully!',
-            confirmButtonColor: '#10b981'
-          });
-          this.closeDialog();
-          this.getAllJobPlacementOfficers();
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          console.error('Failed to update JPO:', err);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: err.error?.message || 'Failed to update JPO',
-            confirmButtonColor: '#ef4444'
-          });
-        },
-      });
+      this.jpoService
+        .updateJPO(this.selectedUserId as string, formData)
+        .subscribe({
+          next: (res) => {
+            this.isSubmitting = false;
+            Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: 'JPO updated successfully!',
+              confirmButtonColor: '#10b981',
+            });
+            this.closeDialog();
+            this.getAllJobPlacementOfficers();
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            console.error('Failed to update JPO:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err.error?.message || 'Failed to update JPO',
+              confirmButtonColor: '#ef4444',
+            });
+          },
+        });
     } else {
       // Create new JPO - password will be auto-generated on backend
       this.jpoService.registerJPO(formData).subscribe({
@@ -210,7 +208,7 @@ export class JobPlacementComponent implements OnInit {
               icon: 'success',
               title: 'Success',
               text: 'JPO registered successfully! A temporary password has been sent to their email.',
-              confirmButtonColor: '#10b981'
+              confirmButtonColor: '#10b981',
             });
             this.closeDialog();
             this.getAllJobPlacementOfficers();
@@ -219,7 +217,7 @@ export class JobPlacementComponent implements OnInit {
               icon: 'error',
               title: 'Failed',
               text: res?.message || 'Unable to register JPO',
-              confirmButtonColor: '#ef4444'
+              confirmButtonColor: '#ef4444',
             });
           }
         },
@@ -230,11 +228,69 @@ export class JobPlacementComponent implements OnInit {
             icon: 'error',
             title: 'Error',
             text: err.error?.message || 'Something went wrong',
-            confirmButtonColor: '#ef4444'
+            confirmButtonColor: '#ef4444',
           });
         },
       });
     }
+  }
+
+  handleSendNewPassword(
+    userId: string,
+    firstName: string,
+    lastName: string,
+  ): void {
+    Swal.fire({
+      title: 'Send New Password?',
+      html: `Are you sure you want to generate and send a new password to <strong>${firstName} ${lastName}</strong>?<br><br>The new password will be sent to their registered email address.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Send Password',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Sending...',
+          text: 'Generating new password and sending email',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        this.jpoService.sendNewPassword(userId).subscribe({
+          next: (res) => {
+            if (res?.status === 'SUCCESS') {
+              Swal.fire({
+                icon: 'success',
+                title: 'Password Sent!',
+                text: 'A new password has been generated and sent to the email address.',
+                confirmButtonColor: '#10b981',
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Failed',
+                text: res?.message || 'Failed to send new password',
+                confirmButtonColor: '#ef4444',
+              });
+            }
+          },
+          error: (err) => {
+            console.error('Error sending new password:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err.error?.detail || 'Failed to send new password',
+              confirmButtonColor: '#ef4444',
+            });
+          },
+        });
+      }
+    });
   }
 
   // Pagination helper methods

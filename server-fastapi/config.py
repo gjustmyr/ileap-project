@@ -48,11 +48,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 # CORS configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else [
     "http://localhost:4200",  # Superadmin
-    "http://localhost:4201",  # Employer
+    "http://localhost:4201",  # OJT Head
     "http://localhost:4202",  # OJT Coordinator
-    "http://localhost:4203",  # OJT Head
-    "http://localhost:4204",  # Student Trainee
-    "http://localhost:4700",  # Supervisor
+    "http://localhost:4203",  # Student Trainee
+    "http://localhost:4204",  # Employer
+    "http://localhost:4205",  # Supervisor
+    "http://localhost:4206",  # Job Placement Head
+    "http://localhost:4207",  # Alumni
 ]
 
 # File upload configuration

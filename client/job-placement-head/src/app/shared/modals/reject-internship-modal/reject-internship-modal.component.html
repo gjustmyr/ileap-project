@@ -1,0 +1,37 @@
+<!-- Reject Dialog -->
+<p-dialog
+  header="Reject Internship"
+  [(visible)]="isVisible"
+  [modal]="true"
+  [style]="{ width: '30vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="pointer-events-none"
+  (onHide)="handleClose()"
+>
+  <div class="pointer-events-auto">
+    <p class="mb-4">
+      Please provide a reason for rejecting this internship posting:
+    </p>
+    <textarea
+      [(ngModel)]="rejectRemarks"
+      rows="5"
+      class="w-full border rounded p-2"
+      placeholder="Enter rejection remarks..."
+    ></textarea>
+    <div class="flex justify-end gap-2 mt-4">
+      <button
+        (click)="handleClose()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="handleConfirm()"
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm poppins-medium rounded"
+      >
+        Confirm Reject
+      </button>
+    </div>
+  </div>
+</p-dialog>

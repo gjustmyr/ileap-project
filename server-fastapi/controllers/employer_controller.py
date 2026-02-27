@@ -126,7 +126,13 @@ def get_all_employers(
         query = query.filter(Employer.industry_id == industry_id)
     
     if eligibility:
-        query = query.filter(Employer.eligibility == eligibility)
+        # Support filtering for multiple eligibility values
+        # e.g., "internship,both" or "job_placement,both"
+        if ',' in eligibility:
+            eligibility_values = [e.strip() for e in eligibility.split(',')]
+            query = query.filter(Employer.eligibility.in_(eligibility_values))
+        else:
+            query = query.filter(Employer.eligibility == eligibility)
     
     if status_filter:
         query = query.filter(Employer.status == status_filter)

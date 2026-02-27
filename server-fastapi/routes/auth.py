@@ -51,6 +51,11 @@ async def login_supervisor(credentials: LoginRequest, db: Session = Depends(get_
     return auth_controller.login_user_by_role(credentials, db, expected_role="trainee_supervisor")
 
 
+@router.post("/jp-officer/login", response_model=LoginResponse)
+async def login_jp_officer(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """Job Placement Officer portal login"""
+    return auth_controller.login_user_by_role(credentials, db, expected_role="job_placement_officer")
+
 
 @router.post("/logout")
 async def logout(authorization: str = Header(None), token_data: dict = Depends(verify_token)):

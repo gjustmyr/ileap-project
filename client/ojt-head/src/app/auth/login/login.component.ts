@@ -40,9 +40,9 @@ export class LoginComponent implements OnInit {
       // Validate token before redirecting
       this.authService.validateToken().subscribe({
         next: (response: any) => {
-          // Token is valid - redirect to dashboard
-          console.log('User already logged in, redirecting to dashboard...');
-          this.router.navigate(['/main/dashboard']);
+          // Token is valid - redirect to ojt-head
+          console.log('User already logged in, redirecting to ojt-head...');
+          this.router.navigate(['/ojt-head']);
         },
         error: () => {
           // Token is invalid - clear it and stay on login page

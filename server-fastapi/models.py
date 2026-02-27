@@ -564,18 +564,53 @@ class Alumni(Base):
 	__tablename__ = "alumni"
 
 	alumni_id = Column(Integer, primary_key=True, index=True)
+	user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, unique=True)
 	first_name = Column(String(50), nullable=False)
 	middle_name = Column(String(50), nullable=True)
 	last_name = Column(String(50), nullable=False)
 	email = Column(String(100), nullable=False, unique=True)
+	phone_number = Column(String(20), nullable=True)
 	sr_code = Column(String(50), nullable=True)
 	program_id = Column(Integer, ForeignKey("programs.program_id"), nullable=True)
 	graduation_year = Column(Integer, nullable=True)
+	current_employment_status = Column(String(20), nullable=True, default="unemployed")  # 'employed', 'unemployed', 'self-employed'
+	current_company = Column(String(255), nullable=True)
+	current_position = Column(String(255), nullable=True)
+	resume_file = Column(String(255), nullable=True)
+	linkedin_url = Column(String(255), nullable=True)
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 	# Relationships
+	user = relationship("User", backref="alumni")
 	program = relationship("Program", backref="alumni")
+	job_applications = relationship("JobApplication", back_populates="alumni", cascade="all, delete-orphan")
+
+
+class JobApplication(Base):
+	"""Model for alumni job applications"""
+	__tablename__ = "job_applications"
+
+	application_id = Column(Integer, primary_key=True, index=True)
+	alumni_id = Column(Integer, ForeignKey("alumni.alumni_id", ondelete="CASCADE"), nullable=False)
+	internship_id = Column(Integer, ForeignKey("internships.internship_id", ondelete="CASCADE"), nullable=False)
+	employer_id = Column(Integer, ForeignKey("employers.employer_id"), nullable=False)
+	status = Column(String(20), nullable=False, default="pending")  # 'pending', 'reviewing', 'shortlisted', 'hired', 'rejected'
+	cover_letter = Column(Text, nullable=True)
+	applied_at = Column(DateTime, default=datetime.utcnow)
+	reviewed_at = Column(DateTime, nullable=True)
+	hired_at = Column(DateTime, nullable=True)
+	employment_start_date = Column(Date, nullable=True)
+	employment_end_date = Column(Date, nullable=True)
+	is_currently_employed = Column(Boolean, default=False)
+	notes = Column(Text, nullable=True)
+	created_at = Column(DateTime, default=datetime.utcnow)
+	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+	# Relationships
+	alumni = relationship("Alumni", back_populates="job_applications")
+	internship = relationship("Internship")
+	employer = relationship("Employer")
 
 
 class DailyAccomplishment(Base):
