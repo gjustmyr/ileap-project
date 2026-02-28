@@ -785,6 +785,6 @@ export class PersonalHistoryStatementComponent {
     }
 
     // Otherwise, construct the URL
-    return `http://localhost:3000/${this.data.profile_picture}`;
+    return `http://47.128.70.19:3000/${this.data.profile_picture}`;
   }
 }

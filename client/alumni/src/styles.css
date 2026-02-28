@@ -1,123 +1,110 @@
-/* Tailwind CSS */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import "tailwindcss";
-
-/* PrimeNG Icons */
-@import "primeicons/primeicons.css";
-
-/* Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Poppins", sans-serif;
-  background-color: #f9fafb;
-}
-
-/* Poppins Font Classes */
-.poppins-thin {
-  font-family: "Poppins", sans-serif;
-  font-weight: 100;
-}
-
-.poppins-extralight {
-  font-family: "Poppins", sans-serif;
-  font-weight: 200;
-}
-
-.poppins-light {
+@import "primeicons/primeicons.css";poppins-light {
   font-family: "Poppins", sans-serif;
   font-weight: 300;
+  font-style: normal;
 }
 
 .poppins-regular {
   font-family: "Poppins", sans-serif;
   font-weight: 400;
+  font-style: normal;
 }
 
 .poppins-medium {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
+  font-style: normal;
+}
+.poppins-thin {
+  font-family: "Poppins", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.poppins-extralight {
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.poppins-light {
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.poppins-regular {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.poppins-medium {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
 }
 
 .poppins-semibold {
   font-family: "Poppins", sans-serif;
   font-weight: 600;
+  font-style: normal;
 }
 
 .poppins-bold {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
+  font-style: normal;
 }
 
 .poppins-extrabold {
   font-family: "Poppins", sans-serif;
   font-weight: 800;
+/* Button cursor pointer */
+button {
+  cursor: pointer;
+} font-family: "Poppins", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}poppins-regular-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: italic;
 }
 
-.poppins-black {
+.poppins-medium-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.poppins-semibold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.poppins-bold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.poppins-extrabold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.poppins-black-italic {
   font-family: "Poppins", sans-serif;
   font-weight: 900;
+  font-style: italic;
 }
 
-/* Login Page Specific Styles */
-.login-section {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-container {
-  background: white;
-  padding: 2rem;
-}
-
-.login-cover {
-  position: relative;
-  background-size: cover;
-  background-position: center;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* PrimeNG Overrides */
-.p-dropdown {
-  width: 100%;
-}
-
-.p-dropdown-panel {
-  z-index: 9999 !important;
-}
-
-.p-dialog {
-  max-width: 90vw;
-}
-
-/* Utility Classes */
-.cursor-pointer {
+/* Button cursor pointer */
+button {
   cursor: pointer;
-}
-
-.transition-colors {
-  transition: color 0.2s ease-in-out;
 }

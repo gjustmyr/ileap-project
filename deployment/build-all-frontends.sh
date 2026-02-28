@@ -6,12 +6,12 @@ set -e
 
 # Colors for output
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
+BLUE='\047.128.70.1933[0;34m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Production IP
-EC2_IP="54.160.137.135"
+EC2_IP="47.128.70.19"
 
 echo -e "${BLUE}🚀 Building All ILEAP Frontend Applications${NC}"
 echo -e "${BLUE}Production IP: ${EC2_IP}${NC}"
