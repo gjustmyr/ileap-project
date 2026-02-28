@@ -59,7 +59,7 @@ pm2 logs ileap-backend --lines 20 --nostream
 
 echo ""
 echo "=== Backend Status ==="
-curl -s http://localhost:3000/api/health || echo "Health check endpoint not available"
+curl -s http://54.251.87.169:3000/api/health || echo "Health check endpoint not available"
 
 ENDSSH
 

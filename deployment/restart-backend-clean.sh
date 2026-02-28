@@ -55,11 +55,11 @@ sleep 3
 # Test backend
 echo ""
 echo "8. Testing backend..."
-curl -s http://localhost:3000/ | head -20
+curl -s http://54.251.87.169:3000/ | head -20
 
 echo ""
 echo "9. Testing API docs endpoint..."
-curl -s http://localhost:3000/docs | head -20
+curl -s http://54.251.87.169:3000/docs | head -20
 
 echo ""
 echo "=== Backend restart complete ==="
