@@ -20,13 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent
 # In production: uses absolute path from environment variable or defaults to /var/www/html/uploads
 UPLOAD_BASE_DIR = os.getenv("UPLOAD_DIR", str(BASE_DIR / "uploads"))
 
-# Ensure upload base directory exists (with error handling for production)
-try:
-    Path(UPLOAD_BASE_DIR).mkdir(parents=True, exist_ok=True)
-except PermissionError:
-    print(f"Warning: Cannot create {UPLOAD_BASE_DIR}, assuming it exists")
-
 # Specific upload directories
+# NOTE: Directories must be created manually with proper permissions
+# For production: sudo mkdir -p /var/www/html/uploads/{profile_pictures,requirements,resumes,moa,logos,requirement_templates,documents,accomplishments}
+# For production: sudo chown -R ec2-user:nginx /var/www/html/uploads && sudo chmod -R 775 /var/www/html/uploads
 UPLOAD_DIRS = {
     "profile_pictures": Path(UPLOAD_BASE_DIR) / "profile_pictures",
     "requirements": Path(UPLOAD_BASE_DIR) / "requirements",
@@ -37,13 +34,6 @@ UPLOAD_DIRS = {
     "documents": Path(UPLOAD_BASE_DIR) / "documents",
     "accomplishments": Path(UPLOAD_BASE_DIR) / "accomplishments",
 }
-
-# Create all upload subdirectories (with error handling for production)
-for upload_dir in UPLOAD_DIRS.values():
-    try:
-        upload_dir.mkdir(parents=True, exist_ok=True)
-    except PermissionError:
-        print(f"Warning: Cannot create {upload_dir}, assuming it exists")
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ileap.db")
