@@ -20,6 +20,8 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   loading: boolean = false;
+  showContactModal = false;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -162,5 +164,13 @@ export class LoginComponent {
         });
       }
     });
+  }
+
+  openContactModal() {
+    this.showContactModal = true;
+  }
+
+  closeContactModal() {
+    this.showContactModal = false;
   }
 }
