@@ -40,7 +40,7 @@ export class PersonalHistoryPdfService {
 
     // Logo
     try {
-      const logoData = await this.loadImage('/assets/img/logo.png');
+      const logoData = await this.loadImage('assets/img/logo.png');
       // Maintain aspect ratio - use smaller dimension
       const logoMaxWidth = 20;
       const logoMaxHeight = 14;

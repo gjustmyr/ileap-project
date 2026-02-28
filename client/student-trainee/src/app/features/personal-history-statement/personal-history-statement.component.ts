@@ -145,7 +145,7 @@ export class PersonalHistoryStatementComponent implements OnInit {
 
       // Logo
       try {
-        const logoData = await this.loadImage('/assets/img/logo.png');
+        const logoData = await this.loadImage('assets/img/logo.png');
         doc.addImage(logoData, 'PNG', margin + 3, y + 2, 20, 14);
       } catch (error) {
         console.warn('Logo not found');
