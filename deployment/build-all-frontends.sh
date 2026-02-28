@@ -90,7 +90,9 @@ EOF
     }
     
     echo -e "  ➜ Building production bundle with base-href=${BASE_HREF}..."
-    MSYS_NO_PATHCONV=1 npm run build -- --configuration production --base-href=${BASE_HREF} 2>&1 | tee /tmp/npm-build-${APP_NAME}.log || {
+    # MSYS_NO_PATHCONV=1 npm run build -- --configuration production --base-href=${BASE_HREF} 2>&1 | tee /tmp/npm-build-${APP_NAME}.log || {
+
+    MSYS_NO_PATHCONV=1 ng build --configuration production {
         echo -e "${RED}  ✗ Failed to build ${APP_NAME}${NC}"
         return 1
     }
