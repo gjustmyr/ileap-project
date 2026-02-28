@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private encryption: EncryptionService,
+    private router: Router,
   ) {}
 
   loginUser(email_address: string, password: string): Observable<any> {
@@ -56,5 +58,10 @@ export class AuthService {
       authorization: token,
     });
     return this.http.get(`${this.baseURL}/auth/validate-token`, { headers });
+  }
+
+  logout(): void {
+    sessionStorage.clear();
+    this.router.navigate(['/login']);
   }
 }

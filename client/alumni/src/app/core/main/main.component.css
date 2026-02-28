@@ -1,0 +1,24 @@
+/* Main component styles */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.flex.px-20 {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.flex-1.bg-white {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.flex-1.overflow-auto {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+}

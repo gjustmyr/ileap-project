@@ -42,7 +42,9 @@
       <!-- Breadcrumb for School Info -->
       <div *ngIf="schoolInfoView !== 'campuses'" class="px-6 pt-4">
         <nav class="mb-2">
-          <ol class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+          <ol
+            class="flex items-center gap-2 text-sm text-gray-600 poppins-regular"
+          >
             <li>
               <button
                 (click)="schoolInfoView = 'campuses'"
@@ -54,7 +56,10 @@
             <li *ngIf="schoolInfoView === 'departments'">
               <i class="pi pi-angle-right text-xs"></i>
             </li>
-            <li *ngIf="schoolInfoView === 'departments'" class="text-gray-800 font-medium">
+            <li
+              *ngIf="schoolInfoView === 'departments'"
+              class="text-gray-800 font-medium"
+            >
               Departments - {{ selectedCampusName }}
             </li>
             <li *ngIf="schoolInfoView === 'programs'">
@@ -71,7 +76,10 @@
             <li *ngIf="schoolInfoView === 'programs'">
               <i class="pi pi-angle-right text-xs"></i>
             </li>
-            <li *ngIf="schoolInfoView === 'programs'" class="text-gray-800 font-medium">
+            <li
+              *ngIf="schoolInfoView === 'programs'"
+              class="text-gray-800 font-medium"
+            >
               Programs - {{ selectedDepartmentName }}
             </li>
           </ol>
@@ -83,12 +91,14 @@
         *ngIf="schoolInfoView === 'campuses'"
         (viewDepartmentsEvent)="onViewDepartments($event)"
       ></app-campuses>
+
       <app-departments
         *ngIf="schoolInfoView === 'departments'"
         [campusId]="selectedCampusId"
         [campusName]="selectedCampusName"
         (viewProgramsEvent)="onViewPrograms($event)"
       ></app-departments>
+
       <app-programs
         *ngIf="schoolInfoView === 'programs'"
         [campusId]="selectedCampusId"

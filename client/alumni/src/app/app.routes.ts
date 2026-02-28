@@ -1,8 +1,4 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { ChangePasswordComponent } from './auth/change-password/change-password.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { authGuard } from './auth/auth.guard';
 import { loginGuard } from './auth/login.guard';
 
@@ -19,36 +15,47 @@ export const routes: Routes = [
         (m) => m.RegisterComponent,
       ),
     canActivate: [loginGuard],
-    data: {
-      title: 'Alumni Registration',
-    },
+    data: { title: 'Alumni Registration' },
   },
   {
     path: 'login',
-    component: LoginComponent,
+    loadComponent: () =>
+      import('./auth/login/login.component').then((m) => m.LoginComponent),
     canActivate: [loginGuard],
-    data: {
-      title: 'Alumni Login',
-    },
-  },
-  {
-    path: 'change-password',
-    component: ChangePasswordComponent,
-    canActivate: [authGuard],
+    data: { title: 'Alumni Login' },
   },
   {
     path: 'forgot-password',
-    component: ForgotPasswordComponent,
+    loadComponent: () =>
+      import('./auth/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
     canActivate: [loginGuard],
   },
   {
     path: 'reset-password',
-    component: ResetPasswordComponent,
+    loadComponent: () =>
+      import('./auth/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
   },
-  // Temporary: Alumni portal main page redirects to login until components are built
   {
     path: 'alumni',
+    loadComponent: () =>
+      import('./core/main/main.component').then((m) => m.MainComponent),
+    canActivate: [authGuard],
+    data: { title: 'Alumni Portal' },
+  },
+  {
+    path: 'change-password',
+    loadComponent: () =>
+      import('./auth/change-password/change-password.component').then(
+        (m) => m.ChangePasswordComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: '**',
     redirectTo: 'login',
-    pathMatch: 'full',
   },
 ];

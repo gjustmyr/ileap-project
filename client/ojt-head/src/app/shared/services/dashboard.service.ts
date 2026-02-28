@@ -16,7 +16,7 @@ export interface DashboardFilters {
   providedIn: 'root',
 })
 export class DashboardService {
-  private apiUrl = 'http://54.251.87.169:3000/api/ojt-head/dashboard';
+  private apiUrl = 'http://localhost:3000/api/ojt-head/dashboard';
 
   constructor(private http: HttpClient) {}
 

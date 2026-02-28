@@ -1,1 +1,14 @@
-/* Registration page styles */
+.register-section {
+  font-family: "Poppins", sans-serif;
+}
+
+.register-container {
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+.register-cover {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}

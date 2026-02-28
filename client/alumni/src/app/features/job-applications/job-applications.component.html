@@ -1,0 +1,187 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">
+      My Applications
+    </h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Track the status of your job applications
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-12">
+    <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+    <p class="mt-4 text-gray-600">Loading applications...</p>
+  </div>
+
+  <!-- No Applications -->
+  <div
+    *ngIf="!loading && applications.length === 0"
+    class="text-center py-12 bg-white border border-gray-200 rounded-md"
+  >
+    <i class="pi pi-inbox text-6xl text-gray-400"></i>
+    <p class="mt-4 text-gray-600 poppins-regular">
+      You haven't applied to any jobs yet
+    </p>
+  </div>
+
+  <!-- Applications Table -->
+  <div
+    *ngIf="!loading && applications.length > 0"
+    class="bg-white border border-gray-200 rounded-md overflow-hidden"
+  >
+    <table class="w-full">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th
+            class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider poppins-medium"
+          >
+            Job Title
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider poppins-medium"
+          >
+            Company
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider poppins-medium"
+          >
+            Applied Date
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider poppins-medium"
+          >
+            Status
+          </th>
+          <th
+            class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider poppins-medium"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let app of applications" class="hover:bg-gray-50">
+          <td class="px-4 py-3 text-sm text-gray-900 poppins-regular">
+            {{ app.job_title }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+            {{ app.company_name }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-600 poppins-regular">
+            {{ app.applied_at | date: "MMM d, yyyy" }}
+          </td>
+          <td class="px-4 py-3">
+            <span
+              class="px-3 py-1 rounded-full text-xs poppins-medium"
+              [ngClass]="{
+                'bg-yellow-100 text-yellow-800': app.status === 'pending',
+                'bg-blue-100 text-blue-800': app.status === 'reviewing',
+                'bg-purple-100 text-purple-800': app.status === 'shortlisted',
+                'bg-green-100 text-green-800': app.status === 'hired',
+                'bg-red-100 text-red-800': app.status === 'rejected',
+              }"
+            >
+              {{ app.status | titlecase }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <button
+              (click)="viewApplication(app)"
+              class="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm poppins-medium"
+            >
+              <i class="pi pi-eye"></i>
+              View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Application Dialog -->
+<div
+  *ngIf="showViewDialog"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  (click)="closeViewDialog()"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 poppins-semibold">
+        Application Details
+      </h2>
+    </div>
+
+    <div class="p-6" *ngIf="selectedApplication">
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold poppins-semibold">
+          {{ selectedApplication.job_title }}
+        </h3>
+        <p class="text-gray-600 poppins-regular">
+          {{ selectedApplication.company_name }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Applied Date</p>
+          <p class="font-medium poppins-regular">
+            {{ selectedApplication.applied_at | date: "MMM d, yyyy" }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600 poppins-medium">Status</p>
+          <span
+            class="inline-block px-3 py-1 rounded-full text-xs poppins-medium"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-800':
+                selectedApplication.status === 'pending',
+              'bg-blue-100 text-blue-800':
+                selectedApplication.status === 'reviewing',
+              'bg-purple-100 text-purple-800':
+                selectedApplication.status === 'shortlisted',
+              'bg-green-100 text-green-800':
+                selectedApplication.status === 'hired',
+              'bg-red-100 text-red-800':
+                selectedApplication.status === 'rejected',
+            }"
+          >
+            {{ selectedApplication.status | titlecase }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 mb-2 poppins-medium">Cover Letter</p>
+        <div class="bg-gray-50 p-4 rounded border border-gray-200">
+          <p class="whitespace-pre-wrap text-sm poppins-regular">
+            {{ selectedApplication.cover_letter }}
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="selectedApplication.notes" class="mb-4">
+        <p class="text-sm text-gray-600 mb-2 poppins-medium">Employer Notes</p>
+        <div class="bg-blue-50 p-4 rounded border border-blue-200">
+          <p class="whitespace-pre-wrap text-sm poppins-regular">
+            {{ selectedApplication.notes }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          (click)="closeViewDialog()"
+          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors poppins-medium"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

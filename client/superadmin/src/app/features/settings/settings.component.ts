@@ -20,7 +20,7 @@ import { IndustriesComponent } from '../industries/industries.component';
 })
 export class SettingsComponent {
   activeTab: 'school-info' | 'industries' = 'school-info';
-  
+
   // School Info navigation
   schoolInfoView: 'campuses' | 'departments' | 'programs' = 'campuses';
   selectedCampusId: string = '';
@@ -34,7 +34,10 @@ export class SettingsComponent {
     this.schoolInfoView = 'departments';
   }
 
-  onViewPrograms(event: { departmentId: string; departmentName: string }): void {
+  onViewPrograms(event: {
+    departmentId: string;
+    departmentName: string;
+  }): void {
     this.selectedDepartmentId = event.departmentId;
     this.selectedDepartmentName = event.departmentName;
     this.schoolInfoView = 'programs';

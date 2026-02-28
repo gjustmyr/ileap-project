@@ -4,13 +4,17 @@
 
     <div class="flex-1 bg-white">
       <div class="border-b border-gray-200">
-        <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <div
+          class="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200"
+        >
           <!-- Current Date and Time -->
-          <div class="flex items-center gap-2 text-sm text-gray-600 poppins-regular">
+          <div
+            class="flex items-center gap-2 text-sm text-gray-600 poppins-regular"
+          >
             <i class="pi pi-clock text-blue-500"></i>
             <span>{{ currentDateTime }}</span>
           </div>
-          
+
           <!-- User Dropdown (moved here) -->
           <div class="relative">
             <!-- User Dropdown Trigger -->
@@ -19,7 +23,9 @@
               class="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <i class="pi pi-user text-red-500"></i>
-              <span class="text-sm text-gray-700 poppins-medium">{{ userName }}</span>
+              <span class="text-sm text-gray-700 poppins-medium">{{
+                userName
+              }}</span>
               <i class="pi pi-chevron-down text-xs text-gray-600"></i>
             </button>
 
@@ -30,7 +36,9 @@
             >
               <!-- User Info -->
               <div class="px-4 py-3 border-b border-gray-200">
-                <div class="text-xs text-gray-500 poppins-regular">Logged in as</div>
+                <div class="text-xs text-gray-500 poppins-regular">
+                  Logged in as
+                </div>
                 <div class="text-sm text-gray-700 poppins-medium mt-1">
                   {{ userName }}
                 </div>
@@ -57,7 +65,7 @@
             </div>
           </div>
         </div>
-        
+
         <nav class="flex gap-4">
           <button
             (click)="navigateToTab('/superadmin/job-placement')"

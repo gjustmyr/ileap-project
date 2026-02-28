@@ -1,0 +1,93 @@
+<div class="p-4">
+  <!-- Title -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-bold text-gray-800 poppins-semibold">Dashboard</h1>
+    <p class="text-sm text-gray-500 poppins-regular mt-1">
+      Overview of your job search and applications
+    </p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-briefcase text-blue-500 text-2xl mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Available Jobs</p>
+        <p class="text-2xl font-bold text-gray-800">{{ totalJobs }}</p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-send text-green-500 text-2xl mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Active Applications</p>
+        <p class="text-2xl font-bold text-gray-800">{{ activeApplications }}</p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-clock text-orange-500 text-2xl mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Pending Review</p>
+        <p class="text-2xl font-bold text-gray-800">
+          {{ pendingApplications }}
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white border border-gray-200 rounded-md px-4 py-3 flex items-start space-x-3"
+    >
+      <i class="pi pi-check-circle text-purple-500 text-2xl mt-1"></i>
+      <div>
+        <p class="text-sm text-gray-600 poppins-medium">Accepted</p>
+        <p class="text-2xl font-bold text-gray-800">
+          {{ acceptedApplications }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome Message -->
+  <div class="bg-white border border-gray-200 rounded-md p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+      Welcome to Alumni Portal
+    </h2>
+    <p class="text-gray-600 mb-4">
+      This portal allows you to browse approved job postings and track your
+      applications.
+    </p>
+    <div class="space-y-2">
+      <div class="flex items-start gap-2">
+        <i class="pi pi-check text-green-500 mt-1"></i>
+        <span class="text-sm text-gray-700"
+          >Browse job listings posted by approved employers</span
+        >
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="pi pi-check text-green-500 mt-1"></i>
+        <span class="text-sm text-gray-700"
+          >Apply for jobs with your cover letter</span
+        >
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="pi pi-check text-green-500 mt-1"></i>
+        <span class="text-sm text-gray-700"
+          >Track your application status in real-time</span
+        >
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="pi pi-check text-green-500 mt-1"></i>
+        <span class="text-sm text-gray-700"
+          >Update your profile and upload your resume</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
