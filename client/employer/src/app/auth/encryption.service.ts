@@ -5,8 +5,8 @@ import * as CryptoJS from 'crypto-js';
   providedIn: 'root',
 })
 export class EncryptionService {
-  // Secret key for encryption - should match backend
-  private readonly SECRET_KEY = 'ILEAP_SECURE_TRANSPORT_KEY_2026';
+  // Secret key for encryption - MUST match backend TRANSPORT_ENCRYPTION_KEY
+  private readonly SECRET_KEY = 'llfks8ysjhkdjh';
 
   constructor() {}
 

@@ -12,22 +12,16 @@ from controllers.internship_controller import (
 	delete_internship
 )
 from models import Employer, Skill, Internship, Student, ClassEnrollment, Class, Program, Department, InternshipApplication
-from sklearn.metrics.pairwise import cosine_similarity
 from datetime import datetime
 from utils.datetime_helper import now as philippine_now, utcnow as philippine_utcnow
 import os
 import uuid
+import sys
 from pathlib import Path
 
-# Try to import BERT, fallback to TF-IDF if not available
-try:
-	from sentence_transformers import SentenceTransformer
-	BERT_AVAILABLE = True
-	print("BERT (sentence-transformers) loaded successfully")
-except ImportError:
-	from sklearn.feature_extraction.text import TfidfVectorizer
-	BERT_AVAILABLE = False
-	print("WARNING: BERT not available, using TF-IDF fallback")
+# Import enhanced matcher
+sys.path.append(os.path.join(os.path.dirname(__file__), '../ml_models'))
+from ml_models.enhanced_matcher import get_matcher
 
 router = APIRouter(prefix="/api/internships", tags=["Internships"])
 
@@ -178,68 +172,81 @@ def get_available_internships(
 	else:
 		print(f"No student found - recommendations disabled")
 	
-	# Collect all internship texts for vectorization
-	internship_texts = []
-	for internship in internships:
-		# Build internship text from title, description, and skills
-		skills_text = " ".join([skill.skill_name for skill in internship.skills]) if internship.skills else ""
-		title_text = internship.title or ""
-		desc_text = internship.full_description or ""
-		internship_text = f"{title_text} {desc_text} {skills_text}".strip()
-		internship_texts.append(internship_text)
-	
-	# Calculate cosine similarities using BERT or TF-IDF
-	similarities = []
-	if student and student_profile_text and internship_texts:
+	# Calculate match scores using Enhanced Matching System v2.0
+	match_scores = {}
+	if student:
 		try:
-			if BERT_AVAILABLE:
-				# Use BERT embeddings for semantic similarity
-				print(f"\n🤖 Loading BERT model...")
-				model = SentenceTransformer('all-MiniLM-L6-v2')
+			# Get enhanced matcher
+			matcher = get_matcher()
+			
+			print(f"\n🎯 Using Enhanced Matching System v2.0")
+			print(f"Calculating match scores for {len(internships)} internships...")
+			
+			# Prepare student data
+			student_data = {
+				'student_id': student.student_id,
+				'skills': [skill.skill_name for skill in student.skills] if student.skills else [],
+				'program': program_text,
+				'major': student.major or "",
+				'department': department_text,
+				'about': student.about or ""
+			}
+			
+			# Calculate match scores for each internship
+			for internship in internships:
+				internship_data = {
+					'internship_id': internship.internship_id,
+					'employer_id': internship.employer_id,
+					'industry_id': internship.employer.industry_id if internship.employer else None,
+					'skills': [skill.skill_name for skill in internship.skills] if internship.skills else [],
+					'title': internship.title or "",
+					'description': internship.full_description or "",
+					'posting_type': internship.posting_type or "internship",
+					'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
+					'company_name': internship.employer.company_name if internship.employer else ""
+				}
 				
-				print(f"Generating embeddings...")
-				student_embedding = model.encode([student_profile_text])
-				internship_embeddings = model.encode(internship_texts)
+				# Calculate match score
+				result = matcher.calculate_match_score(db, student_data, internship_data)
+				match_scores[internship.internship_id] = result
 				
-				similarities = cosine_similarity(student_embedding, internship_embeddings)[0].tolist()
-				
-				print(f"\n✓ BERT Embeddings + Cosine Similarity Complete")
-				print(f"Model: all-MiniLM-L6-v2 (sentence-transformers)")
-				print(f"Total internships analyzed: {len(internships)}")
-			else:
-				# Fallback to TF-IDF
-				print(f"\n📊 Using TF-IDF vectorization...")
-				all_texts = [student_profile_text] + internship_texts
-				vectorizer = TfidfVectorizer(stop_words='english', lowercase=True)
-				tfidf_matrix = vectorizer.fit_transform(all_texts)
-				student_vector = tfidf_matrix[0:1]
-				internship_vectors = tfidf_matrix[1:]
-				similarities = cosine_similarity(student_vector, internship_vectors)[0].tolist()
-				
-				print(f"\n✓ TF-IDF Vectorization + Cosine Similarity Complete")
-				print(f"Total internships analyzed: {len(internships)}")
+				print(f"\n--- Internship: {internship.title} ---")
+				print(f"Company: {internship_data['company_name']}")
+				print(f"Match Score: {result['match_score']:.4f} ({result['match_score'] * 100:.2f}%)")
+				print(f"Match Label: {result['match_label']}")
+				print(f"Recommended: {'YES' if result['is_recommended'] else 'NO'}")
+				print(f"Components: Skills={result['components']['skill_score']:.2f}, Program={result['components']['program_score']:.2f}, Semantic={result['components']['semantic_score']:.2f}, Historical={result['components']['historical_score']:.2f}")
+			
+			# Store matches in database for historical tracking
+			matches_to_store = [
+				{
+					'internship_id': internship.internship_id,
+					'match_score': match_scores[internship.internship_id]['match_score'],
+					'match_label': match_scores[internship.internship_id]['match_label'],
+					'is_recommended': match_scores[internship.internship_id]['is_recommended'],
+					'components': match_scores[internship.internship_id]['components'],
+					'skill_metrics': match_scores[internship.internship_id]['skill_metrics']
+				}
+				for internship in internships if internship.internship_id in match_scores
+			]
+			matcher._store_matches(db, student.student_id, matches_to_store)
+			
+			print(f"\n✓ Enhanced Matching Complete - {len(match_scores)} matches calculated and stored")
+			
 		except Exception as e:
-			# Fallback to no similarities if error occurs
-			print(f"\n✗ Error in similarity calculation: {str(e)}")
+			print(f"\n✗ Error in enhanced matching: {str(e)}")
 			import traceback
 			traceback.print_exc()
-			similarities = [0.0] * len(internships)
 	else:
-		print(f"\nNo student profile or internship texts available for matching")
-		similarities = [0.0] * len(internships)
+		print(f"\nNo student found - recommendations disabled")
 	
 	for idx, internship in enumerate(internships):
-		# Get similarity score for this internship
-		similarity_score = similarities[idx] if idx < len(similarities) else 0.0
-		
-		# Log each internship's matching score
-		if student:
-			internship_skills = [skill.skill_name for skill in internship.skills] if internship.skills else []
-			print(f"\n--- Internship {idx + 1}: {internship.title} ---")
-			print(f"Company: {internship.employer.company_name if internship.employer else 'N/A'}")
-			print(f"Skills Required: {internship_skills}")
-			print(f"Cosine Similarity Score: {similarity_score:.4f} ({similarity_score * 100:.2f}%)")
-			print(f"Recommended: {'YES' if similarity_score >= 0.2 else 'NO'} (threshold: 0.2 or 20%)")
+		# Get match score for this internship
+		match_result = match_scores.get(internship.internship_id)
+		match_score = match_result['match_score'] if match_result else 0.0
+		is_recommended = match_result['is_recommended'] if match_result else False
+		match_label = match_result['match_label'] if match_result else "No Match"
+		match_components = match_result['components'] if match_result else {}
 		
 		internship_dict = {
 			"internship_id": internship.internship_id,
@@ -255,10 +262,13 @@ def get_available_internships(
 			"industry_id": internship.employer.industry_id if internship.employer else None,
 			"industry_name": internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else None,
 			"address": internship.employer.address if internship.employer else None,
-			"moa_file": internship.employer.moa_file if internship.employer else None,  # Include MOA file
+			"moa_file": internship.employer.moa_file.replace("\\", "/") if (internship.employer and internship.employer.moa_file) else None,  # Include MOA file
 			"duration_months": 6,  # Default value
 			"skills": [skill.skill_name for skill in internship.skills] if internship.skills else [],
-			"isRecommended": similarity_score >= 0.2  # Recommend if similarity >= 20%
+			"isRecommended": is_recommended,  # Use enhanced matching recommendation
+			"matchScore": match_score,  # Include match score (0.0-1.0)
+			"matchLabel": match_label,  # Include match label (Excellent/Strong/Good/Fair/Weak Match)
+			"matchComponents": match_components  # Include component scores for detailed view
 		}
 		result_data.append(internship_dict)
 
@@ -880,6 +890,9 @@ async def apply_to_internship(
 		
 		# Get upload directory from config
 		upload_dir = get_upload_path("resumes")
+		
+		# Create directory if it doesn't exist
+		upload_dir.mkdir(parents=True, exist_ok=True)
 		
 		# Generate unique filename
 		unique_filename = f"{uuid.uuid4()}{file_ext}"

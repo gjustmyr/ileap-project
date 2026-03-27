@@ -33,12 +33,15 @@ export class InternshipsComponent implements OnInit {
   isLoading = false;
   bookmarkedInternships: number[] = []; // Store bookmarked internship IDs
   showBookmarksOnly: boolean = false;
+  studentId: number | null = null;
 
   // Dialog states
   showViewDialog = false;
   showApplyDialog = false;
   applicationLetter = '';
   selectedResume: File | null = null;
+  matchExplanation: any = null;
+  isLoadingExplanation = false;
 
   // Search and Filters
   searchKeyword = '';
@@ -55,6 +58,7 @@ export class InternshipsComponent implements OnInit {
   constructor(private internshipsService: InternshipsService) {}
 
   ngOnInit(): void {
+    this.loadStudentProfile();
     this.loadCompanies();
     this.loadIndustries();
     this.loadInternships();
@@ -63,6 +67,17 @@ export class InternshipsComponent implements OnInit {
     if (saved) {
       this.bookmarkedInternships = JSON.parse(saved);
     }
+  }
+
+  loadStudentProfile(): void {
+    this.internshipsService.getStudentProfile().subscribe({
+      next: (response) => {
+        this.studentId = response.data?.student_id || null;
+      },
+      error: (error) => {
+        console.error('Error loading student profile:', error);
+      },
+    });
   }
 
   loadCompanies(): void {
@@ -116,6 +131,10 @@ export class InternshipsComponent implements OnInit {
     this.internshipsService.getAvailableInternships(params).subscribe({
       next: (response) => {
         this.internships = response.data || [];
+        // Sort by match score (highest first)
+        this.internships.sort(
+          (a, b) => (b.matchScore || 0) - (a.matchScore || 0),
+        );
         this.isLoading = false;
       },
       error: (error) => {
@@ -137,6 +156,24 @@ export class InternshipsComponent implements OnInit {
   viewInternship(internship: any): void {
     this.selectedInternship = internship;
     this.showViewDialog = true;
+    this.matchExplanation = null;
+
+    // Load match explanation if there's a match score
+    if (internship.matchScore && this.studentId) {
+      this.isLoadingExplanation = true;
+      this.internshipsService
+        .explainRecommendation(this.studentId, internship.internship_id)
+        .subscribe({
+          next: (response) => {
+            this.matchExplanation = response;
+            this.isLoadingExplanation = false;
+          },
+          error: (error) => {
+            console.error('Error loading explanation:', error);
+            this.isLoadingExplanation = false;
+          },
+        });
+    }
   }
 
   openApplyDialog(internship: any): void {
@@ -301,5 +338,22 @@ export class InternshipsComponent implements OnInit {
       link.download = `MOA_${this.selectedInternship.company_name}.pdf`;
       link.click();
     }
+  }
+
+  getMatchScoreClass(score: number): string {
+    if (!score) return 'match-none';
+    if (score >= 0.75) return 'match-excellent';
+    if (score >= 0.6) return 'match-strong';
+    if (score >= 0.45) return 'match-good';
+    if (score >= 0.3) return 'match-fair';
+    return 'match-weak';
+  }
+
+  getMatchScorePercentage(score: number): number {
+    return Math.round((score || 0) * 100);
+  }
+
+  sortByMatchScore(): void {
+    this.internships.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
   }
 }

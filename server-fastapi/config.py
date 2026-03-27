@@ -36,31 +36,43 @@ UPLOAD_DIRS = {
 }
 
 # Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ileap.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required")
 
 # JWT configuration
-JWT_SECRET_KEY = os.getenv("JWT_SECRET", "ILEAP_JWT_SECRET_KEY_2025_SECURE_TOKEN")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
+if not JWT_SECRET_KEY:
+    raise ValueError("JWT_SECRET or SECRET_KEY environment variable is required")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
 # CORS configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else [
-    "http://localhost:4200",  # Superadmin
-    "http://localhost:4201",  # OJT Head
-    "http://localhost:4202",  # OJT Coordinator
-    "http://localhost:4203",  # Student Trainee
-    "http://localhost:4204",  # Employer
-    "http://localhost:4205",  # Supervisor
-    "http://localhost:4206",  # Job Placement Head
-    "http://localhost:4207",  # Alumni
-]
+# IMPORTANT: CORS_ORIGINS must be set in .env for production
+# Never use wildcard (*) in production
+CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS")
+if CORS_ORIGINS_ENV:
+    CORS_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_ENV.split(",")]
+else:
+    # Development-only defaults - MUST set CORS_ORIGINS in production
+    print("⚠️  WARNING: Using default CORS origins for development. Set CORS_ORIGINS in .env for production!")
+    CORS_ORIGINS = [
+        "http://localhost:4200",  # Superadmin
+        "http://localhost:4201",  # OJT Head
+        "http://localhost:4202",  # OJT Coordinator
+        "http://localhost:4203",  # Student Trainee
+        "http://localhost:4204",  # Employer
+        "http://localhost:4205",  # Supervisor
+        "http://localhost:4206",  # Job Placement Head
+        "http://localhost:4207",  # Alumni
+    ]
 
 # File upload configuration
 MAX_UPLOAD_SIZE = 52428800  # 50MB
 
 # API configuration
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
-API_PORT = int(os.getenv("PORT", 3000))
+API_PORT = int(os.getenv("PORT", os.getenv("API_PORT", "3000")))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 def get_upload_path(category: str, *parts) -> Path:

@@ -124,6 +124,9 @@ async def create_requirement_template(
         filename = f"{uuid4()}{file_ext}"
         file_path = get_upload_path("requirement_templates", filename)
         
+        # Create directory if it doesn't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        
         content = await template_file.read()
         with open(file_path, "wb") as f:
             f.write(content)
@@ -200,6 +203,9 @@ async def update_requirement_template(
         file_ext = os.path.splitext(template_file.filename)[1]
         filename = f"{uuid4()}{file_ext}"
         file_path = get_upload_path("requirement_templates", filename)
+        
+        # Create directory if it doesn't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         
         content = await template_file.read()
         with open(file_path, "wb") as f:

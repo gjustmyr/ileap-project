@@ -757,6 +757,9 @@ async def submit_requirement_for_student(
 	# Get upload directory from config
 	upload_dir = get_upload_path("requirements", f"student_{student_id}")
 	
+	# Create directory if it doesn't exist
+	upload_dir.mkdir(parents=True, exist_ok=True)
+	
 	# Generate unique filename
 	timestamp = philippine_utcnow().strftime("%Y%m%d_%H%M%S")
 	file_extension = os.path.splitext(file.filename)[1]

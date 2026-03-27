@@ -69,4 +69,22 @@ export class InternshipsService {
       headers: this.getHeaders(),
     });
   }
+
+  getStudentProfile(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/student-trainee/profile`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  explainRecommendation(
+    studentId: number,
+    internshipId: number,
+  ): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/students/${studentId}/recommendations/explain/${internshipId}`,
+      {
+        headers: this.getHeaders(),
+      },
+    );
+  }
 }

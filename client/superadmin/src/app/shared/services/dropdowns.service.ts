@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { environment } from '@environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 
@@ -22,7 +22,7 @@ export class DropdownsService {
       catchError((error) => {
         console.error('Failed to fetch active campuses:', error);
         return of([]);
-      })
+      }),
     );
   }
 
@@ -38,7 +38,7 @@ export class DropdownsService {
         catchError((error) => {
           console.error('Failed to fetch active departments:', error);
           return of([]);
-        })
+        }),
       );
   }
   getActiveIndustries(): Observable<any[]> {
@@ -53,14 +53,14 @@ export class DropdownsService {
         catchError((error) => {
           console.error('Failed to fetch active departments:', error);
           return of([]);
-        })
+        }),
       );
   }
 
   /**
    * 🆕 Optional: Get departments by campus ID
    */
-  
+
   getDepartments(): Observable<any> {
     const token = sessionStorage.getItem('auth_token');
     const headers = new HttpHeaders({

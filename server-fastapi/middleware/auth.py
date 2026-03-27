@@ -3,7 +3,9 @@ import jwt
 import os
 from models_token_blacklist import token_blacklist
 
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
+SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY or JWT_SECRET environment variable is required")
 ALGORITHM = "HS256"
 
 
@@ -86,11 +88,7 @@ def get_current_user(authorization: str = Header(None)):
 
 
 def optional_verify_token(authorization: str = Header(None)):
-    """
-    Optional token verification - doesn't raise exception if no token.
-    Returns payload if valid token exists, None otherwise.
-    Used for routes that should redirect logged-in users (like login page).
-    """
+    
     if not authorization:
         return None
     

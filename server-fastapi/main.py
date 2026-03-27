@@ -15,7 +15,7 @@ from database import engine
 from models import Base
 #sa
 # Import routes
-from routes import auth, campus, department, program, section, ojt_head, ojt_head_portal, ojt_coordinator, employer, industry, class_routes, internship, supervisor, student, student_trainee_portal, requirements, ojt_assignments, ojt_daily_records, oeams, dashboard, dropdown, requirement_templates, superadmin, jp_employer
+from routes import auth, campus, department, program, section, ojt_head, ojt_head_portal, ojt_coordinator, employer, industry, class_routes, internship, supervisor, student, student_trainee_portal, requirements, ojt_assignments, ojt_daily_records, oeams, dashboard, dropdown, requirement_templates, superadmin, jp_employer, ml_matching, bulk_upload, enhanced_matching
 
 load_dotenv()
     
@@ -41,6 +41,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(superadmin.router)
+app.include_router(bulk_upload.router)
 app.include_router(campus.router)
 app.include_router(department.router)
 app.include_router(program.router)
@@ -66,6 +67,8 @@ app.include_router(ojt_daily_records.router)
 app.include_router(oeams.router)
 app.include_router(dashboard.router)
 app.include_router(dropdown.router)
+# app.include_router(ml_matching.router)  # DEPRECATED: Use enhanced_matching instead
+app.include_router(enhanced_matching.router)
 
 # Mount static files for uploads
 # This serves files from the uploads directory at /uploads URL path

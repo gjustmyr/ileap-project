@@ -1,21 +1,5 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { MainComponent } from './core/main/main.component';
-import { ChangePasswordComponent } from './auth/change-password/change-password.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { CampusesComponent } from './features/school-info/campuses/campuses.component';
-import { DepartmentsComponent } from './features/school-info/departments/departments.component';
-import { ProgramsComponent } from './features/school-info/programs/programs.component';
-import { JobPlacementComponent } from './features/job-placement/job-placement.component';
-import { OjtHeadComponent } from './features/ojt-head/ojt-head.component';
-import { OjtCoordinatorComponent } from './features/ojt-coordinator/ojt-coordinator.component';
-import { EmployerComponent } from './features/employer/employer.component';
-import { IndustriesComponent } from './features/industries/industries.component';
-import { StudentTraineesComponent } from './features/student-trainees/student-trainees.component';
-import { AlumniComponent } from './features/alumni/alumni.component';
-import { SettingsComponent } from './features/settings/settings.component';
-import { authGuard } from './auth/auth.guard';
+import { authGuard } from '@auth/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,26 +9,39 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    component: LoginComponent,
+    loadComponent: () =>
+      import('@auth/components/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
     data: {
       title: 'Login',
     },
   },
   {
     path: 'change-password',
-    component: ChangePasswordComponent,
+    loadComponent: () =>
+      import('@auth/components/change-password/change-password.component').then(
+        (m) => m.ChangePasswordComponent,
+      ),
   },
   {
     path: 'forgot-password',
-    component: ForgotPasswordComponent,
+    loadComponent: () =>
+      import('@auth/components/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
   },
   {
     path: 'reset-password',
-    component: ResetPasswordComponent,
+    loadComponent: () =>
+      import('@auth/components/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
   },
   {
     path: 'superadmin',
-    component: MainComponent,
+    loadComponent: () =>
+      import('@core/layouts/main/main.component').then((m) => m.MainComponent),
     canActivate: [authGuard],
     children: [
       {
@@ -54,57 +51,90 @@ export const routes: Routes = [
       },
       {
         path: 'school-information',
-        component: CampusesComponent,
+        loadComponent: () =>
+          import('@features/school-info/campuses/campuses.component').then(
+            (m) => m.CampusesComponent,
+          ),
         data: { title: 'School Information' },
       },
       {
         path: 'departments',
-        component: DepartmentsComponent,
+        loadComponent: () =>
+          import('@features/school-info/departments/departments.component').then(
+            (m) => m.DepartmentsComponent,
+          ),
         data: { title: 'Departments' },
       },
       {
         path: 'programs',
-        component: ProgramsComponent,
+        loadComponent: () =>
+          import('@features/school-info/programs/programs.component').then(
+            (m) => m.ProgramsComponent,
+          ),
         data: { title: 'Programs' },
       },
       {
         path: 'job-placement',
-        component: JobPlacementComponent,
+        loadComponent: () =>
+          import('@features/job-placement/job-placement.component').then(
+            (m) => m.JobPlacementComponent,
+          ),
         data: { title: 'Job Placement Office' },
       },
       {
         path: 'ojt-head',
-        component: OjtHeadComponent,
+        loadComponent: () =>
+          import('@features/ojt-head/ojt-head.component').then(
+            (m) => m.OjtHeadComponent,
+          ),
         data: { title: 'OJT Head' },
       },
       {
         path: 'ojt-coordinator',
-        component: OjtCoordinatorComponent,
+        loadComponent: () =>
+          import('@features/ojt-coordinator/ojt-coordinator.component').then(
+            (m) => m.OjtCoordinatorComponent,
+          ),
         data: { title: 'OJT Coordinator' },
       },
       {
         path: 'employer',
-        component: EmployerComponent,
+        loadComponent: () =>
+          import('@features/employer/employer.component').then(
+            (m) => m.EmployerComponent,
+          ),
         data: { title: 'Employers' },
       },
       {
         path: 'industries',
-        component: IndustriesComponent,
+        loadComponent: () =>
+          import('@features/industries/industries.component').then(
+            (m) => m.IndustriesComponent,
+          ),
         data: { title: 'Industries' },
       },
       {
         path: 'student-trainees',
-        component: StudentTraineesComponent,
+        loadComponent: () =>
+          import('@features/student-trainees/student-trainees.component').then(
+            (m) => m.StudentTraineesComponent,
+          ),
         data: { title: 'Student Trainees' },
       },
       {
         path: 'alumni',
-        component: AlumniComponent,
+        loadComponent: () =>
+          import('@features/alumni/alumni.component').then(
+            (m) => m.AlumniComponent,
+          ),
         data: { title: 'Alumni' },
       },
       {
         path: 'settings',
-        component: SettingsComponent,
+        loadComponent: () =>
+          import('@features/settings/settings.component').then(
+            (m) => m.SettingsComponent,
+          ),
         data: { title: 'Settings' },
       },
     ],

@@ -17,7 +17,7 @@ import Swal from 'sweetalert2';
 
 import { ProgramsService } from './programs.service';
 import { SectionsService } from './sections.service';
-import { DropdownsService } from '../../../shared/services/dropdowns.service';
+import { DropdownsService } from '@shared/services/dropdowns.service';
 import { SelectModule } from 'primeng/select';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -88,17 +88,17 @@ export class ProgramsComponent implements OnChanges {
     private sectionsService: SectionsService,
     private dropdownService: DropdownsService,
     private fb: FormBuilder,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
     this.newProgramForm = this.fb.group({
-      department_id: [null, Validators.required],
+      department_id: [null], // Not required - will be set from page context
       program_name: ['', Validators.required],
       abbrev: [''],
       status: ['active', Validators.required],
     });
 
     this.updateProgramForm = this.fb.group({
-      department_id: [null, Validators.required],
+      department_id: [null], // Not required - will be set from page context
       program_name: ['', Validators.required],
       abbrev: [''],
       status: ['active', Validators.required],
@@ -107,7 +107,7 @@ export class ProgramsComponent implements OnChanges {
     this.newSectionForm = this.fb.group({
       program_id: [null, Validators.required],
       year_level: ['', Validators.required],
-      status: ['active', Validators.required]
+      status: ['active', Validators.required],
     });
 
     this.updateSectionForm = this.fb.group({
@@ -120,7 +120,12 @@ export class ProgramsComponent implements OnChanges {
 
   ngOnInit(): void {
     // Check if properties are provided as Input
-    if (this.departmentId && this.departmentName && this.campusId && this.campusName) {
+    if (
+      this.departmentId &&
+      this.departmentName &&
+      this.campusId &&
+      this.campusName
+    ) {
       this.currentDepartmentId = +this.departmentId;
       this.currentDepartmentName = this.departmentName;
       this.currentCampusId = +this.campusId;
@@ -133,10 +138,18 @@ export class ProgramsComponent implements OnChanges {
     } else {
       // Fall back to query params for backward compatibility
       this.route.queryParams.subscribe((params) => {
-        this.currentDepartmentId = +params['department_id'];
-        this.currentDepartmentName = params['department_name'] || '';
-        this.currentCampusId = +params['campus_id'];
-        this.currentCampusName = params['campus_name'] || '';
+        // Support both camelCase and snake_case query params
+        this.currentDepartmentId =
+          +params['departmentId'] || +params['department_id'];
+        this.currentDepartmentName =
+          params['departmentName'] || params['department_name'] || '';
+        this.currentCampusId = +params['campusId'] || +params['campus_id'];
+        this.currentCampusName =
+          params['campusName'] || params['campus_name'] || '';
+
+        console.log('Query Params:', params);
+        console.log('Parsed Department ID:', this.currentDepartmentId);
+        console.log('Parsed Campus ID:', this.currentCampusId);
 
         if (this.currentDepartmentId) {
           this.selectedDepartmentId = this.currentDepartmentId;
@@ -153,8 +166,16 @@ export class ProgramsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     // Handle changes to Input properties
-    if ((changes['departmentId'] || changes['campusId']) && !changes['departmentId']?.firstChange) {
-      if (this.departmentId && this.departmentName && this.campusId && this.campusName) {
+    if (
+      (changes['departmentId'] || changes['campusId']) &&
+      !changes['departmentId']?.firstChange
+    ) {
+      if (
+        this.departmentId &&
+        this.departmentName &&
+        this.campusId &&
+        this.campusName
+      ) {
         this.currentDepartmentId = +this.departmentId;
         this.currentDepartmentName = this.departmentName;
         this.currentCampusId = +this.campusId;
@@ -174,7 +195,7 @@ export class ProgramsComponent implements OnChanges {
         this.pageNo,
         this.pageSize,
         this.keyword,
-        this.selectedDepartmentId?.toString()
+        this.selectedDepartmentId?.toString(),
       )
       .subscribe({
         next: (res: any) => {
@@ -221,10 +242,14 @@ export class ProgramsComponent implements OnChanges {
   // Program CRUD Methods
   openAddDialog(): void {
     this.isAddDialogVisible = true;
-    this.newProgramForm.reset({
-      department_id: this.currentDepartmentId,
+    // Only set department_id if currentDepartmentId exists, otherwise leave it empty for manual selection
+    const resetValues: any = {
       status: 'active',
-    });
+    };
+    if (this.currentDepartmentId) {
+      resetValues.department_id = this.currentDepartmentId;
+    }
+    this.newProgramForm.reset(resetValues);
   }
 
   closeAddDialog(): void {
@@ -233,6 +258,24 @@ export class ProgramsComponent implements OnChanges {
   }
 
   submitNewProgram(): void {
+    // Use currentDepartmentId from page context if available
+    const formValue = {
+      ...this.newProgramForm.value,
+      department_id:
+        this.newProgramForm.value.department_id || this.currentDepartmentId,
+    };
+
+    // Validate department_id is set
+    if (!formValue.department_id) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Department ID is missing. Please select a department from the Departments page first.',
+        confirmButtonColor: '#ef4444',
+      });
+      return;
+    }
+
     if (this.newProgramForm.valid) {
       Swal.fire({
         title: 'Are you sure?',
@@ -244,14 +287,14 @@ export class ProgramsComponent implements OnChanges {
         confirmButtonText: 'Yes, add it!',
       }).then((result) => {
         if (result.isConfirmed) {
-          this.programsService.addProgram(this.newProgramForm.value).subscribe({
+          this.programsService.addProgram(formValue).subscribe({
             next: (res) => {
               if (res?.success) {
                 Swal.fire({
                   icon: 'success',
                   title: 'Success!',
                   text: 'Program added successfully',
-                  confirmButtonColor: '#3b82f6'
+                  confirmButtonColor: '#3b82f6',
                 });
                 this.loadPrograms();
                 this.closeAddDialog();
@@ -260,7 +303,7 @@ export class ProgramsComponent implements OnChanges {
                   icon: 'error',
                   title: 'Error!',
                   text: res?.message || 'Failed to add program',
-                  confirmButtonColor: '#ef4444'
+                  confirmButtonColor: '#ef4444',
                 });
               }
             },
@@ -270,9 +313,9 @@ export class ProgramsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: 'Something went wrong while adding program',
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
-            }
+            },
           });
         }
       });
@@ -304,7 +347,10 @@ export class ProgramsComponent implements OnChanges {
       }).then((result) => {
         if (result.isConfirmed) {
           this.programsService
-            .updateProgram(this.selectedProgramId!, this.updateProgramForm.value)
+            .updateProgram(
+              this.selectedProgramId!,
+              this.updateProgramForm.value,
+            )
             .subscribe({
               next: (res) => {
                 if (res?.success) {
@@ -312,7 +358,7 @@ export class ProgramsComponent implements OnChanges {
                     icon: 'success',
                     title: 'Success!',
                     text: 'Program updated successfully',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#3b82f6',
                   });
                   this.loadPrograms();
                   this.closeUpdateDialog();
@@ -321,7 +367,7 @@ export class ProgramsComponent implements OnChanges {
                     icon: 'error',
                     title: 'Error!',
                     text: res?.message || 'Failed to update program',
-                    confirmButtonColor: '#ef4444'
+                    confirmButtonColor: '#ef4444',
                   });
                 }
               },
@@ -331,18 +377,22 @@ export class ProgramsComponent implements OnChanges {
                   icon: 'error',
                   title: 'Error!',
                   text: 'Something went wrong while updating program',
-                  confirmButtonColor: '#ef4444'
+                  confirmButtonColor: '#ef4444',
                 });
-              }
+              },
             });
         }
       });
     }
   }
 
-  handleUpdateProgramStatus(event: Event, programId: string, currentStatus: string): void {
+  handleUpdateProgramStatus(
+    event: Event,
+    programId: string,
+    currentStatus: string,
+  ): void {
     event.stopPropagation();
-    
+
     const action = currentStatus === 'active' ? 'disable' : 'enable';
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
@@ -363,7 +413,7 @@ export class ProgramsComponent implements OnChanges {
                 icon: 'success',
                 title: 'Success!',
                 text: `Program ${action}d successfully`,
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#3b82f6',
               });
               this.loadPrograms();
             } else {
@@ -371,7 +421,7 @@ export class ProgramsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: res?.message || `Failed to ${action} program`,
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
             }
           },
@@ -381,9 +431,9 @@ export class ProgramsComponent implements OnChanges {
               icon: 'error',
               title: 'Error!',
               text: `Something went wrong while ${action}ing program`,
-              confirmButtonColor: '#ef4444'
+              confirmButtonColor: '#ef4444',
             });
-          }
+          },
         });
       }
     });
@@ -409,17 +459,19 @@ export class ProgramsComponent implements OnChanges {
 
   loadSections(): void {
     if (!this.selectedProgramId) return;
-    
-    this.sectionsService.getAllSections(1, 1000, '', this.selectedProgramId).subscribe({
-      next: (res) => {
-        if (res?.success) {
-          this.sections = res.data.sections || [];
-        }
-      },
-      error: (err) => {
-        console.error('Error loading sections:', err);
-      }
-    });
+
+    this.sectionsService
+      .getAllSections(1, 1000, '', this.selectedProgramId)
+      .subscribe({
+        next: (res) => {
+          if (res?.success) {
+            this.sections = res.data.sections || [];
+          }
+        },
+        error: (err) => {
+          console.error('Error loading sections:', err);
+        },
+      });
   }
 
   submitNewSection(): void {
@@ -436,10 +488,10 @@ export class ProgramsComponent implements OnChanges {
       }).then((result) => {
         if (result.isConfirmed) {
           // Create an array of section creation requests
-          const sectionRequests = this.sectionNameList.map(sectionName => {
+          const sectionRequests = this.sectionNameList.map((sectionName) => {
             const sectionData = {
               ...this.newSectionForm.value,
-              section_name: sectionName
+              section_name: sectionName,
             };
             return this.sectionsService.addSection(sectionData);
           });
@@ -447,7 +499,7 @@ export class ProgramsComponent implements OnChanges {
           // Execute all requests
           let successCount = 0;
           let errorCount = 0;
-          
+
           sectionRequests.forEach((request, index) => {
             request.subscribe({
               next: (res) => {
@@ -456,7 +508,7 @@ export class ProgramsComponent implements OnChanges {
                 } else {
                   errorCount++;
                 }
-                
+
                 // Check if this is the last request
                 if (index === sectionRequests.length - 1) {
                   // Show final result after all requests complete
@@ -466,21 +518,21 @@ export class ProgramsComponent implements OnChanges {
                         icon: 'success',
                         title: 'Success!',
                         text: `${successCount} section(s) added successfully`,
-                        confirmButtonColor: '#3b82f6'
+                        confirmButtonColor: '#3b82f6',
                       });
                     } else if (successCount === 0) {
                       Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'Failed to add sections',
-                        confirmButtonColor: '#ef4444'
+                        confirmButtonColor: '#ef4444',
                       });
                     } else {
                       Swal.fire({
                         icon: 'warning',
                         title: 'Partial Success',
                         text: `${successCount} section(s) added, ${errorCount} failed`,
-                        confirmButtonColor: '#f59e0b'
+                        confirmButtonColor: '#f59e0b',
                       });
                     }
                     this.loadSections();
@@ -488,7 +540,7 @@ export class ProgramsComponent implements OnChanges {
                     this.newSectionForm.reset({
                       program_id: this.selectedProgramIdForSections,
                       year_level: '',
-                      status: 'active'
+                      status: 'active',
                     });
                   }, 500);
                 }
@@ -496,7 +548,7 @@ export class ProgramsComponent implements OnChanges {
               error: (err) => {
                 console.error('Add section error:', err);
                 errorCount++;
-                
+
                 // Check if this is the last request
                 if (index === sectionRequests.length - 1) {
                   setTimeout(() => {
@@ -505,14 +557,14 @@ export class ProgramsComponent implements OnChanges {
                         icon: 'warning',
                         title: 'Partial Success',
                         text: `${successCount} section(s) added, ${errorCount} failed`,
-                        confirmButtonColor: '#f59e0b'
+                        confirmButtonColor: '#f59e0b',
                       });
                     } else {
                       Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'Failed to add sections',
-                        confirmButtonColor: '#ef4444'
+                        confirmButtonColor: '#ef4444',
                       });
                     }
                     this.loadSections();
@@ -520,11 +572,11 @@ export class ProgramsComponent implements OnChanges {
                     this.newSectionForm.reset({
                       program_id: this.selectedProgramIdForSections,
                       year_level: '',
-                      status: 'active'
+                      status: 'active',
                     });
                   }, 500);
                 }
-              }
+              },
             });
           });
         }
@@ -551,7 +603,10 @@ export class ProgramsComponent implements OnChanges {
       }).then((result) => {
         if (result.isConfirmed) {
           this.sectionsService
-            .updateSection(this.selectedSectionId!, this.updateSectionForm.value)
+            .updateSection(
+              this.selectedSectionId!,
+              this.updateSectionForm.value,
+            )
             .subscribe({
               next: (res) => {
                 if (res?.success) {
@@ -559,7 +614,7 @@ export class ProgramsComponent implements OnChanges {
                     icon: 'success',
                     title: 'Success!',
                     text: 'Section updated successfully',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#3b82f6',
                   });
                   this.loadSections();
                   this.isUpdateSectionDialogVisible = false;
@@ -568,7 +623,7 @@ export class ProgramsComponent implements OnChanges {
                     icon: 'error',
                     title: 'Error!',
                     text: res?.message || 'Failed to update section',
-                    confirmButtonColor: '#ef4444'
+                    confirmButtonColor: '#ef4444',
                   });
                 }
               },
@@ -578,18 +633,22 @@ export class ProgramsComponent implements OnChanges {
                   icon: 'error',
                   title: 'Error!',
                   text: 'Something went wrong while updating section',
-                  confirmButtonColor: '#ef4444'
+                  confirmButtonColor: '#ef4444',
                 });
-              }
+              },
             });
         }
       });
     }
   }
 
-  handleUpdateSectionStatus(event: Event, sectionId: string, currentStatus: string): void {
+  handleUpdateSectionStatus(
+    event: Event,
+    sectionId: string,
+    currentStatus: string,
+  ): void {
     event.stopPropagation();
-    
+
     const action = currentStatus === 'active' ? 'disable' : 'enable';
 
     Swal.fire({
@@ -609,7 +668,7 @@ export class ProgramsComponent implements OnChanges {
                 icon: 'success',
                 title: 'Success!',
                 text: `Section ${action}d successfully`,
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#3b82f6',
               });
               this.loadSections();
             } else {
@@ -617,7 +676,7 @@ export class ProgramsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: res?.message || `Failed to ${action} section`,
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
             }
           },
@@ -627,9 +686,9 @@ export class ProgramsComponent implements OnChanges {
               icon: 'error',
               title: 'Error!',
               text: `Something went wrong while ${action}ing section`,
-              confirmButtonColor: '#ef4444'
+              confirmButtonColor: '#ef4444',
             });
-          }
+          },
         });
       }
     });
@@ -656,10 +715,14 @@ export class ProgramsComponent implements OnChanges {
   handleAddDialog(): void {
     this.isAddDialogVisible = !this.isAddDialogVisible;
     if (this.isAddDialogVisible) {
-      this.newProgramForm.reset({
-        department_id: this.currentDepartmentId,
+      // Only set department_id if currentDepartmentId exists
+      const resetValues: any = {
         status: 'active',
-      });
+      };
+      if (this.currentDepartmentId) {
+        resetValues.department_id = this.currentDepartmentId;
+      }
+      this.newProgramForm.reset(resetValues);
     }
   }
 
@@ -668,7 +731,11 @@ export class ProgramsComponent implements OnChanges {
     this.loadPrograms();
   }
 
-  handleUpdateStatus(event: Event, programId: string, currentStatus: string): void {
+  handleUpdateStatus(
+    event: Event,
+    programId: string,
+    currentStatus: string,
+  ): void {
     this.handleUpdateProgramStatus(event, programId, currentStatus);
   }
 

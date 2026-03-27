@@ -469,7 +469,12 @@ def student_get_available_internships(
     db: Session = Depends(get_db),
     token_data: dict = Depends(verify_student_trainee)
 ):
-    """Get available internship opportunities"""
+    """Get available internship opportunities with Enhanced Matching System v2.0"""
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../ml_models'))
+    from ml_models.enhanced_matcher import get_matcher
+    
     query = db.query(Internship).filter(Internship.status == "open")
     
     if keyword:
@@ -483,6 +488,82 @@ def student_get_available_internships(
     
     internships = query.all()
     
+    # Get student info for matching
+    user_id = token_data.get("user_id")
+    student = db.query(Student).filter(Student.user_id == user_id).first()
+    
+    # Calculate match scores if student found
+    match_scores = {}
+    if student:
+        try:
+            matcher = get_matcher()
+            
+            # Get student's program from enrolled class
+            from models import ClassEnrollment, Class
+            active_enrollment = db.query(ClassEnrollment).filter(
+                ClassEnrollment.student_id == student.student_id,
+                ClassEnrollment.status == "active"
+            ).first()
+            
+            program_name = ""
+            department_name = ""
+            
+            if active_enrollment:
+                class_info = db.query(Class).filter(Class.class_id == active_enrollment.class_id).first()
+                if class_info and class_info.program:
+                    program_name = class_info.program.program_name or ""
+                    if class_info.program.department:
+                        department_name = class_info.program.department.department_name or ""
+            else:
+                program_name = student.program or ""
+                department_name = student.department or ""
+            
+            # Prepare student data
+            student_data = {
+                'student_id': student.student_id,
+                'skills': [skill.skill_name for skill in student.skills] if student.skills else [],
+                'program': program_name,
+                'major': student.major or "",
+                'department': department_name,
+                'about': student.about or ""
+            }
+            
+            # Calculate match scores for each internship
+            for internship in internships:
+                internship_data = {
+                    'internship_id': internship.internship_id,
+                    'employer_id': internship.employer_id,
+                    'industry_id': internship.employer.industry_id if internship.employer else None,
+                    'skills': [skill.skill_name for skill in internship.skills] if internship.skills else [],
+                    'title': internship.title or "",
+                    'description': internship.full_description or "",
+                    'posting_type': internship.posting_type or "internship",
+                    'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
+                    'company_name': internship.employer.company_name if internship.employer else ""
+                }
+                
+                result = matcher.calculate_match_score(db, student_data, internship_data)
+                match_scores[internship.internship_id] = result
+            
+            # Store matches in database
+            matches_to_store = [
+                {
+                    'internship_id': internship.internship_id,
+                    'match_score': match_scores[internship.internship_id]['match_score'],
+                    'match_label': match_scores[internship.internship_id]['match_label'],
+                    'is_recommended': match_scores[internship.internship_id]['is_recommended'],
+                    'components': match_scores[internship.internship_id]['components'],
+                    'skill_metrics': match_scores[internship.internship_id]['skill_metrics']
+                }
+                for internship in internships if internship.internship_id in match_scores
+            ]
+            matcher._store_matches(db, student.student_id, matches_to_store)
+            
+        except Exception as e:
+            print(f"Error in enhanced matching: {str(e)}")
+            import traceback
+            traceback.print_exc()
+    
     result = []
     for internship in internships:
         employer = db.query(Employer).filter(Employer.employer_id == internship.employer_id).first()
@@ -490,6 +571,13 @@ def student_get_available_internships(
         
         # Get skills for this internship
         skills = [{"skill_id": skill.skill_id, "skill_name": skill.skill_name} for skill in internship.skills]
+        
+        # Get match score for this internship
+        match_result = match_scores.get(internship.internship_id)
+        match_score = match_result['match_score'] if match_result else 0.0
+        is_recommended = match_result['is_recommended'] if match_result else False
+        match_label = match_result['match_label'] if match_result else "No Match"
+        match_components = match_result['components'] if match_result else {}
         
         result.append({
             "internship_id": internship.internship_id,
@@ -505,7 +593,12 @@ def student_get_available_internships(
             "industry_name": industry.industry_name if industry else None,
             "industry_id": industry.industry_id if industry else None,
             "address": employer.address if employer else None,
-            "skills": skills
+            "moa_file": employer.moa_file.replace("\\", "/") if employer and employer.moa_file else None,
+            "skills": skills,
+            "isRecommended": is_recommended,
+            "matchScore": match_score,
+            "matchLabel": match_label,
+            "matchComponents": match_components
         })
     
     return {"data": result}

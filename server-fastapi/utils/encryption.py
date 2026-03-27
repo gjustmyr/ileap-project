@@ -6,9 +6,15 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 import base64
 import hashlib
+import os
 
-# Secret key - must match frontend
-SECRET_KEY = 'ILEAP_SECURE_TRANSPORT_KEY_2026'
+# Transport encryption key - must match frontend CryptoJS key
+# WARNING: If changed, frontend encryption key must also be updated
+TRANSPORT_KEY = os.getenv("TRANSPORT_ENCRYPTION_KEY")
+if not TRANSPORT_KEY:
+    # Fallback for backward compatibility - SHOULD BE SET IN .env
+    print("⚠️  WARNING: TRANSPORT_ENCRYPTION_KEY not set in .env. Using fallback value.")
+    TRANSPORT_KEY = 'ILEAP_SECURE_TRANSPORT_KEY_2026'
 
 
 def decrypt_password(encrypted_password: str) -> str:
@@ -35,7 +41,7 @@ def decrypt_password(encrypted_password: str) -> str:
         
         # Derive key and IV from password and salt using EVP_BytesToKey (matching CryptoJS)
         # This matches the OpenSSL EVP_BytesToKey function used by CryptoJS
-        password_bytes = SECRET_KEY.encode()
+        password_bytes = TRANSPORT_KEY.encode()
         key_iv = b''
         prev = b''
         

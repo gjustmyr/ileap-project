@@ -37,7 +37,11 @@ export class SettingsComponent {
   onViewPrograms(event: {
     departmentId: string;
     departmentName: string;
+    campusId: string;
+    campusName: string;
   }): void {
+    this.selectedCampusId = event.campusId;
+    this.selectedCampusName = event.campusName;
     this.selectedDepartmentId = event.departmentId;
     this.selectedDepartmentName = event.departmentName;
     this.schoolInfoView = 'programs';

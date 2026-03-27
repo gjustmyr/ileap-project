@@ -633,3 +633,33 @@ class DailyAccomplishment(Base):
 	# Relationships
 	student = relationship("Student", backref="daily_accomplishments")
 	time_log = relationship("DailyTimeLog", back_populates="accomplishments")
+
+
+class StudentInternshipMatch(Base):
+	"""Model for storing historical match scores and tracking recommendations"""
+	__tablename__ = "student_internship_matches"
+
+	match_id = Column(Integer, primary_key=True, index=True)
+	student_id = Column(Integer, ForeignKey("students.student_id", ondelete="CASCADE"), nullable=False)
+	internship_id = Column(Integer, ForeignKey("internships.internship_id", ondelete="CASCADE"), nullable=False)
+	match_score = Column(Numeric(5, 4), nullable=False)  # 0.0000 to 1.0000
+	match_label = Column(String(50), nullable=True)  # "Strong Match", "Good Match", etc.
+	is_recommended = Column(Boolean, default=False)
+	recommended_at = Column(DateTime, default=datetime.utcnow)
+	applied = Column(Boolean, default=False)  # Did student apply?
+	applied_at = Column(DateTime, nullable=True)
+	accepted = Column(Boolean, default=False)  # Was application accepted?
+	accepted_at = Column(DateTime, nullable=True)
+	feature_values = Column(Text, nullable=True)  # JSON string of feature values for analysis
+	created_at = Column(DateTime, default=datetime.utcnow)
+	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+	# Relationships
+	student = relationship("Student", backref="internship_matches")
+	internship = relationship("Internship", backref="student_matches")
+
+	# Unique constraint to prevent duplicate matches
+	__table_args__ = (
+		UniqueConstraint('student_id', 'internship_id', name='unique_student_internship_match'),
+	)
+

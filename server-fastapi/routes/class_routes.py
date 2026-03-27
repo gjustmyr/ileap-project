@@ -207,7 +207,7 @@ def get_my_classes(
             'class_id': cls.class_id,
             'schoolyear': cls.school_year,
             'semester': cls.semester,
-            'classSection': cls.class_section,
+            'classSection': cls.section,  # Use section field instead of class_section
             'students': students_count,
             'passed': passed,
             'failed': failed

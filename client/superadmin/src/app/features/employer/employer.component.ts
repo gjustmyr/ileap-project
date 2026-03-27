@@ -15,7 +15,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { EmployerService } from './employer.service';
-import { DropdownsService } from '../../shared/services/dropdowns.service';
+import { DropdownsService } from '@shared/services/dropdowns.service';
 
 @Component({
   selector: 'app-employer',

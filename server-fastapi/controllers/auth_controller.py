@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from models import User
+from models import User, SuperAdminProfile
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
@@ -9,8 +9,16 @@ import os
 import secrets
 from models_token_blacklist import token_blacklist
 from utils.encryption import decrypt_password
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+import base64
+from pathlib import Path
 
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
+SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY or JWT_SECRET environment variable is required")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 3
 
@@ -162,40 +170,329 @@ def login_user(credentials, db: Session):
 
 def create_superadmin(credentials, db: Session):
     """
-    Create a superadmin user
+    Create a superadmin user with profile
+    Limited to only ONE superadmin in the system
     """
+    # Validate admin key
+    if credentials.admin_key != SECRET_KEY:
+        raise HTTPException(status_code=403, detail="Invalid admin key")
+    
+    # Check if a superadmin already exists in the system
+    existing_superadmin = db.query(User).filter(User.role == "superadmin").first()
+    if existing_superadmin:
+        raise HTTPException(
+            status_code=400, 
+            detail="A superadmin already exists. Only one superadmin is allowed in the system."
+        )
+    
     email = credentials.email_address
-    password = credentials.password
-
-    if not email or not password:
-        raise HTTPException(status_code=400, detail="Email and password are required")
 
     # Check if user already exists
     existing_user = db.query(User).filter(User.email_address == email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
-    # Hash password
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    # Generate a default password (can be changed later)
+    default_password = "Admin@2025"  # User should change this on first login
+    hashed_password = bcrypt.hashpw(default_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     # Create new user
     new_user = User(
         email_address=email,
         password=hashed_password,
-        role="superadmin"
+        role="superadmin",
+        force_password_change=True  # Force password change on first login
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
+    # Create superadmin profile
+    superadmin_profile = SuperAdminProfile(
+        user_id=new_user.user_id,
+        first_name=credentials.first_name,
+        last_name=credentials.last_name,
+        contact_number=credentials.contact_number,
+        position_title=credentials.position_title,
+        status="active"
+    )
+
+    db.add(superadmin_profile)
+    db.commit()
+    db.refresh(superadmin_profile)
+
+    # Load and encode logo for email embedding
+    base_dir = Path(__file__).resolve().parent.parent
+    logo_path = base_dir / "static" / "email-assets" / "batstateu-logo.png"
+    
+    # Encode logo as base64 and prepare HTML
+    logo_html = ""
+    try:
+        if logo_path.exists():
+            with open(logo_path, "rb") as f:
+                logo_base64 = base64.b64encode(f.read()).decode('utf-8')
+                logo_html = f'<img src="data:image/png;base64,{logo_base64}" alt="BatStateU Logo" />'
+    except Exception as e:
+        print(f"Warning: Could not load email logo: {e}")
+
+    # Send email notification with login credentials
+    email_body_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+
+            .university-logo-section {{
+                text-align: center;
+                padding: 20px;
+                background-color: #fff;
+                border-bottom: 3px solid #8B0000;
+            }}
+            .university-logo-section img {{
+                width: 60px;
+                height: 60px;
+                margin-bottom: 10px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }}
+            .university-logo-section p {{
+                margin: 5px 0;
+                color: #8B0000;
+                font-size: 14px;
+                font-weight: 600;
+            }}
+            .header {{
+                background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+                color: white;
+                padding: 30px 20px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 28px;
+                font-weight: 600;
+                letter-spacing: 2px;
+            }}
+            .header p {{
+                margin: 5px 0 0 0;
+                font-size: 13px;
+                opacity: 0.95;
+                font-weight: 400;
+            }}
+            .header .subtitle {{
+                margin-top: 10px;
+                font-size: 11px;
+                opacity: 0.85;
+                font-style: italic;
+            }}
+            .content {{
+                padding: 40px 30px;
+            }}
+            .greeting {{
+                font-size: 18px;
+                color: #8B0000;
+                margin-bottom: 20px;
+                font-weight: 600;
+            }}
+            .message {{
+                margin-bottom: 30px;
+                color: #555;
+            }}
+            .credentials-box {{
+                background-color: #f8f9fa;
+                border-left: 4px solid #8B0000;
+                padding: 20px;
+                margin: 25px 0;
+                border-radius: 4px;
+            }}
+            .credentials-box h3 {{
+                margin: 0 0 15px 0;
+                color: #8B0000;
+                font-size: 16px;
+            }}
+            .credential-item {{
+                margin: 10px 0;
+                padding: 8px 0;
+            }}
+            .credential-label {{
+                font-weight: 600;
+                color: #333;
+                display: inline-block;
+                width: 150px;
+            }}
+            .credential-value {{
+                color: #555;
+                font-family: 'Courier New', monospace;
+                background-color: #fff;
+                padding: 4px 8px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }}
+            .warning-box {{
+                background-color: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 15px;
+                margin: 25px 0;
+                border-radius: 4px;
+            }}
+            .warning-box strong {{
+                color: #856404;
+            }}
+            .button {{
+                display: inline-block;
+                padding: 12px 30px;
+                background-color: #8B0000;
+                color: white !important;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 20px 0;
+                font-weight: 600;
+                text-align: center;
+            }}
+            .button:hover {{
+                background-color: #660000;
+            }}
+            .footer {{
+                background-color: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                color: #777;
+                font-size: 12px;
+                border-top: 1px solid #e9ecef;
+            }}
+            .footer p {{
+                margin: 5px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="university-logo-section">
+                {logo_html}
+                <p>BATANGAS STATE UNIVERSITY</p>
+                <p style="font-size: 11px; color: #666;">The National Engineering University</p>
+            </div>
+            
+            <div class="header">
+                <h1>ILEAP SYSTEM</h1>
+                <p>Internship Learning Experience, Alumni, and Placement System</p>
+                <p class="subtitle">Lipa Campus</p>
+            </div>
+            
+            <div class="content">
+                <div class="greeting">
+                    Hello {superadmin_profile.first_name} {superadmin_profile.last_name},
+                </div>
+                
+                <div class="message">
+                    <p>Welcome to the ILEAP System! Your <strong>Super Admin</strong> account has been successfully created.</p>
+                    <p>You now have full administrative access to manage the entire ILEAP platform.</p>
+                </div>
+                
+                <div class="credentials-box">
+                    <h3>🔑 Your Login Credentials</h3>
+                    <div class="credential-item">
+                        <span class="credential-label">Email:</span>
+                        <span class="credential-value">{new_user.email_address}</span>
+                    </div>
+                    <div class="credential-item">
+                        <span class="credential-label">Temporary Password:</span>
+                        <span class="credential-value">{default_password}</span>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ IMPORTANT SECURITY NOTICE</strong><br>
+                    For security reasons, you will be required to change your password upon first login. Please keep your credentials confidential and do not share them with anyone.
+                </div>
+                
+                <div style="text-align: center;">
+                    <a href="http://localhost:4200" class="button">Login to ILEAP System</a>
+                </div>
+                
+                <div class="message" style="margin-top: 30px;">
+                    <p>If you have any questions or need assistance, please contact the system administrator.</p>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p><strong>ILEAP System</strong></p>
+                <p>Batangas State University - The National Engineering University</p>
+                <p>Lipa Campus</p>
+                <p>This is an automated message. Please do not reply to this email.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    email_sent = False
+    try:
+        email_user = os.getenv("EMAIL_USER")
+        email_password = os.getenv("EMAIL_PASSWORD")
+        
+        if email_user and email_password:
+            msg = MIMEMultipart('alternative')
+            msg['From'] = email_user
+            msg['To'] = new_user.email_address
+            msg['Subject'] = "🎉 Welcome to ILEAP - Super Admin Account Created"
+            
+            # Attach HTML version
+            msg.attach(MIMEText(email_body_html, 'html'))
+            
+            # Try with timeout to avoid hanging
+            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
+            server.starttls()
+            server.login(email_user, email_password)
+            server.send_message(msg)
+            server.quit()
+            
+            email_sent = True
+            print(f"✅ Welcome email sent to {new_user.email_address}")
+        else:
+            print("⚠️  EMAIL_USER or EMAIL_PASSWORD not configured. Skipping email.")
+    except Exception as email_error:
+        print(f"⚠️  Failed to send welcome email: {email_error}")
+        # Don't fail the registration if email fails
+
+    message = "Superadmin created successfully."
+    if email_sent:
+        message += " Login credentials have been sent to your email."
+    else:
+        message += f" Please use the temporary password: {default_password}"
+    message += " You will be required to change your password on first login."
+
     return {
-        "message": "Superadmin created successfully",
-        "user": {
+        "status": "success",
+        "data": [{
             "user_id": new_user.user_id,
             "email": new_user.email_address,
-            "role": new_user.role
-        }
+            "role": new_user.role,
+            "first_name": superadmin_profile.first_name,
+            "last_name": superadmin_profile.last_name,
+            "default_password": default_password
+        }],
+        "message": message
     }
 
 

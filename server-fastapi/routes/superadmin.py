@@ -52,6 +52,16 @@ async def get_all_campuses(
     return campus_controller.get_all_campuses(pageNo, pageSize, keyword, db)
 
 
+@router.get("/campuses/{campus_id}")
+async def get_campus_by_id(
+    campus_id: int,
+    db: Session = Depends(get_db),
+    token_data: dict = Depends(verify_superadmin)
+):
+    """Get a single campus by ID (superadmin only)"""
+    return campus_controller.get_campus_by_id(campus_id, db)
+
+
 @router.post("/campuses", status_code=status.HTTP_201_CREATED)
 async def create_campus(
     campus: CampusCreate,

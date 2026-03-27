@@ -213,6 +213,9 @@ async def upload_requirement(
     safe_filename = f"student_{student.student_id}_req_{requirement_id}_{timestamp}{file_extension}"
     file_path = get_upload_path("requirements", safe_filename)
     
+    # Create directory if it doesn't exist
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
     # Save file
     try:
         with open(file_path, "wb") as buffer:

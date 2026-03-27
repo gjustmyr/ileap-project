@@ -20,23 +20,36 @@ def generate_password(length: int = 12) -> str:
 
 
 def send_email(to: str, subject: str, body: str):
-    """Send email"""
+    """Send email with better error handling"""
     try:
+        email_user = os.getenv("EMAIL_USER")
+        email_password = os.getenv("EMAIL_PASSWORD")
+        
+        if not email_user or not email_password:
+            print("Email credentials not configured in .env file")
+            return False
+        
         msg = MIMEMultipart()
-        msg['From'] = os.getenv("EMAIL_USER")
+        msg['From'] = email_user
         msg['To'] = to
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
         
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+        server.login(email_user, email_password)
         
         server.send_message(msg)
         server.quit()
+        print(f"✅ Email sent successfully to {to}")
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"❌ SMTP Authentication error: {e}")
+        print("💡 Tip: Use Gmail App Password, not your regular password")
+        return False
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"❌ Email error: {e}")
+        print("💡 Tip: Check your .env EMAIL_USER and EMAIL_PASSWORD settings")
         return False
 
 
@@ -191,8 +204,9 @@ Please login and change your password immediately.
 Best regards,
 ILEAP System"""
             
+            email_sent = False
             try:
-                send_email(
+                email_sent = send_email(
                     ojt_head.email_address,
                     "OJT Head Account Created - ILEAP System",
                     email_body
@@ -201,10 +215,20 @@ ILEAP System"""
                 print(f"Failed to send email: {email_error}")
                 # Account is still created even if email fails
             
+            message = "OJT Head registered successfully."
+            if email_sent:
+                message += " Password sent to email."
+            else:
+                message += f" Email delivery failed. Temporary password: {generated_password}"
+            
             return {
                 "status": "SUCCESS",
-                "data": [],
-                "message": "OJT Head registered successfully. Password sent to email."
+                "data": {
+                    "email": ojt_head.email_address,
+                    "temporary_password": generated_password if not email_sent else None,
+                    "email_sent": email_sent
+                },
+                "message": message
             }
         except Exception as e:
             db.rollback()

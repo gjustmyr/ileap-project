@@ -203,6 +203,9 @@ def update_student_profile_with_picture(user_id: int, profile_data: dict, file: 
         from config import get_upload_path, get_upload_url
         upload_dir = get_upload_path("profile_pictures")
         
+        # Create directory if it doesn't exist
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
         # Generate unique filename
         file_extension = file.filename.split(".")[-1]
         unique_filename = f"{uuid.uuid4()}.{file_extension}"

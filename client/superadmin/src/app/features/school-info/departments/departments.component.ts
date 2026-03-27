@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import {
@@ -16,7 +23,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import Swal from 'sweetalert2';
 
 import { DepartmentsService } from './departments.service';
-import { DropdownsService } from '../../../shared/services/dropdowns.service';
+import { DropdownsService } from '@shared/services/dropdowns.service';
 import { SelectModule } from 'primeng/select';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 
@@ -42,7 +49,12 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 export class DepartmentsComponent implements OnChanges {
   @Input() campusId?: string;
   @Input() campusName?: string;
-  @Output() viewProgramsEvent = new EventEmitter<{departmentId: string, departmentName: string}>();
+  @Output() viewProgramsEvent = new EventEmitter<{
+    departmentId: string;
+    departmentName: string;
+    campusId: string;
+    campusName: string;
+  }>();
 
   departments: any[] = [];
   currentCampusId!: number;
@@ -69,7 +81,7 @@ export class DepartmentsComponent implements OnChanges {
     private departmentsService: DepartmentsService,
     private dropdownService: DropdownsService,
     private fb: FormBuilder,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
     this.newDepartmentForm = this.fb.group({
       department_name: ['', Validators.required],
@@ -99,7 +111,7 @@ export class DepartmentsComponent implements OnChanges {
       this.loadAvailableDeans();
     } else {
       // Fall back to query params for backward compatibility
-      this.route.queryParams.subscribe(params => {
+      this.route.queryParams.subscribe((params) => {
         console.log('Query params:', params);
         this.currentCampusId = +params['campusId'];
         this.currentCampusName = params['campusName'] || '';
@@ -113,7 +125,10 @@ export class DepartmentsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     // Handle changes to Input properties
-    if ((changes['campusId'] || changes['campusName']) && !changes['campusId']?.firstChange) {
+    if (
+      (changes['campusId'] || changes['campusName']) &&
+      !changes['campusId']?.firstChange
+    ) {
       if (this.campusId && this.campusName) {
         this.currentCampusId = +this.campusId;
         this.currentCampusName = this.campusName;
@@ -133,14 +148,20 @@ export class DepartmentsComponent implements OnChanges {
           // Extract unique deans
           const deansMap = new Map();
           response.data.departments.forEach((dept: any) => {
-            console.log('Department:', dept.department_name, 'Dean:', dept.dean_name, dept.dean_email);
+            console.log(
+              'Department:',
+              dept.department_name,
+              'Dean:',
+              dept.dean_name,
+              dept.dean_email,
+            );
             if (dept.dean_name && dept.dean_email) {
               const key = dept.dean_email;
               if (!deansMap.has(key)) {
                 deansMap.set(key, {
                   dean_name: dept.dean_name,
                   dean_email: dept.dean_email,
-                  dean_contact: dept.dean_contact || ''
+                  dean_contact: dept.dean_contact || '',
                 });
               }
             }
@@ -151,7 +172,7 @@ export class DepartmentsComponent implements OnChanges {
       },
       error: (error) => {
         console.error('Error loading deans:', error);
-      }
+      },
     });
   }
 
@@ -202,18 +223,20 @@ export class DepartmentsComponent implements OnChanges {
       dean_name: '',
       dean_email: '',
       dean_contact: '',
-      status: 'active'
+      status: 'active',
     });
   }
 
   onDeanSelect(event: any): void {
     if (event.value && this.deanSelectionMode === 'existing') {
-      const selectedDean = this.availableDeans.find(d => d.dean_email === event.value);
+      const selectedDean = this.availableDeans.find(
+        (d) => d.dean_email === event.value,
+      );
       if (selectedDean) {
         this.newDepartmentForm.patchValue({
           dean_name: selectedDean.dean_name,
           dean_email: selectedDean.dean_email,
-          dean_contact: selectedDean.dean_contact
+          dean_contact: selectedDean.dean_contact,
         });
       }
     }
@@ -224,18 +247,20 @@ export class DepartmentsComponent implements OnChanges {
     this.newDepartmentForm.patchValue({
       dean_name: '',
       dean_email: '',
-      dean_contact: ''
+      dean_contact: '',
     });
   }
 
   onUpdateDeanSelect(event: any): void {
     if (event.value && this.updateDeanSelectionMode === 'existing') {
-      const selectedDean = this.availableDeans.find(d => d.dean_email === event.value);
+      const selectedDean = this.availableDeans.find(
+        (d) => d.dean_email === event.value,
+      );
       if (selectedDean) {
         this.updateDepartmentForm.patchValue({
           dean_name: selectedDean.dean_name,
           dean_email: selectedDean.dean_email,
-          dean_contact: selectedDean.dean_contact
+          dean_contact: selectedDean.dean_contact,
         });
       }
     }
@@ -269,22 +294,28 @@ export class DepartmentsComponent implements OnChanges {
         confirmButtonColor: '#22c55e',
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Yes, add it!',
-        cancelButtonText: 'Cancel'
+        cancelButtonText: 'Cancel',
       }).then((result) => {
         if (result.isConfirmed) {
           let payload: any = {
             department_name: this.newDepartmentForm.value.department_name,
             abbrev: this.newDepartmentForm.value.abbrev,
             campus_id: this.currentCampusId,
-            status: 'active'
+            status: 'active',
           };
 
           // If existing dean selected, only send dean_email
-          if (this.deanSelectionMode === 'existing' && this.newDepartmentForm.value.dean_email) {
+          if (
+            this.deanSelectionMode === 'existing' &&
+            this.newDepartmentForm.value.dean_email
+          ) {
             payload.dean_email = this.newDepartmentForm.value.dean_email;
-          } 
+          }
           // If new dean, send all dean fields
-          else if (this.deanSelectionMode === 'new' && this.newDepartmentForm.value.dean_name) {
+          else if (
+            this.deanSelectionMode === 'new' &&
+            this.newDepartmentForm.value.dean_name
+          ) {
             payload.dean_name = this.newDepartmentForm.value.dean_name;
             payload.dean_email = this.newDepartmentForm.value.dean_email;
             payload.dean_contact = this.newDepartmentForm.value.dean_contact;
@@ -297,7 +328,7 @@ export class DepartmentsComponent implements OnChanges {
                   icon: 'success',
                   title: 'Success!',
                   text: 'Department added successfully',
-                  confirmButtonColor: '#22c55e'
+                  confirmButtonColor: '#22c55e',
                 });
                 this.getAllDepartments();
                 this.isAddDialogVisible = false;
@@ -307,14 +338,14 @@ export class DepartmentsComponent implements OnChanges {
                   dean_name: '',
                   dean_email: '',
                   dean_contact: '',
-                  status: 'active'
+                  status: 'active',
                 });
               } else {
                 Swal.fire({
                   icon: 'error',
                   title: 'Error!',
                   text: res?.message || 'Failed to add department',
-                  confirmButtonColor: '#ef4444'
+                  confirmButtonColor: '#ef4444',
                 });
               }
             },
@@ -324,7 +355,7 @@ export class DepartmentsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: 'Something went wrong while adding department',
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
             },
           });
@@ -346,13 +377,13 @@ export class DepartmentsComponent implements OnChanges {
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Yes, update it!',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
         this.departmentsService
           .updateDepartment(
             this.selectedDepartmentId as string,
-            this.updateDepartmentForm.value
+            this.updateDepartmentForm.value,
           )
           .subscribe({
             next: (res) => {
@@ -361,7 +392,7 @@ export class DepartmentsComponent implements OnChanges {
                   icon: 'success',
                   title: 'Success!',
                   text: 'Department updated successfully',
-                  confirmButtonColor: '#3b82f6'
+                  confirmButtonColor: '#3b82f6',
                 });
                 this.getAllDepartments();
                 this.isUpdateDialogVisible = false;
@@ -372,7 +403,7 @@ export class DepartmentsComponent implements OnChanges {
                   icon: 'error',
                   title: 'Error!',
                   text: res?.message || 'Failed to update department',
-                  confirmButtonColor: '#ef4444'
+                  confirmButtonColor: '#ef4444',
                 });
               }
             },
@@ -382,7 +413,7 @@ export class DepartmentsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: 'Something went wrong while updating department',
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
             },
           });
@@ -405,7 +436,7 @@ export class DepartmentsComponent implements OnChanges {
         this.pageNo,
         this.pageSize,
         this.keyword,
-        this.currentCampusId
+        this.currentCampusId,
       )
       .subscribe({
         next: (res) => {
@@ -444,7 +475,7 @@ export class DepartmentsComponent implements OnChanges {
   handleUpdateStatus(
     event: Event,
     departmentId: string,
-    currentStatus: string
+    currentStatus: string,
   ): void {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const actionText = newStatus === 'inactive' ? 'disable' : 'enable';
@@ -457,7 +488,7 @@ export class DepartmentsComponent implements OnChanges {
       confirmButtonColor: newStatus === 'inactive' ? '#ef4444' : '#22c55e',
       cancelButtonColor: '#6b7280',
       confirmButtonText: `Yes, ${actionText} it!`,
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
         this.departmentsService.toggleDepartmentStatus(departmentId).subscribe({
@@ -467,7 +498,7 @@ export class DepartmentsComponent implements OnChanges {
                 icon: 'success',
                 title: 'Success!',
                 text: `Department is now ${newStatus}`,
-                confirmButtonColor: '#22c55e'
+                confirmButtonColor: '#22c55e',
               });
               this.getAllDepartments();
             } else {
@@ -475,7 +506,7 @@ export class DepartmentsComponent implements OnChanges {
                 icon: 'error',
                 title: 'Error!',
                 text: res?.message || 'Failed to update status',
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
               });
             }
           },
@@ -485,7 +516,7 @@ export class DepartmentsComponent implements OnChanges {
               icon: 'error',
               title: 'Error!',
               text: 'Something went wrong while updating status',
-              confirmButtonColor: '#ef4444'
+              confirmButtonColor: '#ef4444',
             });
           },
         });
@@ -494,6 +525,11 @@ export class DepartmentsComponent implements OnChanges {
   }
 
   viewPrograms(departmentId: string, departmentName: string): void {
-    this.viewProgramsEvent.emit({ departmentId, departmentName });
+    this.viewProgramsEvent.emit({
+      departmentId,
+      departmentName,
+      campusId: this.campusId || '',
+      campusName: this.campusName || '',
+    });
   }
 }

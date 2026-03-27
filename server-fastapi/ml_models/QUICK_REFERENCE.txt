@@ -1,0 +1,253 @@
+"""
+QUICK REFERENCE - Custom Job Matching System
+
+Files Created:
+==============
+
+1. ml_models/collect_training_data.py
+   - Pulls student applications from database
+   - Generates positive (applied) and negative (not applied) examples
+   - Creates training_data.csv
+
+2. ml_models/feature_engineering.py
+   - Extracts numerical features from student-job pairs
+   - Features: skills overlap, text similarity, program match, etc.
+   - Reusable for training and prediction
+
+3. ml_models/train_model.py
+   - Trains 3 models: Logistic Regression, Random Forest, XGBoost
+   - Evaluates each on test set
+   - Saves best model as best_model_latest.pkl
+
+4. ml_models/predictor.py
+   - MatchingModelPredictor class for loading and using trained model
+   - predict() - Single prediction
+   - predict_batch() - Multiple predictions
+
+5. routes/ml_matching.py
+   - FastAPI endpoints for ML predictions
+   - POST /api/match/predict - Single match
+   - POST /api/match/predict-batch - Multiple matches
+   - GET /api/match/student/{id}/recommendations - Top recommendations
+   - GET /api/match/health - Check model status
+
+6. ml_models/quick_start.py
+   - One-command script to run all training steps
+
+7. ml_models/README.md
+   - Complete documentation with examples
+
+
+Quick Commands:
+===============
+
+Train model (all steps):
+    cd server-fastapi
+    python ml_models/quick_start.py
+
+Or step by step:
+    python ml_models/collect_training_data.py
+    python ml_models/train_model.py
+
+Start server:
+    python main.py
+
+Test API:
+    curl http://localhost:3000/api/match/health
+
+
+API Endpoints:
+==============
+
+1. Health Check
+   GET /api/match/health
+   
+   Response:
+   {
+     "status": "healthy",
+     "message": "ML model loaded and ready"
+   }
+
+2. Single Prediction
+   POST /api/match/predict
+   Body: { "student_id": 1, "internship_id": 42 }
+   
+   Response:
+   {
+     "student_id": 1,
+     "internship_id": 42,
+     "match_score": 0.87,
+     "match_label": "Strong Match",
+     "is_recommended": true,
+     "internship_title": "Software Engineering Intern"
+   }
+
+3. Batch Predictions
+   POST /api/match/predict-batch
+   Body: { "student_id": 1, "internship_ids": [42, 43, 44] }
+   
+   Response:
+   {
+     "student_id": 1,
+     "total_matches": 3,
+     "matches": [
+       {
+         "internship_id": 42,
+         "match_score": 0.87,
+         "match_label": "Strong Match",
+         "is_recommended": true,
+         ...
+       },
+       ...
+     ]
+   }
+
+4. Top Recommendations
+   GET /api/match/student/{student_id}/recommendations?limit=10
+   
+   Returns top N matches sorted by score
+
+
+Angular Integration Example:
+=============================
+
+// In your service
+getMatchScores(studentId: number, internshipIds: number[]) {
+  return this.http.post('/api/match/predict-batch', {
+    student_id: studentId,
+    internship_ids: internshipIds
+  });
+}
+
+// In your component
+async loadInternshipsWithMatches() {
+  const internships = await this.getInternships();
+  const matches = await this.getMatchScores(
+    this.studentId,
+    internships.map(i => i.id)
+  );
+  
+  // Merge matches into internships
+  this.internships = internships.map(i => ({
+    ...i,
+    matchScore: matches.find(m => m.internship_id === i.id)?.match_score
+  }));
+  
+  // Sort by match score
+  this.internships.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+}
+
+// In template
+<div *ngFor="let job of internships">
+  <h3>{{ job.title }}</h3>
+  <div class="match-bar">
+    <div [style.width.%]="job.matchScore * 100"></div>
+  </div>
+  <span>{{ job.matchScore * 100 | number:'1.0-0' }}% Match</span>
+</div>
+
+
+Match Score Interpretation:
+============================
+
+0.70 - 1.00: Strong Match ⭐⭐⭐
+0.50 - 0.69: Good Match ⭐⭐
+0.30 - 0.49: Weak Match ⭐
+0.00 - 0.29: Poor Match
+
+
+Features Used:
+==============
+
+1. skills_jaccard: Jaccard similarity between student and job skills
+2. skills_match_count: Number of matching skills
+3. skills_required_count: Total skills required by job
+4. skills_coverage: % of required skills student has
+5. is_job_placement: 1 if job posting, 0 if internship
+6. program_match: Student's program mentioned in job title/description
+7. major_match: Student's major mentioned in job title/description
+8. text_cosine_similarity: TF-IDF cosine similarity of full text
+
+
+Model Performance (Expected):
+==============================
+
+With 50+ training examples:
+- Accuracy: 75-85%
+- Precision: 70-80%
+- Recall: 60-75%
+- F1 Score: 65-77%
+- ROC AUC: 80-90%
+
+With 200+ training examples:
+- Accuracy: 85-92%
+- ROC AUC: 90-95%
+
+
+Retraining:
+===========
+
+Retrain when:
+- You have 50+ new applications
+- Model performance degrades
+- Every 1-2 months
+
+Command:
+    python ml_models/collect_training_data.py
+    python ml_models/train_model.py
+    # Restart FastAPI server
+
+
+Troubleshooting:
+================
+
+1. "Model not found"
+   → Run: python ml_models/train_model.py
+
+2. "Not enough training data"
+   → Need at least 20-30 applications
+   → Use the system more to collect data
+
+3. "XGBoost not available"
+   → Optional: pip install xgboost
+   → Random Forest works fine too
+
+4. "Import error in ml_matching.py"
+   → Check Python path
+   → Make sure ml_models/__init__.py exists
+
+5. Low accuracy
+   → Need more training data
+   → Encourage students to fill out complete profiles
+   → Check feature importance and add more features
+
+
+Next Steps:
+===========
+
+1. ✅ Train your model
+2. ✅ Test API endpoints
+3. ✅ Integrate with Angular
+4. 📊 Monitor performance
+5. 🔄 Retrain periodically with new data
+6. 🚀 Deploy to production
+
+
+Tips for Better Results:
+=========================
+
+1. Encourage complete student profiles (skills, program, major)
+2. Require employers to specify required skills
+3. Collect more application data
+4. Add custom features specific to your domain
+5. Fine-tune model hyperparameters
+6. A/B test different recommendation thresholds
+
+
+Resources:
+==========
+
+Documentation: ml_models/README.md
+Training Script: ml_models/quick_start.py
+Test Predictor: python ml_models/predictor.py
+API Docs: http://localhost:3000/docs (when server running)

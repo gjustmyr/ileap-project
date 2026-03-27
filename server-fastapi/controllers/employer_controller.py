@@ -50,23 +50,36 @@ def hash_password(password: str) -> str:
 
 
 def send_email(to: str, subject: str, body: str):
-    """Send email"""
+    """Send email with better error handling"""
     try:
+        email_user = os.getenv("EMAIL_USER")
+        email_password = os.getenv("EMAIL_PASSWORD")
+        
+        if not email_user or not email_password:
+            print("Email credentials not configured in .env file")
+            return False
+        
         msg = MIMEMultipart('alternative')
-        msg['From'] = os.getenv("EMAIL_USER")
+        msg['From'] = email_user
         msg['To'] = to
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'html'))
         
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+        server.login(email_user, email_password)
         
         server.send_message(msg)
         server.quit()
+        print(f"✅ Email sent successfully to {to}")
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"❌ SMTP Authentication error: {e}")
+        print("💡 Tip: Use Gmail App Password, not your regular password")
+        return False
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"❌ Email error: {e}")
+        print("💡 Tip: Check your .env EMAIL_USER and EMAIL_PASSWORD settings")
         return False
 
 
