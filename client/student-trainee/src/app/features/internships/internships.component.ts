@@ -156,24 +156,6 @@ export class InternshipsComponent implements OnInit {
   viewInternship(internship: any): void {
     this.selectedInternship = internship;
     this.showViewDialog = true;
-    this.matchExplanation = null;
-
-    // Load match explanation if there's a match score
-    if (internship.matchScore && this.studentId) {
-      this.isLoadingExplanation = true;
-      this.internshipsService
-        .explainRecommendation(this.studentId, internship.internship_id)
-        .subscribe({
-          next: (response) => {
-            this.matchExplanation = response;
-            this.isLoadingExplanation = false;
-          },
-          error: (error) => {
-            console.error('Error loading explanation:', error);
-            this.isLoadingExplanation = false;
-          },
-        });
-    }
   }
 
   openApplyDialog(internship: any): void {

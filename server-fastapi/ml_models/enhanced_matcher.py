@@ -12,6 +12,7 @@ Version: 2.0.0
 """
 
 import json
+import re
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -31,7 +32,8 @@ class EnhancedInternshipMatcher:
         skill_weight: float = 0.40,
         program_weight: float = 0.25,
         semantic_weight: float = 0.25,
-        historical_weight: float = 0.10
+        historical_weight: float = 0.10,
+        use_simple_cosine: bool = True
     ):
         """
         Initialize matcher with configurable weights
@@ -41,16 +43,45 @@ class EnhancedInternshipMatcher:
             program_weight: Weight for program/major matching (default 25%)
             semantic_weight: Weight for semantic text similarity (default 25%)
             historical_weight: Weight for historical success patterns (default 10%)
+            use_simple_cosine: If True, use only cosine similarity on merged text (default True)
         """
         self.skill_weight = skill_weight
         self.program_weight = program_weight
         self.semantic_weight = semantic_weight
         self.historical_weight = historical_weight
+        self.use_simple_cosine = use_simple_cosine
         
         # Validate weights sum to 1.0
         total = skill_weight + program_weight + semantic_weight + historical_weight
         if not (0.99 <= total <= 1.01):
             raise ValueError(f"Weights must sum to 1.0, got {total}")
+    
+    
+    @staticmethod
+    def clean_html(text: str) -> str:
+        """
+        Remove HTML tags and clean text for matching
+        
+        Args:
+            text: Text that may contain HTML tags
+            
+        Returns:
+            Clean text without HTML tags
+        """
+        if not text:
+            return ""
+        
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', ' ', text)
+        
+        # Remove HTML entities
+        text = re.sub(r'&[a-zA-Z]+;', ' ', text)
+        text = re.sub(r'&#\d+;', ' ', text)
+        
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        return text.strip()
     
     
     def calculate_skill_score(
@@ -272,6 +303,10 @@ class EnhancedInternshipMatcher:
         Returns:
             dict with match_score, components, and explanation
         """
+        # If using simple cosine similarity only
+        if self.use_simple_cosine:
+            return self._calculate_simple_cosine_match(student_data, internship_data)
+        
         # Extract data
         student_skills = student_data.get('skills', [])
         internship_skills = internship_data.get('skills', [])
@@ -356,6 +391,93 @@ class EnhancedInternshipMatcher:
             },
             'skill_metrics': skill_metrics,
             'program_metrics': program_metrics
+        }
+    
+    
+    def _calculate_simple_cosine_match(
+        self,
+        student_data: Dict,
+        internship_data: Dict
+    ) -> Dict:
+        """
+        Calculate match score using only cosine similarity on merged text
+        
+        Args:
+            student_data: dict with student information
+            internship_data: dict with internship information
+        
+        Returns:
+            dict with match_score and components
+        """
+        # Merge all student information into one string
+        student_skills = student_data.get('skills', [])
+        student_text = " ".join(filter(None, [
+            " ".join(student_skills),
+            student_data.get('program', ''),
+            student_data.get('major', ''),
+            student_data.get('department', ''),
+            self.clean_html(student_data.get('about', '')),
+        ]))
+        
+        # Merge all internship information into one string
+        internship_skills = internship_data.get('skills', [])
+        internship_text = " ".join(filter(None, [
+            internship_data.get('title', ''),
+            self.clean_html(internship_data.get('description', '')),
+            " ".join(internship_skills),
+            internship_data.get('industry', ''),
+            internship_data.get('address', '')
+        ]))
+        
+        # Calculate cosine similarity
+        cosine_score = self.calculate_semantic_score(student_text, internship_text)
+        
+        # Calculate skill metrics for explanation
+        skill_metrics = self.calculate_skill_score(student_skills, internship_skills)
+        
+        # Use cosine score as base, but boost if strong skill match
+        skill_coverage = skill_metrics['coverage']
+        final_score = cosine_score
+        
+        # SKILL BOOST: If majority of skills match, boost the score
+        if skill_coverage >= 0.50:
+            # Boost score based on skill coverage
+            skill_boost = skill_coverage * 0.3  # Up to 30% boost
+            final_score = min(cosine_score + skill_boost, 1.0)
+        
+        # Determine match label based on final score
+        if final_score >= 0.60:
+            match_label = "Excellent Match"
+            is_recommended = True
+        elif final_score >= 0.45:
+            match_label = "Strong Match"
+            is_recommended = True
+        elif final_score >= 0.30:
+            match_label = "Good Match"
+            is_recommended = False
+        elif final_score >= 0.20:
+            match_label = "Fair Match"
+            is_recommended = False
+        else:
+            match_label = "Weak Match"
+            is_recommended = False
+        
+        # SKILL OVERRIDE: If majority of required skills match, always recommend
+        if skill_coverage >= 0.50 and not is_recommended:
+            is_recommended = True
+            match_label = f"{match_label} (Skills Override)"
+        
+        return {
+            'match_score': round(final_score, 4),
+            'match_label': match_label,
+            'is_recommended': is_recommended,
+            'components': {
+                'cosine_similarity': round(cosine_score, 4),
+                'skill_match_count': skill_metrics['match_count'],
+                'skill_coverage': round(skill_metrics['coverage'], 4)
+            },
+            'skill_metrics': skill_metrics,
+            'program_metrics': {}
         }
     
     

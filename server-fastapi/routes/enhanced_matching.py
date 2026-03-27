@@ -484,45 +484,68 @@ def explain_recommendation(
         matching_skills = list(student_skills_set.intersection(internship_skills_set))
         missing_skills = list(internship_skills_set - student_skills_set)
         
-        # Build explanation
-        explanation = {
-            'overall_score': result['match_score'],
-            'match_label': result['match_label'],
-            'is_recommended': result['is_recommended'],
-            'score_breakdown': {
-                'skills': {
-                    'score': result['components']['skill_score'],
-                    'weight': matcher.skill_weight,
-                    'contribution': result['components']['skill_score'] * matcher.skill_weight,
-                    'details': {
-                        'matching_skills': matching_skills,
-                        'missing_skills': missing_skills,
-                        'match_count': f"{len(matching_skills)}/{len(internship_skills_set)}",
-                        'coverage': f"{result['skill_metrics']['coverage']:.0%}"
+        # Build explanation based on matching mode
+        if matcher.use_simple_cosine:
+            # Simple cosine similarity mode
+            explanation = {
+                'overall_score': result['match_score'],
+                'match_label': result['match_label'],
+                'is_recommended': result['is_recommended'],
+                'score_breakdown': {
+                    'cosine_similarity': {
+                        'score': result['components']['cosine_similarity'],
+                        'weight': 1.0,
+                        'contribution': result['components']['cosine_similarity'],
+                        'details': {
+                            'matching_skills': matching_skills,
+                            'missing_skills': missing_skills,
+                            'match_count': f"{len(matching_skills)}/{len(internship_skills_set)}",
+                            'coverage': f"{result['skill_metrics']['coverage']:.0%}"
+                        }
                     }
                 },
-                'program': {
-                    'score': result['components']['program_score'],
-                    'weight': matcher.program_weight,
-                    'contribution': result['components']['program_score'] * matcher.program_weight,
-                    'details': {
-                        'program_relevance': result['program_metrics']['program_match'],
-                        'major_relevance': result['program_metrics']['major_match']
+                'recommendation_reason': _generate_simple_recommendation_reason(result, matching_skills, missing_skills)
+            }
+        else:
+            # Multi-factor mode
+            explanation = {
+                'overall_score': result['match_score'],
+                'match_label': result['match_label'],
+                'is_recommended': result['is_recommended'],
+                'score_breakdown': {
+                    'skills': {
+                        'score': result['components']['skill_score'],
+                        'weight': matcher.skill_weight,
+                        'contribution': result['components']['skill_score'] * matcher.skill_weight,
+                        'details': {
+                            'matching_skills': matching_skills,
+                            'missing_skills': missing_skills,
+                            'match_count': f"{len(matching_skills)}/{len(internship_skills_set)}",
+                            'coverage': f"{result['skill_metrics']['coverage']:.0%}"
+                        }
+                    },
+                    'program': {
+                        'score': result['components']['program_score'],
+                        'weight': matcher.program_weight,
+                        'contribution': result['components']['program_score'] * matcher.program_weight,
+                        'details': {
+                            'program_relevance': result['program_metrics']['program_match'],
+                            'major_relevance': result['program_metrics']['major_match']
+                        }
+                    },
+                    'semantic': {
+                        'score': result['components']['semantic_score'],
+                        'weight': matcher.semantic_weight,
+                        'contribution': result['components']['semantic_score'] * matcher.semantic_weight
+                    },
+                    'historical': {
+                        'score': result['components']['historical_score'],
+                        'weight': matcher.historical_weight,
+                        'contribution': result['components']['historical_score'] * matcher.historical_weight
                     }
                 },
-                'semantic': {
-                    'score': result['components']['semantic_score'],
-                    'weight': matcher.semantic_weight,
-                    'contribution': result['components']['semantic_score'] * matcher.semantic_weight
-                },
-                'historical': {
-                    'score': result['components']['historical_score'],
-                    'weight': matcher.historical_weight,
-                    'contribution': result['components']['historical_score'] * matcher.historical_weight
-                }
-            },
-            'recommendation_reason': _generate_recommendation_reason(result, matching_skills, missing_skills)
-        }
+                'recommendation_reason': _generate_recommendation_reason(result, matching_skills, missing_skills)
+            }
         
         return explanation
     
@@ -531,6 +554,37 @@ def explain_recommendation(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to explain recommendation: {str(e)}"
         )
+
+
+def _generate_simple_recommendation_reason(result: Dict, matching_skills: List[str], missing_skills: List[str]) -> str:
+    """Generate human-readable recommendation reason for simple cosine similarity mode"""
+    score = result['match_score']
+    
+    if score >= 0.60:
+        if len(matching_skills) > 0:
+            return f"Excellent match! Your profile shows strong alignment with this position. You have {len(matching_skills)} matching skills including {', '.join(matching_skills[:3])}."
+        else:
+            return "Excellent match! Your profile shows strong alignment with this position based on your background and experience."
+    elif score >= 0.45:
+        if len(matching_skills) > 0:
+            return f"Strong match! Your profile aligns well with this position. You have {len(matching_skills)} matching skills. Consider highlighting these in your application."
+        else:
+            return "Strong match! Your profile aligns well with this position. Consider highlighting relevant experiences in your application."
+    elif score >= 0.30:
+        if len(missing_skills) > 0:
+            return f"Good potential match. While you have some relevant background, consider developing skills like {', '.join(missing_skills[:3])} to strengthen your application."
+        else:
+            return "Good potential match. Your profile shows some alignment with this position. Consider emphasizing transferable skills in your application."
+    elif score >= 0.20:
+        if len(missing_skills) > 0:
+            return f"Fair match. This position requires skills you may need to develop, including {', '.join(missing_skills[:3])}. Consider this as a learning opportunity."
+        else:
+            return "Fair match. This position may be outside your current focus area, but could offer valuable learning opportunities."
+    else:
+        if len(missing_skills) > 0:
+            return f"Limited match. This position requires different skills than your current profile, including {', '.join(missing_skills[:3])}. Consider positions more aligned with your background."
+        else:
+            return "Limited match. This position may not align well with your current profile. Consider exploring opportunities that better match your skills and interests."
 
 
 def _generate_recommendation_reason(result: Dict, matching_skills: List[str], missing_skills: List[str]) -> str:

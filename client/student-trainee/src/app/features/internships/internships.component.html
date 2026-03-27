@@ -133,27 +133,48 @@
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
                       <!-- Title and Company -->
-                      <div class="flex items-center gap-2 mb-1">
+                      <div class="flex items-center gap-2 mb-1 flex-wrap">
                         <h3
                           class="text-lg font-semibold text-gray-900 hover:text-blue-600"
                         >
                           {{ internship.title }}
                         </h3>
+                        <!-- Match Label Badge (combined label + percentage) -->
                         <span
-                          *ngIf="internship.matchScore"
-                          [class]="
-                            internship.isRecommended
-                              ? 'px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700'
-                              : 'px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700'
-                          "
+                          *ngIf="internship.matchLabel"
+                          [ngClass]="{
+                            'px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700':
+                              internship.matchLabel.includes('Excellent'),
+                            'px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700':
+                              internship.matchLabel.includes('Strong'),
+                            'px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700':
+                              internship.matchLabel.includes('Good'),
+                            'px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-700':
+                              internship.matchLabel.includes('Fair'),
+                            'px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700':
+                              internship.matchLabel.includes('Weak'),
+                          }"
                         >
                           {{
-                            internship.isRecommended
-                              ? "Recommended"
-                              : "Not Recommended"
+                            internship.matchLabel.replace(
+                              " (Skills Override)",
+                              ""
+                            )
                           }}
                           -
                           {{ getMatchScorePercentage(internship.matchScore) }}%
+                        </span>
+                        <!-- Skill Override Badge -->
+                        <span
+                          *ngIf="
+                            internship.matchLabel &&
+                            internship.matchLabel.includes('Skills Override')
+                          "
+                          class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 flex items-center gap-1"
+                          title="Recommended due to strong skill match"
+                        >
+                          <i class="pi pi-star-fill text-xs"></i>
+                          Skills Match
                         </span>
                       </div>
                       <p class="text-sm text-gray-700 mb-2">
@@ -291,9 +312,37 @@
                       <i class="pi pi-building text-gray-400 text-3xl"></i>
                     </div>
                     <div class="flex-1">
-                      <h3 class="font-semibold text-2xl mb-1">
-                        {{ selectedInternship.title }}
-                      </h3>
+                      <div class="flex items-center gap-2 mb-2 flex-wrap">
+                        <h3 class="font-semibold text-2xl">
+                          {{ selectedInternship.title }}
+                        </h3>
+                        <!-- Match Label Badge in Modal -->
+                        <span
+                          *ngIf="selectedInternship.matchLabel"
+                          class="px-3 py-1 text-sm font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                        >
+                          {{
+                            selectedInternship.matchLabel.replace(
+                              " (Skills Override)",
+                              ""
+                            )
+                          }}
+                        </span>
+                        <!-- Skill Override Badge in Modal -->
+                        <span
+                          *ngIf="
+                            selectedInternship.matchLabel &&
+                            selectedInternship.matchLabel.includes(
+                              'Skills Override'
+                            )
+                          "
+                          class="px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-700 flex items-center gap-1"
+                          title="Recommended due to strong skill match"
+                        >
+                          <i class="pi pi-star-fill"></i>
+                          Skills Match
+                        </span>
+                      </div>
                       <p class="text-gray-600 text-lg mb-2">
                         {{ selectedInternship.company_name }}
                       </p>
@@ -423,43 +472,6 @@
                       >
                         {{ skill.skill_name || skill }}
                       </span>
-                    </div>
-                  </div>
-
-                  <!-- Match Explanation -->
-                  <div
-                    *ngIf="
-                      selectedInternship.matchScore &&
-                      matchExplanation &&
-                      !isLoadingExplanation
-                    "
-                    class="mb-6"
-                  >
-                    <h4 class="font-semibold text-base mb-3">
-                      Why this match?
-                    </h4>
-                    <p class="text-gray-700 leading-relaxed">
-                      {{ matchExplanation.recommendation_reason }}
-                    </p>
-                  </div>
-
-                  <!-- Loading Explanation -->
-                  <div
-                    *ngIf="
-                      selectedInternship.matchScore && isLoadingExplanation
-                    "
-                    class="mb-6"
-                  >
-                    <h4 class="font-semibold text-base mb-3">
-                      Why this match?
-                    </h4>
-                    <div class="text-center">
-                      <i
-                        class="pi pi-spin pi-spinner text-2xl text-blue-500"
-                      ></i>
-                      <p class="text-gray-600 mt-2 text-sm">
-                        Loading explanation...
-                      </p>
                     </div>
                   </div>
 
