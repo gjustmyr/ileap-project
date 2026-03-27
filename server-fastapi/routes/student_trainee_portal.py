@@ -474,6 +474,7 @@ def student_get_available_internships(
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), '../ml_models'))
     from ml_models.enhanced_matcher import get_matcher
+    from utils.debug_helpers import log_matching_data_warnings
     
     query = db.query(Internship).filter(Internship.status == "open")
     
@@ -539,8 +540,18 @@ def student_get_available_internships(
                     'description': internship.full_description or "",
                     'posting_type': internship.posting_type or "internship",
                     'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
-                    'company_name': internship.employer.company_name if internship.employer else ""
+                    'company_name': internship.employer.company_name if internship.employer else "",
+                    'address': internship.employer.address if internship.employer else ""
                 }
+                
+                # Debug: Log warnings for missing data (only for first 3 internships to avoid spam)
+                if internships.index(internship) < 3:
+                    log_matching_data_warnings(
+                        student,
+                        student_data['skills'],
+                        internship,
+                        internship_data['skills']
+                    )
                 
                 result = matcher.calculate_match_score(db, student_data, internship_data)
                 match_scores[internship.internship_id] = result

@@ -335,6 +335,58 @@ export class InternshipsComponent implements OnInit {
     return Math.round((score || 0) * 100);
   }
 
+  submitMatchFeedback(internshipId: number, isGoodMatch: boolean): void {
+    if (!this.studentId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Student profile not loaded',
+      });
+      return;
+    }
+
+    this.internshipsService
+      .submitMatchFeedback(this.studentId, internshipId, isGoodMatch)
+      .subscribe({
+        next: () => {
+          // Update the local internship object
+          if (
+            this.selectedInternship &&
+            this.selectedInternship.internship_id === internshipId
+          ) {
+            this.selectedInternship.userFeedback = isGoodMatch;
+          }
+
+          // Update in the list as well
+          const internship = this.internships.find(
+            (i) => i.internship_id === internshipId,
+          );
+          if (internship) {
+            internship.userFeedback = isGoodMatch;
+          }
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Thank you!',
+            text: 'Your feedback helps us improve our recommendations',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+        },
+        error: (error) => {
+          console.error('Error submitting feedback:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to submit feedback. Please try again.',
+          });
+        },
+      });
+  }
+
   sortByMatchScore(): void {
     this.internships.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
   }

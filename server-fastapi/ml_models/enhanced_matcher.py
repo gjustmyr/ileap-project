@@ -6,9 +6,10 @@ This module provides an improved matching algorithm that:
 2. Stores historical matches in the database for learning
 3. Supports both rule-based and ML-based matching
 4. Provides explainable recommendations
+5. Uses Sentence Transformers for advanced semantic matching
 
 Author: ILEAP Development Team
-Version: 2.0.0
+Version: 2.1.1
 """
 
 import json
@@ -18,8 +19,76 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
+
+# Try to import sentence transformers, fall back to TF-IDF if not available
+try:
+    from sentence_transformers import SentenceTransformer
+    SENTENCE_TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    print("Warning: sentence-transformers not installed. Using TF-IDF fallback.")
+    print("Install with: pip install sentence-transformers")
+
+
+# Custom stop words for job matching
+CUSTOM_STOP_WORDS = ENGLISH_STOP_WORDS.union({
+    'intern', 'internship', 'position', 'role', 'job', 'opportunity',
+    'looking', 'seeking', 'need', 'want', 'must', 'should', 'will',
+    'company', 'team', 'work', 'working', 'experience', 'candidate',
+    'student', 'trainee', 'applicant', 'individual', 'person',
+    'join', 'hiring', 'recruiting', 'employment', 'career'
+})
+
+# Skill synonyms for normalization
+SKILL_SYNONYMS = {
+    'js': 'javascript',
+    'ts': 'typescript',
+    'py': 'python',
+    'react.js': 'react',
+    'reactjs': 'react',
+    'react js': 'react',
+    'node.js': 'nodejs',
+    'node js': 'nodejs',
+    'vue.js': 'vue',
+    'vuejs': 'vue',
+    'angular.js': 'angular',
+    'angularjs': 'angular',
+    'c++': 'cpp',
+    'c#': 'csharp',
+    '.net': 'dotnet',
+    'asp.net': 'aspnet',
+    'ml': 'machine learning',
+    'ai': 'artificial intelligence',
+    'db': 'database',
+    'sql': 'structured query language',
+    'nosql': 'non relational database',
+    'ui': 'user interface',
+    'ux': 'user experience',
+    'api': 'application programming interface',
+    'rest': 'restful api',
+    'graphql': 'graph query language',
+    'html5': 'html',
+    'css3': 'css',
+    'es6': 'javascript',
+    'jquery': 'javascript library',
+}
+
+# Program-to-job-title relevance keywords
+PROGRAM_KEYWORDS = {
+    'computer engineering': ['software', 'hardware', 'embedded', 'systems', 'network', 'programming', 'developer', 'engineer', 'it', 'tech support', 'database', 'web', 'mobile', 'cloud', 'firmware', 'iot', 'robotics', 'automation'],
+    'computer science': ['software', 'developer', 'programmer', 'data', 'ai', 'ml', 'algorithm', 'web', 'mobile', 'cloud', 'database', 'backend', 'frontend', 'fullstack', 'devops', 'machine learning', 'artificial intelligence'],
+    'information technology': ['it', 'support', 'network', 'systems', 'administrator', 'helpdesk', 'infrastructure', 'security', 'cybersecurity', 'server', 'cloud', 'technical support', 'system admin'],
+    'information systems': ['analyst', 'business analyst', 'systems analyst', 'it', 'database', 'erp', 'crm', 'project management', 'business intelligence'],
+    'electrical engineering': ['electrical', 'electronics', 'circuit', 'power', 'automation', 'control', 'embedded', 'instrumentation', 'plc', 'scada'],
+    'mechanical engineering': ['mechanical', 'cad', 'design', 'manufacturing', 'production', 'maintenance', 'hvac', 'autocad', 'solidworks'],
+    'civil engineering': ['civil', 'construction', 'structural', 'surveying', 'autocad', 'project engineer', 'site engineer', 'estimator'],
+    'business': ['business', 'management', 'marketing', 'sales', 'finance', 'accounting', 'hr', 'human resources', 'operations', 'admin'],
+    'accounting': ['accounting', 'accountant', 'bookkeeping', 'audit', 'tax', 'finance', 'payroll', 'accounts'],
+    'marketing': ['marketing', 'digital marketing', 'social media', 'content', 'seo', 'advertising', 'brand', 'campaign'],
+    'multimedia': ['graphic design', 'video editing', 'animation', 'photoshop', 'illustrator', 'premiere', 'after effects', 'ui', 'ux', 'designer'],
+}
 
 
 class EnhancedInternshipMatcher:
@@ -33,7 +102,8 @@ class EnhancedInternshipMatcher:
         program_weight: float = 0.25,
         semantic_weight: float = 0.25,
         historical_weight: float = 0.10,
-        use_simple_cosine: bool = True
+        use_simple_cosine: bool = True,
+        use_sentence_transformers: bool = True
     ):
         """
         Initialize matcher with configurable weights
@@ -44,12 +114,26 @@ class EnhancedInternshipMatcher:
             semantic_weight: Weight for semantic text similarity (default 25%)
             historical_weight: Weight for historical success patterns (default 10%)
             use_simple_cosine: If True, use only cosine similarity on merged text (default True)
+            use_sentence_transformers: If True, use Sentence Transformers instead of TF-IDF (default True)
         """
         self.skill_weight = skill_weight
         self.program_weight = program_weight
         self.semantic_weight = semantic_weight
         self.historical_weight = historical_weight
         self.use_simple_cosine = use_simple_cosine
+        self.use_sentence_transformers = use_sentence_transformers and SENTENCE_TRANSFORMERS_AVAILABLE
+        
+        # Initialize Sentence Transformer model if available
+        self.sentence_model = None
+        if self.use_sentence_transformers:
+            try:
+                # Use a lightweight, fast model optimized for semantic similarity
+                self.sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
+                print("✓ Sentence Transformers loaded successfully")
+            except Exception as e:
+                print(f"Warning: Failed to load Sentence Transformers: {e}")
+                print("Falling back to TF-IDF")
+                self.use_sentence_transformers = False
         
         # Validate weights sum to 1.0
         total = skill_weight + program_weight + semantic_weight + historical_weight
@@ -84,22 +168,186 @@ class EnhancedInternshipMatcher:
         return text.strip()
     
     
+    @staticmethod
+    def clean_text(text: str) -> str:
+        """
+        Enhanced text cleaning for better matching
+        
+        Args:
+            text: Raw text to clean
+            
+        Returns:
+            Cleaned and normalized text
+        """
+        if not text:
+            return ""
+        
+        # Convert to lowercase
+        text = text.lower()
+        
+        # Remove URLs
+        text = re.sub(r'http[s]?://\S+', '', text)
+        
+        # Remove email addresses
+        text = re.sub(r'\S+@\S+', '', text)
+        
+        # Remove special characters but keep spaces and hyphens
+        text = re.sub(r'[^a-z0-9\s\-]', ' ', text)
+        
+        # Replace hyphens with spaces
+        text = text.replace('-', ' ')
+        
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Remove very short words (1-2 characters) except common tech terms
+        words = text.split()
+        words = [w for w in words if len(w) > 2 or w in ['ai', 'ml', 'ui', 'ux', 'db', 'js', 'ts', 'py', 'c', 'r']]
+        
+        return ' '.join(words).strip()
+    
+    
+    @staticmethod
+    def normalize_skills(skills: List[str]) -> List[str]:
+        """
+        Normalize skill names using synonym dictionary
+        
+        Args:
+            skills: List of skill names
+            
+        Returns:
+            List of normalized skill names
+        """
+        normalized = []
+        for skill in skills:
+            if not skill:
+                continue
+            skill_lower = skill.lower().strip()
+            # Apply synonyms
+            skill_normalized = SKILL_SYNONYMS.get(skill_lower, skill_lower)
+            normalized.append(skill_normalized)
+        return normalized
+    
+    
+    @staticmethod
+    def normalize_job_title(title: str) -> str:
+        """
+        Normalize job titles to handle similar variations
+        
+        Examples:
+        - "Software Engineer" -> "software engineer developer"
+        - "Full Stack Developer" -> "full stack developer engineer"
+        - "Frontend Dev" -> "frontend developer engineer"
+        
+        Args:
+            title: Job title to normalize
+            
+        Returns:
+            Normalized title with common variations
+        """
+        if not title:
+            return ""
+        
+        title_lower = title.lower()
+        
+        # Add common synonyms
+        synonyms = {
+            'engineer': 'engineer developer',
+            'developer': 'developer engineer',
+            'dev': 'developer engineer',
+            'programmer': 'programmer developer engineer',
+            'frontend': 'frontend front-end front end',
+            'backend': 'backend back-end back end',
+            'fullstack': 'fullstack full-stack full stack',
+            'full stack': 'fullstack full-stack full stack',
+            'jr': 'junior jr',
+            'sr': 'senior sr',
+            'intern': 'intern internship trainee',
+            'internship': 'intern internship trainee',
+        }
+        
+        # Apply synonyms
+        for key, value in synonyms.items():
+            if key in title_lower:
+                title_lower = title_lower.replace(key, value)
+        
+        return title_lower
+    
+    
+    @staticmethod
+    def check_program_relevance(
+        student_program: str,
+        student_major: str,
+        job_title: str,
+        job_description: str
+    ) -> float:
+        """
+        Check if job is relevant to student's program/major
+        
+        Returns a relevance factor between 0.3 and 1.0:
+        - 1.0 = Highly relevant (keywords match)
+        - 0.3 = Not relevant (no keywords match) - 70% penalty
+        
+        Args:
+            student_program: Student's program (e.g., "Computer Engineering")
+            student_major: Student's major (e.g., "Software Engineering")
+            job_title: Internship title
+            job_description: Internship description
+            
+        Returns:
+            float: Relevance factor (0.3 to 1.0)
+        """
+        if not student_program and not student_major:
+            return 1.0  # No penalty if no program info
+        
+        # Combine program and major for checking
+        student_field = f"{student_program} {student_major}".lower()
+        job_text = f"{job_title} {job_description[:500]}".lower()
+        
+        # Find relevant keywords for this program
+        relevant_keywords = []
+        for program, keywords in PROGRAM_KEYWORDS.items():
+            if program in student_field:
+                relevant_keywords.extend(keywords)
+        
+        if not relevant_keywords:
+            return 1.0  # No penalty if program not in mapping
+        
+        # Check if any relevant keyword appears in job
+        matches = 0
+        for keyword in relevant_keywords:
+            if keyword in job_text:
+                matches += 1
+        
+        if matches > 0:
+            return 1.0  # Relevant - no penalty
+        
+        # Not relevant - apply 70% penalty (return 0.3)
+        return 0.3
+    
+    
     def calculate_skill_score(
         self,
         student_skills: List[str],
         internship_skills: List[str]
     ) -> Dict[str, float]:
         """
-        Calculate skill matching score using multiple metrics
+        Calculate skill matching score using hybrid approach:
+        1. Exact matching (primary)
+        2. Semantic similarity (secondary, for partial credit)
         
         Returns:
-            dict with jaccard, coverage, and match_count scores
+            dict with jaccard, coverage, match_count, and semantic_score
         """
-        # Normalize skills to lowercase
-        student_skills_set = {s.lower().strip() for s in student_skills if s}
-        internship_skills_set = {s.lower().strip() for s in internship_skills if s}
+        # Normalize skills first
+        student_skills_normalized = self.normalize_skills(student_skills)
+        internship_skills_normalized = self.normalize_skills(internship_skills)
         
-        # Calculate metrics
+        # Convert to sets for comparison
+        student_skills_set = {s.lower().strip() for s in student_skills_normalized if s}
+        internship_skills_set = {s.lower().strip() for s in internship_skills_normalized if s}
+        
+        # Calculate exact match metrics
         if not student_skills_set or not internship_skills_set:
             return {
                 'jaccard': 0.0,
@@ -111,12 +359,44 @@ class EnhancedInternshipMatcher:
         intersection = student_skills_set.intersection(internship_skills_set)
         union = student_skills_set.union(internship_skills_set)
         
-        jaccard = len(intersection) / len(union) if union else 0.0
-        coverage = len(intersection) / len(internship_skills_set) if internship_skills_set else 0.0
+        exact_jaccard = len(intersection) / len(union) if union else 0.0
+        exact_coverage = len(intersection) / len(internship_skills_set) if internship_skills_set else 0.0
+        
+        # Calculate semantic similarity for skills (if enabled and available)
+        semantic_similarity = 0.0
+        if (self.use_sentence_transformers and 
+            hasattr(self, 'sentence_model') and 
+            self.sentence_model is not None and 
+            len(student_skills_set) > 0 and 
+            len(internship_skills_set) > 0):
+            try:
+                # Create skill text
+                student_skill_text = " ".join(student_skills_set)
+                internship_skill_text = " ".join(internship_skills_set)
+                
+                # Calculate semantic similarity
+                embeddings = self.sentence_model.encode([student_skill_text, internship_skill_text])
+                semantic_similarity = cosine_similarity(
+                    embeddings[0].reshape(1, -1),
+                    embeddings[1].reshape(1, -1)
+                )[0][0]
+                semantic_similarity = max(0.0, min(1.0, float(semantic_similarity)))
+            except Exception as e:
+                print(f"Warning: Skill semantic similarity failed: {e}")
+                semantic_similarity = 0.0
+        
+        # If semantic similarity is available, combine (80% exact, 20% semantic)
+        # Otherwise, use 100% exact matching
+        if semantic_similarity > 0:
+            combined_jaccard = (exact_jaccard * 0.80) + (semantic_similarity * 0.20)
+            combined_coverage = (exact_coverage * 0.80) + (semantic_similarity * 0.20)
+        else:
+            combined_jaccard = exact_jaccard
+            combined_coverage = exact_coverage
         
         return {
-            'jaccard': jaccard,
-            'coverage': coverage,
+            'jaccard': combined_jaccard,
+            'coverage': combined_coverage,
             'match_count': len(intersection),
             'total_required': len(internship_skills_set)
         }
@@ -179,17 +459,85 @@ class EnhancedInternshipMatcher:
         internship_text: str
     ) -> float:
         """
-        Calculate semantic similarity using TF-IDF cosine similarity
+        Calculate semantic similarity using Sentence Transformers or TF-IDF fallback
+        
+        Returns:
+            float between 0.0 and 1.0
+        """
+        try:
+            # Clean both texts
+            student_text = self.clean_text(student_text)
+            internship_text = self.clean_text(internship_text)
+            
+            if not student_text or not internship_text:
+                return 0.0
+            
+            # Use Sentence Transformers if available (better accuracy)
+            if self.use_sentence_transformers and self.sentence_model:
+                return self._calculate_semantic_score_transformers(student_text, internship_text)
+            
+            # Fallback to TF-IDF (faster, but less accurate)
+            return self._calculate_semantic_score_tfidf(student_text, internship_text)
+        
+        except Exception as e:
+            print(f"Warning: Semantic similarity calculation failed: {e}")
+            return 0.0
+    
+    
+    def _calculate_semantic_score_transformers(
+        self,
+        student_text: str,
+        internship_text: str
+    ) -> float:
+        """
+        Calculate semantic similarity using Sentence Transformers
+        
+        This method uses pre-trained neural networks to understand semantic meaning,
+        resulting in much better matching than TF-IDF.
+        
+        Returns:
+            float between 0.0 and 1.0
+        """
+        try:
+            # Generate embeddings (vector representations)
+            embeddings = self.sentence_model.encode([student_text, internship_text])
+            
+            # Calculate cosine similarity between embeddings
+            similarity = cosine_similarity(
+                embeddings[0].reshape(1, -1),
+                embeddings[1].reshape(1, -1)
+            )[0][0]
+            
+            # Normalize to 0-1 range (sometimes can be slightly negative)
+            similarity = max(0.0, min(1.0, similarity))
+            
+            return float(similarity)
+        
+        except Exception as e:
+            print(f"Warning: Sentence Transformers calculation failed: {e}")
+            # Fallback to TF-IDF
+            return self._calculate_semantic_score_tfidf(student_text, internship_text)
+    
+    
+    def _calculate_semantic_score_tfidf(
+        self,
+        student_text: str,
+        internship_text: str
+    ) -> float:
+        """
+        Calculate semantic similarity using TF-IDF (fallback method)
         
         Returns:
             float between 0.0 and 1.0
         """
         try:
             vectorizer = TfidfVectorizer(
-                max_features=100,
-                stop_words='english',
+                max_features=150,
+                stop_words=list(CUSTOM_STOP_WORDS),
                 lowercase=True,
-                ngram_range=(1, 2)
+                ngram_range=(1, 2),
+                min_df=1,
+                max_df=0.95
             )
             
             tfidf_matrix = vectorizer.fit_transform([student_text, internship_text])
@@ -198,7 +546,7 @@ class EnhancedInternshipMatcher:
             return float(similarity)
         
         except Exception as e:
-            print(f"Warning: Semantic similarity calculation failed: {e}")
+            print(f"Warning: TF-IDF calculation failed: {e}")
             return 0.0
     
     
@@ -400,84 +748,67 @@ class EnhancedInternshipMatcher:
         internship_data: Dict
     ) -> Dict:
         """
-        Calculate match score using only cosine similarity on merged text
+        Calculate match score using pure dual-encoder approach
+        
+        Concatenates ALL student data into one string, ALL internship data into another,
+        then feeds both to Sentence Transformers to get ONE cosine similarity score.
+        
+        No manual weighting, no component scores - just pure semantic similarity.
         
         Args:
             student_data: dict with student information
             internship_data: dict with internship information
         
         Returns:
-            dict with match_score and components
+            dict with match_score, match_label, and is_recommended only
         """
-        # Merge all student information into one string
+        # Concatenate ALL student information into ONE string
         student_skills = student_data.get('skills', [])
+        student_skills_normalized = self.normalize_skills(student_skills)
         student_text = " ".join(filter(None, [
-            " ".join(student_skills),
+            " ".join(student_skills_normalized),
             student_data.get('program', ''),
             student_data.get('major', ''),
             student_data.get('department', ''),
             self.clean_html(student_data.get('about', '')),
         ]))
         
-        # Merge all internship information into one string
+        # Concatenate ALL internship information into ONE string
         internship_skills = internship_data.get('skills', [])
+        internship_skills_normalized = self.normalize_skills(internship_skills)
         internship_text = " ".join(filter(None, [
-            internship_data.get('title', ''),
+            self.normalize_job_title(internship_data.get('title', '')),
             self.clean_html(internship_data.get('description', '')),
-            " ".join(internship_skills),
+            " ".join(internship_skills_normalized),
             internship_data.get('industry', ''),
+            internship_data.get('company_name', ''),
             internship_data.get('address', '')
         ]))
         
-        # Calculate cosine similarity
-        cosine_score = self.calculate_semantic_score(student_text, internship_text)
+        # Feed both strings to Sentence Transformers → Get ONE cosine similarity score
+        cosine_similarity = self.calculate_semantic_score(student_text, internship_text)
         
-        # Calculate skill metrics for explanation
-        skill_metrics = self.calculate_skill_score(student_skills, internship_skills)
+        # Calculate skill match count for display only (not used in scoring)
+        student_skills_set = {s.lower().strip() for s in student_skills_normalized if s}
+        internship_skills_set = {s.lower().strip() for s in internship_skills_normalized if s}
+        skill_match_count = len(student_skills_set.intersection(internship_skills_set))
+        total_required_skills = len(internship_skills_set)
         
-        # Use cosine score as base, but boost if strong skill match
-        skill_coverage = skill_metrics['coverage']
-        final_score = cosine_score
-        
-        # SKILL BOOST: If majority of skills match, boost the score
-        if skill_coverage >= 0.50:
-            # Boost score based on skill coverage
-            skill_boost = skill_coverage * 0.3  # Up to 30% boost
-            final_score = min(cosine_score + skill_boost, 1.0)
-        
-        # Determine match label based on final score
-        if final_score >= 0.60:
-            match_label = "Excellent Match"
+        # Determine recommendation based on cosine similarity threshold
+        if cosine_similarity >= 0.40:
+            match_label = "Recommended"
             is_recommended = True
-        elif final_score >= 0.45:
-            match_label = "Strong Match"
-            is_recommended = True
-        elif final_score >= 0.30:
-            match_label = "Good Match"
-            is_recommended = False
-        elif final_score >= 0.20:
-            match_label = "Fair Match"
-            is_recommended = False
         else:
-            match_label = "Weak Match"
+            match_label = "Not Recommended"
             is_recommended = False
         
-        # SKILL OVERRIDE: If majority of required skills match, always recommend
-        if skill_coverage >= 0.50 and not is_recommended:
-            is_recommended = True
-            match_label = f"{match_label} (Skills Override)"
-        
+        # Return ONLY the final score and recommendation
         return {
-            'match_score': round(final_score, 4),
+            'match_score': round(cosine_similarity, 4),
             'match_label': match_label,
             'is_recommended': is_recommended,
-            'components': {
-                'cosine_similarity': round(cosine_score, 4),
-                'skill_match_count': skill_metrics['match_count'],
-                'skill_coverage': round(skill_metrics['coverage'], 4)
-            },
-            'skill_metrics': skill_metrics,
-            'program_metrics': {}
+            'skill_match_count': skill_match_count,
+            'total_required_skills': total_required_skills
         }
     
     
@@ -563,8 +894,8 @@ class EnhancedInternshipMatcher:
                     'match_score': match_result['match_score'],
                     'match_label': match_result['match_label'],
                     'is_recommended': match_result['is_recommended'],
-                    'components': match_result['components'],
-                    'skill_metrics': match_result['skill_metrics']
+                    'skill_match_count': match_result.get('skill_match_count', 0),
+                    'total_required_skills': match_result.get('total_required_skills', 0)
                 })
         
         # Sort by match score (descending)
@@ -591,10 +922,10 @@ class EnhancedInternshipMatcher:
         
         try:
             for match in matches:
-                # Prepare feature values as JSON
+                # Prepare feature values as JSON (simplified - just skill counts)
                 feature_values = json.dumps({
-                    'components': match['components'],
-                    'skill_metrics': match['skill_metrics']
+                    'skill_match_count': match.get('skill_match_count', 0),
+                    'total_required_skills': match.get('total_required_skills', 0)
                 })
                 
                 # Use upsert to update if exists

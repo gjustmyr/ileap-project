@@ -203,7 +203,8 @@ def get_available_internships(
 					'description': internship.full_description or "",
 					'posting_type': internship.posting_type or "internship",
 					'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
-					'company_name': internship.employer.company_name if internship.employer else ""
+					'company_name': internship.employer.company_name if internship.employer else "",
+					'address': internship.employer.address if internship.employer else ""
 				}
 				
 				# Calculate match score

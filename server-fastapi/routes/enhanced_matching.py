@@ -173,8 +173,17 @@ def get_match_score(
             'description': internship.full_description or "",
             'posting_type': internship.posting_type or "internship",
             'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
-            'company_name': internship.employer.company_name if internship.employer else ""
+            'company_name': internship.employer.company_name if internship.employer else "",
+            'address': internship.employer.address if internship.employer else ""
         }
+        
+        # Debug: Log warnings for missing data
+        log_matching_data_warnings(
+            student,
+            student_data['skills'],
+            internship,
+            internship_data['skills']
+        )
         
         # Calculate match
         result = matcher.calculate_match_score(db, student_data, internship_data)
@@ -460,7 +469,7 @@ def explain_recommendation(
             'program': student.program or "",
             'major': student.major or "",
             'department': student.department or "",
-            'about': student.about or ""
+            # 'about': student.about or ""
         }
         
         internship_data = {
@@ -472,8 +481,12 @@ def explain_recommendation(
             'description': internship.full_description or "",
             'posting_type': internship.posting_type or "internship",
             'industry': internship.employer.industry.industry_name if (internship.employer and internship.employer.industry) else "",
-            'company_name': internship.employer.company_name if internship.employer else ""
+            'company_name': internship.employer.company_name if internship.employer else "",
+            'address': internship.employer.address if internship.employer else ""
         }
+        
+        # Debug: Log warnings for missing data
+        log_matching_data_warnings(student, student_skills, internship, internship_skills)
         
         # Calculate match
         result = matcher.calculate_match_score(db, student_data, internship_data)
@@ -678,4 +691,88 @@ def sync_application_feedback(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync feedback: {str(e)}"
+        )
+
+
+# User Feedback Endpoint
+class MatchFeedbackRequest(BaseModel):
+    is_good_match: bool
+
+@router.post("/{student_id}/match-feedback/{internship_id}")
+def submit_user_match_feedback(
+    student_id: int,
+    internship_id: int,
+    feedback: MatchFeedbackRequest,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Submit user feedback on whether a match is good or not
+    
+    This helps train the ML model by collecting ground truth labels
+    
+    Args:
+        student_id: Student ID
+        internship_id: Internship ID
+        feedback: User feedback (is_good_match: true/false)
+    
+    Returns:
+        Success message
+    """
+    # Verify student exists
+    student = db.query(Student).filter(Student.student_id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Verify internship exists
+    internship = db.query(Internship).filter(Internship.internship_id == internship_id).first()
+    if not internship:
+        raise HTTPException(status_code=404, detail="Internship not found")
+    
+    # Authorization check - only the student themselves can submit feedback
+    if current_user.get('role') == 'student' and current_user.get('user_id') != student.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    try:
+        # Find or create match record
+        match = db.query(StudentInternshipMatch).filter(
+            and_(
+                StudentInternshipMatch.student_id == student_id,
+                StudentInternshipMatch.internship_id == internship_id
+            )
+        ).first()
+        
+        if not match:
+            # Create new match record if it doesn't exist
+            match = StudentInternshipMatch(
+                student_id=student_id,
+                internship_id=internship_id,
+                match_score=0.0,  # Will be updated by matching system
+                match_label="Unknown",
+                is_recommended=False
+            )
+            db.add(match)
+        
+        # Update user feedback
+        match.user_feedback = feedback.is_good_match
+        match.user_feedback_at = datetime.utcnow()
+        match.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        print(f"✓ User feedback recorded: Student {student_id}, Internship {internship_id}, Good Match: {feedback.is_good_match}")
+        
+        return {
+            'message': 'Feedback submitted successfully',
+            'student_id': student_id,
+            'internship_id': internship_id,
+            'is_good_match': feedback.is_good_match
+        }
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error submitting user feedback: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to submit feedback: {str(e)}"
         )

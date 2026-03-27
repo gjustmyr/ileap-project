@@ -87,4 +87,18 @@ export class InternshipsService {
       },
     );
   }
+
+  submitMatchFeedback(
+    studentId: number,
+    internshipId: number,
+    isGoodMatch: boolean,
+  ): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/students/${studentId}/match-feedback/${internshipId}`,
+      { is_good_match: isGoodMatch },
+      {
+        headers: this.getHeaders(),
+      },
+    );
+  }
 }

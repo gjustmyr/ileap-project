@@ -650,6 +650,8 @@ class StudentInternshipMatch(Base):
 	applied_at = Column(DateTime, nullable=True)
 	accepted = Column(Boolean, default=False)  # Was application accepted?
 	accepted_at = Column(DateTime, nullable=True)
+	user_feedback = Column(Boolean, nullable=True)  # User's opinion: True=good match, False=not a match, None=no feedback
+	user_feedback_at = Column(DateTime, nullable=True)  # When user provided feedback
 	feature_values = Column(Text, nullable=True)  # JSON string of feature values for analysis
 	created_at = Column(DateTime, default=datetime.utcnow)
 	updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
